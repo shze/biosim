@@ -1,0 +1,4 @@
+build/
+.directory
+.kdev4/
+biosim.kdev4

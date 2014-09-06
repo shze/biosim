@@ -1,0 +1,14 @@
+---
+# BasedOnStyle:  LLVM
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+ColumnLimit: 120
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+NamespaceIndentation: All
+Cpp11BracedListStyle: true
+Standard: Cpp11
+IndentFunctionDeclarationAfterType: true
+AlwaysBreakTemplateDeclarations: true 
+#BreakBeforeBraces: Stroustrup
+SpaceAfterControlStatementKeyword: false
+...
