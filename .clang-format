@@ -9,6 +9,6 @@ Cpp11BracedListStyle: true
 Standard: Cpp11
 IndentFunctionDeclarationAfterType: true
 AlwaysBreakTemplateDeclarations: true 
-#BreakBeforeBraces: Stroustrup
 SpaceAfterControlStatementKeyword: false
+AlignTrailingComments: false
 ...

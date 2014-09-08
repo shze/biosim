@@ -1,10 +1,12 @@
+#include <map>
+
 namespace biosim {
   namespace tools {
     // enumerate is wrapper of T; it uses identifier() to get an identifier string for a T
     template <typename T>
     class enumerate {
     public:
-      // constructor
+      // ctor
       explicit enumerate(T __obj) : _object(__obj) {}
       // get object held by enumerate; use this explicit name instead of overloading operator * or operator T
       T const &get_object() const { return _object; }
@@ -28,7 +30,7 @@ namespace biosim {
 
     private:
       T _object; // the enumerated object
-    };           // class enumerate
+    }; // class enumerate
 
     // output operator for enumerate<T>
     template <typename T>
@@ -36,5 +38,5 @@ namespace biosim {
       __out << __rhs.get_object();
       return __out;
     } // operator<<
-  }
-}
+  } // namespace tools
+} // namespace biosim
