@@ -6,6 +6,7 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 
 set(LIBBIOSIM_SOURCES
   che/cc.cpp
+  tools/log.cpp
 )
 
 add_library(biosim STATIC ${LIBBIOSIM_SOURCES})
