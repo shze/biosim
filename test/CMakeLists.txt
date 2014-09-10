@@ -9,4 +9,4 @@ set(SOURCES_UNIT_TESTER
 )
 
 add_executable(unit_tester ${SOURCES_UNIT_TESTER})
-#target_link_libraries(unit_tester biosim)
+target_link_libraries(unit_tester biosim)

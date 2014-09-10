@@ -1,3 +1,6 @@
+#ifndef tools_enumerate_h
+#define tools_enumerate_h
+
 #include <map>
 
 namespace biosim {
@@ -40,3 +43,5 @@ namespace biosim {
     } // operator<<
   } // namespace tools
 } // namespace biosim
+
+#endif // tools_enumerate_h

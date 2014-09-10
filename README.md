@@ -14,7 +14,10 @@
   have two leading `_`. Template parameters are uppercase.
 * Always place the `const` modifer after the part which constness it describes (so that types can be completely read
   backwards).
+* Always use `{}`, even for single statements.
 * Group methods by method/design pattern without empty line between methods.
 * Use short, but descriptive names; comment at least every method and member.
 
 ##Programming
+
+* Make single argument ctor explicit.

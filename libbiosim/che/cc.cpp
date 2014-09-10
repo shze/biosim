@@ -1,16 +1,43 @@
 #include "che/cc.h"
+#include <algorithm>
+#include "tools/log.h"
 
 namespace biosim {
   namespace che {
     // construct cc with id; id is assumed unique; throws if not found
     cc::cc(std::string __id) : _impl(find(__id)) {}
+    // ctor from id_char and monomer_type, assumed unique; use const ref for args b/c they're no sink args
+    cc::cc(char const &__id_char, monomer_type const &__monomer) : _impl(find(__id_char, __monomer)) {}
+    // ctor from specificity and monomer_type; assumed not unique, constructs first
+    cc::cc(specificity_type __specificity, monomer_type __monomer_type) : _impl(find(__specificity, __monomer_type)) {}
+    // ctor from weight set
+    cc::cc(weight_map __weights) : _impl() {
+      if(__weights.empty()) { // we don't know specificity nor monomer_type, so we cannot even set it to unknown
+        BOOST_THROW_EXCEPTION(cc_data_not_found() << exception_desc("weight_map empty"));
+      } // if
+
+      std::shared_ptr<cc::data const> first_compound(find(__weights.begin()->first));
+      if(__weights.size() == 1) {
+        _impl = first_compound;
+        return;
+      } // if
+
+      for(auto const &p : __weights) {
+        find(p.first); // just to make sure all are found b/c it throws otherwise
+      } // for
+
+      std::shared_ptr<cc::data const> unknown_compound(find(specificity_unknown, first_compound->_monomer_type));
+      _impl = std::make_shared<data>(unknown_compound->_id, unknown_compound->_id_char, first_compound->_specificity,
+                                     first_compound->_monomer_type, __weights);
+    } // ctor
+
     // get identifier
     std::string cc::get_identifier() const { return _impl->_id; }
     // get identifier char, i.e. single letter code
     char cc::get_identifier_char() const { return _impl->_id_char; }
     // get specificity
     cc::specificity_type cc::get_specificity() const { return _impl->_specificity; }
-    // return if an unknown (unspecified) symbol; only for unknown, not for gap.
+    // return if an unknown (unspecified) compound; only for unknown, not for gap.
     bool cc::is_unknown() const { return _impl->_specificity == specificity_unknown; }
     // return if gap
     bool cc::is_gap() const { return _impl->_specificity == specificity_gap; }
@@ -24,7 +51,7 @@ namespace biosim {
       std::list<std::string> ids;
       for(auto p : data_enum::get_instances()) {
         ids.push_back(p.first);
-      }
+      } // for
       return ids;
     } // get_id_list()
 
@@ -37,7 +64,7 @@ namespace biosim {
     // ctor for profile derived-single-letter AA
     cc::data::data(std::string __id, std::string __base_id)
         : _id(__id), _id_char(), _specificity(), _monomer_type(), _weights() {
-      std::shared_ptr<data> base_ptr(find(__base_id)); // find base id, use it to set the following values
+      std::shared_ptr<data const> base_ptr(find(__base_id)); // find base id, use it to set the following values
       _id_char = base_ptr->_id_char;
       _specificity = base_ptr->_specificity;
       _monomer_type = base_ptr->_monomer_type;
@@ -47,15 +74,58 @@ namespace biosim {
     // monomer values; it assumes they are consistent and uses the values of the first base id.
     cc::data::data(std::string __id, char __id_char, std::string __base_id1, std::string __base_id2)
         : _id(__id), _id_char(__id_char), _specificity(), _monomer_type(), _weights() {
-      std::shared_ptr<data> base_ptr1(find(__base_id1));
-      std::shared_ptr<data> base_ptr2(find(__base_id2));
+      std::shared_ptr<data const> base_ptr1(find(__base_id1));
+      std::shared_ptr<data const> base_ptr2(find(__base_id2));
       _specificity = base_ptr1->_specificity;
       _monomer_type = base_ptr1->_monomer_type;
       _weights = {{__base_id1, 0.5}, {__base_id2, 0.5}};
     } // data ctor
+    // ctor for profile no-single-letter AA
+    cc::data::data(std::string __id, char __id_char, cc::specificity_type __specificity,
+                   cc::monomer_type __monomer_type, weight_map __weights)
+        : _id(__id),
+          _id_char(__id_char),
+          _specificity(__specificity),
+          _monomer_type(__monomer_type),
+          _weights(__weights) {}
 
-    // (static) find symbol with id; id is assumed unique; throws if no object was found
-    std::shared_ptr<cc::data> cc::find(std::string __id) { return data_enum::get_instances().at(__id).get_object(); }
+    // (static) find compound with id; id is assumed unique; throws if no object was found
+    std::shared_ptr<cc::data const> cc::find(std::string __id) {
+      return data_enum::get_instances().at(__id).get_object();
+    }
+    // (static) find compound with id_char and monomer_type; combination is assumed unique
+    std::shared_ptr<cc::data const> cc::find(char const &__id_char, monomer_type const &__monomer_type) {
+      auto itr = std::find_if(data_enum::get_instances().begin(), data_enum::get_instances().end(),
+                              [&](std::pair<std::string, tools::enumerate<std::shared_ptr<data const>>> p) {
+        // first two parts are testing id_char, monomer_type; last ist testing that we only find primary compounds
+        return p.second.get_object()->_id_char == __id_char && p.second.get_object()->_monomer_type == __monomer_type &&
+               p.second.get_object()->_id == p.second.get_object()->_weights.begin()->first;
+      });
+
+      if(itr == data_enum::get_instances().end()) {
+        BOOST_THROW_EXCEPTION(cc_data_not_found()
+                              << exception_desc(std::string("no data found with id_char=") + __id_char +
+                                                " and monomer_type=" + std::to_string(__monomer_type)));
+      } // if
+
+      return itr->second.get_object();
+    }
+    // (static) find compound with specificity and monomer_type; NOT assumed unique, only the first compound is returned
+    std::shared_ptr<cc::data const> cc::find(specificity_type __specificity, monomer_type __monomer_type) {
+      auto itr = std::find_if(data_enum::get_instances().begin(), data_enum::get_instances().end(),
+                              [&](std::pair<std::string, tools::enumerate<std::shared_ptr<data const>>> p) {
+        return p.second.get_object()->_specificity == __specificity &&
+               p.second.get_object()->_monomer_type == __monomer_type;
+      });
+
+      if(itr == data_enum::get_instances().end()) {
+        BOOST_THROW_EXCEPTION(cc_data_not_found() << exception_desc(
+                                  std::string("no data found with specificity_type=") + std::to_string(__specificity) +
+                                  " and monomer_type=" + std::to_string(__monomer_type)));
+      } // if
+
+      return itr->second.get_object();
+    }
     // (static) constructs data objects of the enumerated instance set, i.e. all single letter AA, see:
     // http://www.ebi.ac.uk/pdbe-srv/pdbechem/
     // http://onlinelibrary.wiley.com/doi/10.1002/0471250953.bia01as00/full
