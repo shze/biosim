@@ -4,6 +4,7 @@ project(test)
 include_directories(../libbiosim/)
 
 set(SOURCES_UNIT_TESTER
+  che/cc.cpp
   tools/enumerate.cpp
   unit_tester.cpp
 )

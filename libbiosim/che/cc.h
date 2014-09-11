@@ -10,7 +10,7 @@
 namespace biosim {
   namespace che {
     struct cc_data_not_found : virtual boost::exception, virtual std::exception {}; // exception specific for cc
-    using exception_desc = tools::exception_desc; // reuse from tools namespace
+    using errinfo_desc = tools::errinfo_desc; // reuse from tools namespace
 
     // stores a chemical component based on the CCD, see: http://www.wwpdb.org/ccd.html;
     // focuses on amino acids, which it defaults to, since the CCD does not contain all one letter codes for DNA and

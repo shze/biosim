@@ -6,7 +6,7 @@
 
 namespace biosim {
   namespace tools {
-    using exception_desc = boost::error_info<struct tag_exception_desc, std::string>;
+    using errinfo_desc = boost::error_info<struct tag_desc, std::string>;
   } // namespace tools
 } // namespace biosim
 
