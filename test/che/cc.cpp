@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(cc_ctor_from_id) {
   BOOST_CHECK(weights.begin()->first == "ALA");
   BOOST_CHECK(weights.begin()->second == 1.0);
   
-  BOOST_REQUIRE_THROW(che::cc compound("this_does_not_exist"), std::out_of_range);
+  BOOST_REQUIRE_THROW(che::cc compound("this_does_not_exist"), che::cc_data_not_found);
 }
 
 BOOST_AUTO_TEST_CASE(cc_ctor_from_char) {

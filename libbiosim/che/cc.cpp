@@ -13,7 +13,7 @@ namespace biosim {
     // ctor from weight set
     cc::cc(weight_map __weights) : _impl() {
       if(__weights.empty()) { // we don't know specificity nor monomer_type, so we cannot even set it to unknown
-        BOOST_THROW_EXCEPTION(cc_data_not_found() << errinfo_desc("weight_map empty"));
+        throw cc_data_not_found("weight_map empty");
       } // if
 
       std::shared_ptr<cc::data const> first_compound(find(__weights.begin()->first));
@@ -94,7 +94,7 @@ namespace biosim {
       try {
         return data_enum::get_instances().at(__id).get_object();
       } catch(std::exception &e) {
-        BOOST_THROW_EXCEPTION(cc_data_not_found() << errinfo_desc("id not found, map out of range"));
+        throw cc_data_not_found("map out of range, no data found with id=" + __id);
       }
     }
     // (static) find compound with id_char and monomer_type; combination is assumed unique
@@ -107,9 +107,8 @@ namespace biosim {
       });
 
       if(itr == data_enum::get_instances().end()) {
-        BOOST_THROW_EXCEPTION(cc_data_not_found()
-                              << errinfo_desc(std::string("no data found with id_char=") + __id_char +
-                                              " and monomer_type=" + std::to_string(__monomer_type)));
+        throw cc_data_not_found(std::string("no data found with id_char=") + __id_char + " and monomer_type=" +
+                                std::to_string(__monomer_type));
       } // if
 
       return itr->second.get_object();
@@ -123,9 +122,8 @@ namespace biosim {
       });
 
       if(itr == data_enum::get_instances().end()) {
-        BOOST_THROW_EXCEPTION(cc_data_not_found() << errinfo_desc(std::string("no data found with specificity_type=") +
-                                                                  std::to_string(__specificity) + " and monomer_type=" +
-                                                                  std::to_string(__monomer_type)));
+        throw cc_data_not_found("no data found with specificity_type=" + std::to_string(__specificity) +
+                                " and monomer_type=" + std::to_string(__monomer_type));
       } // if
 
       return itr->second.get_object();

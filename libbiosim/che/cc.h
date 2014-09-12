@@ -5,12 +5,13 @@
 #include <list>
 #include <memory>
 #include "tools/enumerate.h"
-#include "tools/exceptions.h"
 
 namespace biosim {
   namespace che {
-    struct cc_data_not_found : virtual boost::exception, virtual std::exception {}; // exception specific for cc
-    using errinfo_desc = tools::errinfo_desc; // reuse from tools namespace
+    // exception specific for cc
+    struct cc_data_not_found : std::runtime_error {
+      explicit cc_data_not_found(std::string const &__s) : std::runtime_error("cc data not found: " + __s) {}
+    };
 
     // stores a chemical component based on the CCD, see: http://www.wwpdb.org/ccd.html;
     // focuses on amino acids, which it defaults to, since the CCD does not contain all one letter codes for DNA and

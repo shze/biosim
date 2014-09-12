@@ -19,4 +19,6 @@
 
 ##Programming
 
+* Use exceptions, derive from std::runtime_exception; don't use boost::exceptions, they don't mix well, 
+  see: http://stackoverflow.com/questions/25759293/
 * Make single argument ctor explicit.
