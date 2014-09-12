@@ -5,11 +5,10 @@
 ##Formatting
 
 * Format using `clang-format` and the style defined in `.clang-format`.  
-  Use `clang-format-3.5` or newer because they can fit short enums on a single line.__
+  Use `clang-format-3.5` or newer because they can fit short enums on a single line.  
   See http://clang.llvm.org/docs/ClangFormat.html on how to integrate formatting for different editors.
   For KDevelop, add a custom source formatter script with `clang-format-3.4 -style=file -assume-filename=$FILE` as
-  command and assign your favorite shortcut key to the _Reformat Source_ command.__
-  **TODO**: Make short enums be placed on a single line.
+  command and assign your favorite shortcut key to the _Reformat Source_ command.
 * All identifiers are lowercase, words are separated by `_`. Member variables have one, passed function variables
   have two leading `_`. Template parameters are uppercase.
 * Always place the `const` modifer after the part which constness it describes (so that types can be completely read
