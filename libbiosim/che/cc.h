@@ -32,7 +32,7 @@ namespace biosim {
       // ctor from id; id is assumed unique; throws if not found
       explicit cc(std::string __id);
       // ctor from id_char and monomer_type, assumed unique; use const ref for args b/c they're no sink args
-      cc(char const &__id_char, monomer_type const &__monomer);
+      explicit cc(char const &__id_char, monomer_type const &__monomer = l_peptide_linking);
       // ctor from specificity and monomer_type; assumed not unique, constructs first
       cc(specificity_type __specificity, monomer_type __monomer_type);
       // ctor from weight set
@@ -55,6 +55,8 @@ namespace biosim {
 
       // get list of all identifiers; static public interface
       static std::list<std::string> get_id_list();
+      // create a string of identifier chars; static public interface
+      static std::string get_identifier_char_string();
 
     private:
       // contains the cc data; type that is enumerated

@@ -54,6 +54,14 @@ namespace biosim {
       } // for
       return ids;
     } // get_id_list()
+    // (static) create a string of identifier chars; static public interface
+    std::string cc::get_identifier_char_string() {
+      std::string id_chars;
+      for(auto p : data_enum::get_instances()) {
+        id_chars.push_back(p.second.get_object()->_id_char);
+      } // for
+      return id_chars;
+    } // get_identifier_char_string
 
     // ctor for primary unique-single-letter AA; __specificity and __monomer_type have defaults
     cc::data::data(std::string __id, char __id_char, cc::specificity_type __specificity,
@@ -191,5 +199,5 @@ namespace biosim {
     } // initialize()
 
     bool cc::_initialized(cc::initialize()); // initialize static variable
-  }
-}
+  } // namespace che
+} // namespace biosim
