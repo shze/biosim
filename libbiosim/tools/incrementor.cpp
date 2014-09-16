@@ -1,10 +1,12 @@
 #include "tools/incrementor.h"
 #include <stdexcept>
+#include "tools/log.h"
 
 namespace biosim {
   namespace tools {
     // ctor taking alphabet; default ctor
-    incrementor::incrementor(std::string __alphabet) : _alphabet(__alphabet) {}
+    incrementor::incrementor(std::string __alphabet)
+        : _alphabet(__alphabet), _first_char_is_neutral(__alphabet[0] == '0') {}
     // incrementing function
     std::string incrementor::next(std::string __s, size_t increment) const {
       int pos = __s.length() - 1; // start at last char; use int because we're decreasing it, and it can go < 0
@@ -22,7 +24,7 @@ namespace biosim {
         }
         pos--;
         if(increment && pos < 0) { // if we run out of string, add at the beginning
-          __s.insert(__s.begin(), _alphabet[increment]);
+          __s.insert(__s.begin(), _first_char_is_neutral ? _alphabet[increment] : _alphabet[increment - 1]);
           increment = 0; // technically we also need to do pos++, but this is always the last step, so skip this
         } // if
       } // while

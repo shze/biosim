@@ -18,6 +18,9 @@ namespace biosim {
 
     private:
       std::string _alphabet; // the ordered alphabet for incrementing
+      // neutral element is not used for carryover, e.g. alphabet = 01: next(0) = 10, not 00;
+      // non-neutral elements are used e.g. alphabet = AB: next(B) = AA, not BA
+      bool _first_char_is_neutral;
     }; // class incrementor
   } // namespace tools
 } // namespace biosim
