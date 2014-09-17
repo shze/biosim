@@ -12,6 +12,12 @@ namespace biosim {
     public:
       // ctor from storage and identifier (also default ctor)
       explicit molecule(std::string const &__storage = std::string(), std::string const &__identifier = std::string());
+      // get storage
+      std::string const &get_storage() const;
+      // get identifier
+      std::string const &get_identifier() const;
+      // get ps
+      ps const &get_ps() const;
       // set ps
       void set_ps(ps __ps);
 

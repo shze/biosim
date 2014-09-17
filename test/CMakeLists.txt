@@ -5,6 +5,7 @@ include_directories(../libbiosim/)
 
 set(SOURCES_UNIT_TESTER
   che/cc.cpp
+  che/molecule.cpp
   tools/enumerate.cpp
   tools/incrementor.cpp
   unit_tester.cpp
