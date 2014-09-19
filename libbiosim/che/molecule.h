@@ -4,6 +4,7 @@
 #include "che/ps.h"
 #include "che/ts.h"
 #include <string>
+#include <algorithm>
 
 namespace biosim {
   namespace che {
@@ -16,6 +17,8 @@ namespace biosim {
       std::string const &get_storage() const;
       // get identifier
       std::string const &get_identifier() const;
+      // get length
+      size_t get_length() const;
       // get ps
       ps const &get_ps() const;
       // set ps
@@ -27,6 +30,15 @@ namespace biosim {
       ps _ps; // sequence
       ts _ts; // coordinates
     }; // class molecule
+
+    // output operator for molecule
+    inline std::ostream &operator<<(std::ostream &__out, molecule const &__molecule) {
+      std::string id(__molecule.get_identifier());
+      id.erase(std::remove(id.begin(), id.end(), '\n'), id.end());
+      __out << __molecule.get_storage() << ": " << id << " length=" << __molecule.get_length() << "\n"
+            << __molecule.get_ps();
+      return __out;
+    } // operator<<()
   } // namespace che
 } // namespace biosim
 

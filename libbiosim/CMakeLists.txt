@@ -16,5 +16,5 @@ set(LIBBIOSIM_SOURCES
 
 add_library(biosim STATIC ${LIBBIOSIM_SOURCES})
 
-#find_package(Boost REQUIRED COMPONENTS regex system filesystem)
-#target_link_libraries(biosim ${Boost_LIBRARIES})
+find_package(Boost REQUIRED COMPONENTS regex)
+target_link_libraries(biosim ${Boost_LIBRARIES})

@@ -16,7 +16,7 @@ namespace biosim {
             "(?:;[^\n]*[[:space:]]*)+|" // multiline identifier starting with ';', use [^\n] to match until eol; or
             "(?:>[^\n]*[[:space:]]*)" // single line identifier starting with '>'; add '?:' to not add matches from
             ")?" // these capture groups '(..)' to the result; last ? to make identifier optional
-            "([^>;* ]+)\\*?"); // sequence, allow all characters except space, identifier begins, sequence ends
+            "([^>;*]+)\\*?[[:space:]]*"); // sequence, allow all characters except identifier begins and sequence ends
 
         std::string file_content(boost::algorithm::join(tools::file::read_to_string_list(__filename), "\n"));
         DEBUG << "Read fasta file content:\n" << file_content;
@@ -43,7 +43,7 @@ namespace biosim {
                                             charset_match.end())); // true if charset_match is a subset of charset_ccd
 
           if(is_cc_sequence) {
-            LOG << "Detected file type for " << __filename << ": fasta file, symbol_ccd.";
+            LOG << "Detected file type for " << __filename << ": fasta file, cc sequence.";
             // if file had no/empty identifier, use default
             molecule new_molecule(__filename, match_identifier.empty() ? ">lcl|sequence" : match_identifier);
             new_molecule.set_ps(convert_to_ps(match_sequence));
@@ -53,7 +53,7 @@ namespace biosim {
             std::stringstream ss(match_identifier);
             std::string first_line;
             std::getline(ss, first_line); // read until linebreak from stream into string
-            LOG << "Sequence type not identified, ignoring sequence " << first_line;
+            LOG << "Sequence type not identified, ignoring sequence." << first_line;
           } // else
         } // for
 

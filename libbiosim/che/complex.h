@@ -10,7 +10,9 @@ namespace biosim {
     class complex {
     public:
       // get list of all chain_ids
-      std::list<std::string> get_chain_id_list();
+      std::list<std::string> get_chain_id_list() const;
+      // get molecule with given chain_id, throws out of range if no molecule with this chain_id exists
+      molecule const &get(std::string __chain_id) const;
       // add molecule to complex, assign next available chain_id, and returns the chain_id
       std::string add(molecule __molecule);
 

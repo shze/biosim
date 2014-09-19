@@ -7,6 +7,7 @@ set(SOURCES_UNIT_TESTER
   che/cc.cpp
   che/complex.cpp
   che/molecule.cpp
+  che/io/file_fasta.cpp
   tools/enumerate.cpp
   tools/file.cpp
   tools/incrementor.cpp
