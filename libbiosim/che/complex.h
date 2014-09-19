@@ -9,8 +9,10 @@ namespace biosim {
     // complex of multiple molecules with additional information
     class complex {
     public:
-      // add molecule to complex, assign next available chain_id
-      void add(molecule __molecule);
+      // get list of all chain_ids
+      std::list<std::string> get_chain_id_list();
+      // add molecule to complex, assign next available chain_id, and returns the chain_id
+      std::string add(molecule __molecule);
 
     private:
       std::map<std::string, molecule> _molecules; // maps chain_id -> molecule

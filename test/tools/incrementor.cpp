@@ -1,5 +1,4 @@
 #include <boost/test/unit_test.hpp>
-#include "tools/log.h"
 
 #include "tools/incrementor.h" // header to test
 
