@@ -8,7 +8,7 @@ namespace biosim {
   namespace che {
     namespace io {
       // (static) reads sequences from a given file
-      complex file_fasta::read(std::string const &__filename) {
+      qs file_fasta::read(std::string const &__filename) {
         // regex string for matching a single fasta sequence (identifier/sequence pair) out of a multifasta
         // each iteration matches a single fasta with [0] the complete match, [1] the identifier, [2] the sequence
         static boost::regex const regex_multifasta(
@@ -21,7 +21,7 @@ namespace biosim {
         std::string file_content(boost::algorithm::join(tools::file::read_to_string_list(__filename), "\n"));
         DEBUG << "Read fasta file content:\n" << file_content;
 
-        complex all_molecules;
+        qs all_molecules;
 
         // loop over all identifier/sequence pairs
         boost::sregex_iterator itr(file_content.begin(), file_content.end(), regex_multifasta), itr_end;
@@ -45,9 +45,9 @@ namespace biosim {
           if(is_cc_sequence) {
             LOG << "Detected file type for " << __filename << ": fasta file, cc sequence.";
             // if file had no/empty identifier, use default
-            molecule new_molecule(__filename, match_identifier.empty() ? ">lcl|sequence" : match_identifier);
-            new_molecule.set_ps(convert_to_ps(match_sequence));
-            all_molecules.add(new_molecule);
+            ts new_ts(__filename, match_identifier.empty() ? ">lcl|sequence" : match_identifier);
+            new_ts.set_ps(convert_to_ps(match_sequence));
+            all_molecules.add(new_ts);
           } // if
           else { // do not throw exception here, the user of this class has to check how many molecules were found
             std::stringstream ss(match_identifier);

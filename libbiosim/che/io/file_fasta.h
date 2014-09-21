@@ -1,7 +1,7 @@
 #ifndef che_io_file_fasta_h
 #define che_io_file_fasta_h
 
-#include "che/complex.h"
+#include "che/qs.h"
 #include <set>
 
 namespace biosim {
@@ -18,7 +18,7 @@ namespace biosim {
       class file_fasta {
       public:
         // reads sequences from a given file
-        static complex read(std::string const &__filename);
+        static qs read(std::string const &__filename);
 
       private:
         // return the set of unique chars in the given string without whitespace

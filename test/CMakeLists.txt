@@ -5,8 +5,9 @@ include_directories(../libbiosim/)
 
 set(SOURCES_UNIT_TESTER
   che/cc.cpp
-  che/complex.cpp
-  che/molecule.cpp
+  che/cchb.cpp
+  che/qs.cpp
+  che/ts.cpp
   che/io/file_fasta.cpp
   tools/enumerate.cpp
   tools/file.cpp

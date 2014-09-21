@@ -101,10 +101,10 @@ namespace biosim {
     std::shared_ptr<cc::data const> cc::find(std::string __id) {
       try {
         return data_enum::get_instances().at(__id).get_object();
-      } catch(std::exception &e) {
+      } catch(std::out_of_range &e) {
         throw cc_data_not_found("map out of range, no data found with id=" + __id);
       }
-    }
+    } // find()
     // (static) find compound with id_char and monomer_type; combination is assumed unique
     std::shared_ptr<cc::data const> cc::find(char const &__id_char, monomer_type const &__monomer_type) {
       auto itr = std::find_if(data_enum::get_instances().begin(), data_enum::get_instances().end(),
@@ -120,7 +120,7 @@ namespace biosim {
       } // if
 
       return itr->second.get_object();
-    }
+    } // find()
     // (static) find compound with specificity and monomer_type; NOT assumed unique, only the first compound is returned
     std::shared_ptr<cc::data const> cc::find(specificity_type __specificity, monomer_type __monomer_type) {
       auto itr = std::find_if(data_enum::get_instances().begin(), data_enum::get_instances().end(),
@@ -135,7 +135,7 @@ namespace biosim {
       } // if
 
       return itr->second.get_object();
-    }
+    } // find()
     // (static) constructs data objects of the enumerated instance set, i.e. all single letter AA, see:
     // http://www.ebi.ac.uk/pdbe-srv/pdbechem/
     // http://onlinelibrary.wiley.com/doi/10.1002/0471250953.bia01as00/full

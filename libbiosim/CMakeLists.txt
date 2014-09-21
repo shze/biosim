@@ -6,8 +6,9 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 
 set(LIBBIOSIM_SOURCES
   che/cc.cpp
-  che/complex.cpp
-  che/molecule.cpp
+  che/cchb.cpp
+  che/qs.cpp
+  che/ts.cpp
   che/io/file_fasta.cpp
   tools/file.cpp
   tools/incrementor.cpp
