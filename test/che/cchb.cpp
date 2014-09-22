@@ -50,4 +50,21 @@ BOOST_AUTO_TEST_CASE(cchb_ctor_from_specificity) {
   BOOST_CHECK(weights.begin()->second == 1.0);
 }
 
+BOOST_AUTO_TEST_CASE(cchb_ctor_from_weights) {
+  che::cchb::weight_map empty_weights;
+  BOOST_REQUIRE_THROW(che::cchb hb_symbol("C", empty_weights), che::cchb_data_not_found);
+
+  che::cchb::weight_map multiple_weights = {{"H", 0.3}, {"E", 0.4}, {"C", 0.3}};
+  che::cchb hb_symbol("H", multiple_weights);
+  BOOST_CHECK(hb_symbol.get_identifier() == "H");
+  BOOST_CHECK(hb_symbol.get_specificity() == che::cchb::specificity_defined);
+  BOOST_CHECK(hb_symbol.is_gap() == false);
+  BOOST_CHECK(hb_symbol.is_unknown() == false);
+  che::cchb::weight_map weights = hb_symbol.get_weights();
+  BOOST_CHECK(weights.size() == 3);
+  BOOST_CHECK(weights["H"] == 0.3);
+  BOOST_CHECK(weights["E"] == 0.4);
+  BOOST_CHECK(weights["C"] == 0.3);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
