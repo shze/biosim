@@ -1,6 +1,5 @@
 #include "che/cchb.h"
 #include <algorithm>
-// #include "tools/log.h"
 
 namespace biosim {
   namespace che {
