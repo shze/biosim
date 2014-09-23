@@ -56,8 +56,9 @@ namespace biosim {
 
       // test if this interval and interval2 are continuous (1->2; overlapping or adjacent with a gap <= epsilon)
       bool is_continuous(interval<T> const &__interval2) const {
-        // overlapping if min of other interval is in [min, max + epsilon] of this interval
-        return __interval2._min >= _min && __interval2._min <= _max + get_epsilon();
+        // continuous if _max is in [__interval2._min-eps, __interval2._max), and _interval2._min is in (_min, _max+eps]
+        return (_max >= __interval2._min - get_epsilon() && _max < __interval2._max) &&
+               (__interval2._min > _min && __interval2._min <= _max + get_epsilon());
       } // is_continuous()
       // test if this interval and interval2 overlap (if this.max is in interval2 or interval2.max is in this interval)
       bool overlaps(interval<T> const &__interval2) const {
@@ -91,7 +92,7 @@ namespace biosim {
       } // equal_min_max()
       // returns if both intervals have same length
       static bool equal_length(interval<T> const &__interval1, interval<T> const &__interval2) {
-        return __interval1.length() == __interval2.length();
+        return __interval1.get_length() == __interval2.get_length();
       } // equal_length()
       // returns true if this interval is equal to the rhs interval
       bool operator==(interval<T> const &__rhs) const {
@@ -104,7 +105,8 @@ namespace biosim {
       static std::list<interval<T>> merge(interval<T> const &__interval1, interval<T> const &__interval2) {
         std::list<interval<T>> merged_intervals; // to collect result intervals
 
-        if(__interval1.is_continuous(__interval2) || __interval2.is_continuous(__interval1)) {
+        if(__interval1.is_continuous(__interval2) || __interval2.is_continuous(__interval1) ||
+           __interval1.overlaps(__interval2)) {
           // create a merged interval
           interval merged_interval(std::min(__interval1._min, __interval2._min),
                                    std::max(__interval1._max, __interval2._max));

@@ -9,6 +9,7 @@ set(SOURCES_UNIT_TESTER
   che/qs.cpp
   che/ts.cpp
   che/io/file_fasta.cpp
+  math/interval.cpp
   tools/enumerate.cpp
   tools/file.cpp
   tools/incrementor.cpp
