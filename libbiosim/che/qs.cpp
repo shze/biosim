@@ -3,6 +3,10 @@
 
 namespace biosim {
   namespace che {
+    // default ctor
+    qs::qs() : _ts(), _ss() {}
+    // ctor from ts and ss
+    qs::qs(ts __ts, ss __ss) : _ts(), _ss() { add(__ts, __ss); }
     // get list of all chain_ids
     std::list<std::string> qs::get_chain_id_list() const {
       std::list<std::string> chain_ids;
@@ -21,7 +25,13 @@ namespace biosim {
         chain_id = inc.next(chain_id);
       } // while
 
-      _ts[chain_id] = __ts;
+      _ts.insert(std::pair<std::string, ts>(chain_id, __ts));
+      return chain_id;
+    } // add()
+    // add corresponding ts and ss to qs; assign next available chain_id, and returns the chain_id
+    std::string qs::add(ts __ts, ss __ss) {
+      std::string chain_id = add(__ts);
+      _ss.insert(std::pair<std::string, ss>(chain_id, __ss));
       return chain_id;
     } // add()
   } // namespace che

@@ -8,8 +8,10 @@ set(LIBBIOSIM_SOURCES
   che/cc.cpp
   che/cchb.cpp
   che/qs.cpp
+  che/ss.cpp
   che/ts.cpp
   che/io/file_fasta.cpp
+  che/io/file_psipredv.cpp
   tools/file.cpp
   tools/incrementor.cpp
   tools/log.cpp

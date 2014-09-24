@@ -38,6 +38,11 @@ namespace biosim {
       // get profile weights
       weight_map get_weights() const;
 
+      // define ordering
+      bool operator<(cchb const &__rhs) const;
+      // equality
+      bool operator==(cchb const &__rhs) const;
+
       // get list of all identifiers; static public interface
       static std::list<std::string> get_id_list();
 

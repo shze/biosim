@@ -3,8 +3,10 @@
 namespace biosim {
   namespace che {
     // ctor from storage and identifier (also default ctor)
-    ts::ts(std::string const &__storage, std::string const &__identifier)
-        : _storage(__storage), _id(__identifier), _ps() {}
+    ts::ts(std::string __storage, std::string __identifier) : _storage(__storage), _id(__identifier), _ps() {}
+    // ctor from storage, identifier, and ps
+    ts::ts(std::string __storage, std::string __identifier, ps __ps)
+        : _storage(__storage), _id(__identifier), _ps(__ps) {}
     // get storage
     std::string const &ts::get_storage() const { return _storage; }
     // get identifier

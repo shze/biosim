@@ -44,19 +44,15 @@ namespace biosim {
       template <typename I>
       static bool overlaps(sequence_interval const &__interval, I __begin, I __end, bool __all_types_overlap = false) {
         return !get_overlapping_subset(__interval, __begin, __end, __all_types_overlap).empty();
-      } // overlap()
+      } // overlaps()
 
-      // compares two sequence intervals by comparing dimension, with the default interval min/max, and type
+      // compares two sequence intervals by comparing dimension, with the default interval min/max
       static bool less_dimension_min_max(sequence_interval const &__interval1, sequence_interval const &__interval2) {
-        return math::interval<size_t>::less_min_max(__interval1.get_dimension(), __interval2.get_dimension()) ||
-               (!(math::interval<size_t>::less_min_max(__interval2.get_dimension(), __interval1.get_dimension())) &&
-                __interval1.get_type() < __interval2.get_type());
+        return math::interval<size_t>::less_min_max(__interval1.get_dimension(), __interval2.get_dimension());
       } // less_dimension_min_max()
-      // compares two sequence intervals by comparing max value of the dimension, and type
+      // compares two sequence intervals by comparing max value of the dimension
       static bool less_dimension_max(sequence_interval const &__interval1, sequence_interval const &__interval2) {
-        return math::interval<size_t>::less_max(__interval1.get_dimension(), __interval2.get_dimension()) ||
-               (!(math::interval<size_t>::less_max(__interval2.get_dimension(), __interval1.get_dimension())) &&
-                __interval1.get_type() < __interval2.get_type());
+        return math::interval<size_t>::less_max(__interval1.get_dimension(), __interval2.get_dimension());
       } // less_dimension_max()
 
       // define ordering

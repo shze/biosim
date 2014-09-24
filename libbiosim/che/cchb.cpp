@@ -31,6 +31,16 @@ namespace biosim {
     // get profile weights
     cchb::weight_map cchb::get_weights() const { return _impl->_weights; }
 
+    // define ordering
+    bool cchb::operator<(cchb const &__rhs) const {
+      return get_identifier() < __rhs.get_identifier() ||
+             (get_identifier() == __rhs.get_identifier() && get_specificity() < __rhs.get_specificity()) ||
+             (get_identifier() == __rhs.get_identifier() && get_specificity() == __rhs.get_specificity() &&
+              get_weights() < __rhs.get_weights());
+    } // operator<
+    // equality
+    bool cchb::operator==(cchb const &__rhs) const { return !(*this < __rhs) && !(__rhs < *this); }
+
     // (static) get list of all identifiers; static public interface
     std::list<std::string> cchb::get_id_list() {
       std::list<std::string> ids;

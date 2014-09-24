@@ -11,7 +11,9 @@ namespace biosim {
     class ts {
     public:
       // ctor from storage and identifier (also default ctor)
-      explicit ts(std::string const &__storage = std::string(), std::string const &__identifier = std::string());
+      explicit ts(std::string __storage = std::string(), std::string __identifier = std::string());
+      // ctor from storage, identifier, and ps
+      ts(std::string __storage, std::string __identifier, ps __ps);
       // get storage
       std::string const &get_storage() const;
       // get identifier
