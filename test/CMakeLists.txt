@@ -8,6 +8,7 @@ set(SOURCES_UNIT_TESTER
   che/cchb.cpp
   che/qs.cpp
   che/sequence_interval.cpp
+  che/ss.cpp
   che/ts.cpp
   che/io/file_fasta.cpp
   math/interval.cpp
