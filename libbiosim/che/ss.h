@@ -11,6 +11,8 @@ namespace biosim {
     public:
       // ctor from secondary structure sequence
       explicit ss(std::vector<cchb> __sequence);
+      // ctor from pool
+      explicit ss(std::set<cchb_interval> __pool);
       // get secondary structure sequence
       std::vector<cchb> const &get_sequence() const;
       // get secondary structure intervals

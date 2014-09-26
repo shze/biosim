@@ -8,7 +8,7 @@
 namespace biosim {
   namespace che {
     namespace io {
-      // (static) creates a complex from a given file
+      // (static) creates a quarternary structure from a given file
       qs file_psipredv::read(std::string const &__filename) {
         // regex for a single data line of the psipred vertical format; comment or empty lines do not match this regex;
         // groups will be used to construct sequences.
