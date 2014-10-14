@@ -17,6 +17,16 @@ BOOST_AUTO_TEST_CASE(ss_ctor) {
   s = che::ss(v);
   BOOST_CHECK(s.get_sequence().size() == 1);
   BOOST_CHECK(s.get_sses().empty());
+
+  std::set<che::cchb_interval> pool;
+  s = che::ss(pool);
+  BOOST_CHECK(s.get_sequence().empty());
+  BOOST_CHECK(s.get_sses().empty());
+
+  pool.insert(che::cchb_interval(math::interval<size_t>(5, 10), che::cchb("H")));
+  s = che::ss(pool);
+  BOOST_CHECK(s.get_sequence().empty());
+  BOOST_CHECK(s.get_sses().size() == 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -15,8 +15,10 @@ namespace biosim {
       } // for
       return chain_ids;
     } // get_chain_id_list()
-    // get molecule with given chain_id, throws out of range if no molecule with this chain_id exists
-    ts const &qs::get(std::string __chain_id) const { return _ts.at(__chain_id); }
+    // get ts with given chain_id, throws out of range if no ts with this chain_id exists
+    ts const &qs::get_ts(std::string __chain_id) const { return _ts.at(__chain_id); }
+    // get ss with given chain_id, throws out of range if no ts with this chain_id exists
+    ss const &qs::get_ss(std::string __chain_id) const { return _ss.at(__chain_id); }
     // add molecule to ts, assign next available chain_id, and returns the chain_id
     std::string qs::add(ts __ts) {
       std::string chain_id = "A"; // determine next available chain_id, start from A

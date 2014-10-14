@@ -11,10 +11,20 @@ BOOST_AUTO_TEST_CASE(ts_ctor) {
   BOOST_CHECK(t.get_storage().empty());
   BOOST_CHECK(t.get_identifier().empty());
   BOOST_CHECK(t.get_ps().size() == 0);
+  BOOST_CHECK(t.get_ps().size() == t.get_length());
 
   t = che::ts("storage", "id");
   BOOST_CHECK(t.get_storage() == "storage");
   BOOST_CHECK(t.get_identifier() == "id");
+
+  che::ps p;
+  p.emplace_back('A');
+  t = che::ts("storage", "id", p);
+  BOOST_CHECK(t.get_storage() == "storage");
+  BOOST_CHECK(t.get_identifier() == "id");
+  BOOST_CHECK(t.get_ps().size() == 1);
+  BOOST_CHECK(t.get_ps().size() == t.get_length());
+  BOOST_CHECK(t.get_ps().front().get_identifier_char() == 'A');
 }
 
 BOOST_AUTO_TEST_CASE(ts_ps) {
@@ -23,6 +33,7 @@ BOOST_AUTO_TEST_CASE(ts_ps) {
   p.emplace_back('A');
   t.set_ps(p);
   BOOST_CHECK(t.get_ps().size() == 1);
+  BOOST_CHECK(t.get_ps().size() == t.get_length());
   BOOST_CHECK(t.get_ps().front().get_identifier_char() == 'A');
 }
 
