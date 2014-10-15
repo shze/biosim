@@ -324,7 +324,7 @@ namespace biosim {
           } // else if
         } // for
 
-        return qs(ts(__filename, ">lcl|sequence", cc_sequence), ss(pool));
+        return cc_sequence.empty() ? qs() : qs(ts(__filename, ">lcl|sequence", cc_sequence), ss(pool));
       } // read()
     } // namespace io
   } // namespace che

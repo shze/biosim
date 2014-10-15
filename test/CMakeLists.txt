@@ -11,6 +11,8 @@ set(SOURCES_UNIT_TESTER
   che/ss.cpp
   che/ts.cpp
   che/io/file_fasta.cpp
+  che/io/file_psipredv.cpp
+  che/io/file_sse_pool.cpp
   math/interval.cpp
   tools/enumerate.cpp
   tools/file.cpp
