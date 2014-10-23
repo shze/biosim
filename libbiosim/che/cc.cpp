@@ -107,11 +107,15 @@ namespace biosim {
     } // find()
     // (static) find compound with id_char and monomer_type; combination is assumed unique
     std::shared_ptr<cc::data const> cc::find(char const &__id_char, monomer_type const &__monomer_type) {
+      std::shared_ptr<cc::data const> unknown_compound(find(specificity_unknown, __monomer_type));
       auto itr = std::find_if(data_enum::get_instances().begin(), data_enum::get_instances().end(),
                               [&](std::pair<std::string, tools::enumerate<std::shared_ptr<data const>>> p) {
-        // first two parts are testing id_char, monomer_type; last ist testing that we only find primary compounds
+        // first two parts are testing id_char, monomer_type; last two are testing that we only find primary compounds
+        // i.e. not a derived compound, and not a profile compound
         return p.second.get_object()->_id_char == __id_char && p.second.get_object()->_monomer_type == __monomer_type &&
-               p.second.get_object()->_id == p.second.get_object()->_weights.begin()->first;
+               !(p.second.get_object()->_id != p.second.get_object()->_weights.begin()->first &&
+                 p.second.get_object()->_weights.size() == 1) &&
+               !(p.second.get_object()->_id == unknown_compound->_id && p.second.get_object()->_weights.size() > 1);
       });
 
       if(itr == data_enum::get_instances().end()) {

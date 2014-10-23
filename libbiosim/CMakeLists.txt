@@ -6,7 +6,7 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 
 set(LIBBIOSIM_SOURCES
   che/cc.cpp
-  che/cchb.cpp
+  che/cchb_dssp.cpp
   che/qs.cpp
   che/ss.cpp
   che/ts.cpp

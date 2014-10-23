@@ -5,7 +5,7 @@ include_directories(../libbiosim/)
 
 set(SOURCES_UNIT_TESTER
   che/cc.cpp
-  che/cchb.cpp
+  che/cchb_dssp.cpp
   che/qs.cpp
   che/sequence_interval.cpp
   che/ss.cpp

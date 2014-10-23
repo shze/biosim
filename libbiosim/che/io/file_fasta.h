@@ -22,9 +22,13 @@ namespace biosim {
 
       private:
         // return the set of unique chars in the given string without whitespace
-        static std::set<char> get_unique_chars_ignore_whitespace(std::string const &__s);
+        static std::set<char> get_unique_chars_ignore_whitespace(std::string __s);
         // convert a string of id_chars to a ps
         static ps convert_to_ps(std::string __s);
+        // convert a string of id_chars to an ss
+        static ss convert_to_ss(std::string __s);
+        // shorten the file storage location to the last two parts
+        static std::string shorten_file_storage(std::string __s);
       }; // class file_fasta
     } // namespace io
   } // namespace che

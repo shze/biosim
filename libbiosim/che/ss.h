@@ -10,18 +10,18 @@ namespace biosim {
     class ss {
     public:
       // ctor from secondary structure sequence
-      explicit ss(std::vector<cchb> __sequence);
+      explicit ss(std::vector<cchb_dssp> __sequence);
       // ctor from pool
-      explicit ss(std::set<cchb_interval> __pool);
+      explicit ss(std::set<cchb_dssp_interval> __pool);
       // get secondary structure sequence
-      std::vector<cchb> const &get_sequence() const;
+      std::vector<cchb_dssp> const &get_sequence() const;
       // get secondary structure intervals
-      std::set<cchb_interval> const &get_sses() const;
+      std::set<cchb_dssp_interval> const &get_sses() const;
 
     private:
-      std::vector<cchb> _sequence; // secondary structure sequence
-      std::set<cchb_interval> _sses; // secondary structure elements
-    };
+      std::vector<cchb_dssp> _sequence; // secondary structure sequence
+      std::set<cchb_dssp_interval> _sses; // secondary structure elements
+    }; // class ss
   } // namespace che
 } // namespace biosim
 

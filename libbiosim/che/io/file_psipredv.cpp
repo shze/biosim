@@ -23,7 +23,7 @@ namespace biosim {
 
         // create two sequences, one for each type
         ps cc_sequence;
-        std::vector<cchb> cchb_sequence;
+        std::vector<cchb_dssp> cchb_sequence;
 
         for(auto const &line : file_lines) {
           boost::smatch match;
@@ -46,8 +46,7 @@ namespace biosim {
                   << "; prob_H=" << prob_h << "; prob_E=" << prob_e;
 
             cc_sequence.emplace_back(aa_char);
-            cchb_sequence.emplace_back(std::string(ss_char, 1),
-                                       cchb::weight_map({{"C", prob_c}, {"H", prob_h}, {"E", prob_e}}));
+            cchb_sequence.emplace_back(ss_char, cchb_dssp::weight_map({{'C', prob_c}, {'H', prob_h}, {'E', prob_e}}));
           } // if
         } // for
 

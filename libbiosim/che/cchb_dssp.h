@@ -1,5 +1,5 @@
-#ifndef che_cchb_h
-#define che_cchb_h
+#ifndef che_cchb_dssp_h
+#define che_cchb_dssp_h
 
 #include <map>
 #include <list>
@@ -8,27 +8,28 @@
 
 namespace biosim {
   namespace che {
-    // exception specific for cchb
-    struct cchb_data_not_found : std::runtime_error {
-      explicit cchb_data_not_found(std::string const &__s) : std::runtime_error("cchb data not found: " + __s) {}
-    };
+    // exception specific for cchb_dssp
+    struct cchb_dssp_data_not_found : std::runtime_error {
+      explicit cchb_dssp_data_not_found(std::string const &__s)
+          : std::runtime_error("cchb_dssp data not found: " + __s) {}
+    }; // struct cchb_dssp_data_not_found
 
-    // stores the hydrogen bond state for a cc; design see cc
-    class cchb {
+    // stores the hydrogen bond state for a cc using DSSP symbols; design see cc
+    class cchb_dssp {
     public:
       // specificity defined as enum for easier comparison; only one specificity allowed, no combinations.
       enum specificity_type { specificity_defined, specificity_unknown, specificity_gap };
-      using weight_map = std::map<std::string, double>; // simplify naming
+      using weight_map = std::map<char, double>; // simplify naming
 
       // ctor from id; id is assumed unique; throws if not found
-      explicit cchb(std::string __id);
-      // ctor from specificity and monomer_type; assumed not unique, constructs first
-      explicit cchb(specificity_type __specificity);
+      explicit cchb_dssp(char __id);
+      // ctor from specificity; assumed not unique, constructs first
+      explicit cchb_dssp(specificity_type __specificity);
       // ctor from id and weight set
-      cchb(std::string __id, weight_map __weights);
+      cchb_dssp(char __id, weight_map __weights);
 
       // get identifier
-      std::string get_identifier() const;
+      char get_identifier() const;
       // get specificity
       specificity_type get_specificity() const;
       // return if an unknown (unspecified) compound; only for unknown, not for gap.
@@ -39,32 +40,36 @@ namespace biosim {
       weight_map get_weights() const;
 
       // define ordering
-      bool operator<(cchb const &__rhs) const;
+      bool operator<(cchb_dssp const &__rhs) const;
       // equality
-      bool operator==(cchb const &__rhs) const;
+      bool operator==(cchb_dssp const &__rhs) const;
 
       // get list of all identifiers; static public interface
-      static std::list<std::string> get_id_list();
+      static std::list<char> get_id_list();
+      // create a string of identifier chars; static public interface
+      static std::string get_identifier_char_string();
 
     private:
-      // contains the cchb data; type that is enumerated
+      // contains the cchb_dssp data; type that is enumerated
       struct data {
         // ctor for primary symbol
-        data(std::string __id, specificity_type __specificity = specificity_defined);
+        data(char __id, specificity_type __specificity = specificity_defined);
         // ctor for profile symbol
-        data(std::string __id, weight_map __weights);
+        data(char __id, weight_map __weights);
 
-        std::string _id; // identifier
+        char _id; // identifier
         specificity_type _specificity; // specificity
         weight_map _weights; // weights of this data object based on compounds in the enumerated instance set
       }; // struct data
 
       // define identifier function for use with enumerate; friend and not part of the class
-      friend std::string identifier(std::shared_ptr<data const> const &__data_ptr) { return __data_ptr->_id; }
+      friend std::string identifier(std::shared_ptr<data const> const &__data_ptr) {
+        return std::string(1, __data_ptr->_id);
+      } // identifier()
 
       using data_enum = tools::enumerate<std::shared_ptr<data const>>; // simplify naming
       // find compound with id; id is assumed unique
-      static std::shared_ptr<data const> find(std::string __id);
+      static std::shared_ptr<data const> find(char __id);
       // find compound with specificity; NOT assumed unique, only the first compound is returned
       static std::shared_ptr<data const> find(specificity_type __specificity);
       static bool _initialized; // static variable to initialize data_enum with a minimal set of data objects
@@ -73,8 +78,8 @@ namespace biosim {
       static bool initialize();
 
       std::shared_ptr<data const> _impl; // ptr to implementation; shared_ptr is acceptable, b/c it points to const data
-    }; // class cc
+    }; // class cchb_dssp
   } // namespace che
 } // namespace biosim
 
-#endif // che_cchb_h
+#endif // che_cchb_dssp_h

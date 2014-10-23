@@ -3,7 +3,7 @@
 
 #include "math/interval.h"
 #include <set>
-#include "che/cchb.h"
+#include "che/cchb_dssp.h"
 
 namespace biosim {
   namespace che {
@@ -68,7 +68,7 @@ namespace biosim {
       return __out;
     } // operator<<()
 
-    using cchb_interval = sequence_interval<cchb>;
+    using cchb_dssp_interval = sequence_interval<cchb_dssp>;
   } // namespace che
 } // namespace biosim
 

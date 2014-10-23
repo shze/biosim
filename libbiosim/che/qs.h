@@ -15,6 +15,10 @@ namespace biosim {
       qs(ts __ts, ss __ss);
       // get list of all chain_ids
       std::list<std::string> get_chain_id_list() const;
+      // if the ts with the given chain_id exists
+      bool has_ts(std::string __chain_id) const;
+      // if the ss with the given chain_id exists
+      bool has_ss(std::string __chain_id) const;
       // get ts with given chain_id, throws out of range if no ts with this chain_id exists
       ts const &get_ts(std::string __chain_id) const;
       // get ss with given chain_id, throws out of range if no ts with this chain_id exists

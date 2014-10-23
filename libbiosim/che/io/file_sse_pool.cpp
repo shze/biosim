@@ -48,7 +48,7 @@ namespace biosim {
 
         // create variables to store the data read from the file
         ps cc_sequence;
-        std::set<cchb_interval> pool;
+        std::set<cchb_dssp_interval> pool;
 
         // variables to keep track of the numbers of helices; don't track strand# b/c it may be unknown when predicted
         size_t last_helix_serial_number(0); // starts with 1, and will be increased by 1 for each helix
@@ -176,9 +176,9 @@ namespace biosim {
             cc_sequence[terminal_residue_sequence_number - 1] = cc(terminal_residue_name);
 
             // create and insert sequence_interval into the pool
-            pool.insert(cchb_interval(
+            pool.insert(cchb_dssp_interval(
                 math::interval<size_t>(initial_residue_sequence_number - 1, terminal_residue_sequence_number - 1),
-                cchb("H")));
+                cchb_dssp('H')));
           } // if
           else if(match[15].matched) { // if the 'SHEET' part matches, a sheet line was found
             DEBUG << "Found SHEET line";
@@ -240,9 +240,9 @@ namespace biosim {
             cc_sequence[terminal_residue_sequence_number - 1] = cc(terminal_residue_name);
 
             // create and insert sequence_interval into the pool
-            pool.insert(cchb_interval(
+            pool.insert(cchb_dssp_interval(
                 math::interval<size_t>(initial_residue_sequence_number - 1, terminal_residue_sequence_number - 1),
-                cchb("E")));
+                cchb_dssp('E')));
           } // else if
           else if(match[28].matched) { // if the 'SEQRES' part matches, a sequence residue line was found
             DEBUG << "Found SEQRES line";
