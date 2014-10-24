@@ -176,9 +176,8 @@ namespace biosim {
             cc_sequence[terminal_residue_sequence_number - 1] = cc(terminal_residue_name);
 
             // create and insert sequence_interval into the pool
-            pool.insert(cchb_dssp_interval(
-                math::interval<size_t>(initial_residue_sequence_number - 1, terminal_residue_sequence_number - 1),
-                cchb_dssp('H')));
+            pool.insert(cchb_dssp_interval(initial_residue_sequence_number - 1, terminal_residue_sequence_number - 1,
+                                           cchb_dssp('H')));
           } // if
           else if(match[15].matched) { // if the 'SHEET' part matches, a sheet line was found
             DEBUG << "Found SHEET line";
@@ -240,9 +239,8 @@ namespace biosim {
             cc_sequence[terminal_residue_sequence_number - 1] = cc(terminal_residue_name);
 
             // create and insert sequence_interval into the pool
-            pool.insert(cchb_dssp_interval(
-                math::interval<size_t>(initial_residue_sequence_number - 1, terminal_residue_sequence_number - 1),
-                cchb_dssp('E')));
+            pool.insert(cchb_dssp_interval(initial_residue_sequence_number - 1, terminal_residue_sequence_number - 1,
+                                           cchb_dssp('E')));
           } // else if
           else if(match[28].matched) { // if the 'SEQRES' part matches, a sequence residue line was found
             DEBUG << "Found SEQRES line";
