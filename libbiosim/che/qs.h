@@ -32,6 +32,20 @@ namespace biosim {
       std::map<std::string, ts> _ts; // maps chain_id -> ts
       std::map<std::string, ss> _ss; // maps chain_id -> ss
     }; // class qs
+
+    // output operator for qs
+    inline std::ostream &operator<<(std::ostream &__out, qs const &__qs) {
+      for(auto const &chain_id : __qs.get_chain_id_list()) {
+        __out << "Chain: " << chain_id << "\n";
+        if(__qs.has_ts(chain_id)) {
+          __out << __qs.get_ts(chain_id);
+        } // if
+        if(__qs.has_ss(chain_id)) {
+          __out << __qs.get_ss(chain_id);
+        } // if
+      } // for
+      return __out;
+    } // operator<<()
   } // namespace che
 } // namespace biosim
 

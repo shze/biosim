@@ -23,7 +23,7 @@ namespace biosim {
 
         // create two sequences, one for each type
         ps cc_sequence;
-        std::vector<cchb_dssp> cchb_sequence;
+        sequence<cchb_dssp> cchb_sequence;
 
         for(auto const &line : file_lines) {
           boost::smatch match;

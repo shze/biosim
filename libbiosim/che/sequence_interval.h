@@ -64,7 +64,7 @@ namespace biosim {
     // output operator for sequence_interval
     template <typename T>
     inline std::ostream &operator<<(std::ostream &__out, sequence_interval<T> const &__sequence_interval) {
-      __out << __sequence_interval.get_dimension() << "->" << *__sequence_interval.get_type();
+      __out << __sequence_interval.get_dimension() << "->" << __sequence_interval.get_type().get_identifier_char();
       return __out;
     } // operator<<()
 

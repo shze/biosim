@@ -11,7 +11,7 @@ namespace biosim {
     // exception specific for cc
     struct cc_data_not_found : std::runtime_error {
       explicit cc_data_not_found(std::string const &__s) : std::runtime_error("cc data not found: " + __s) {}
-    };
+    }; // struct cc_data_not_found
 
     // stores a chemical component based on the CCD, see: http://www.wwpdb.org/ccd.html;
     // focuses on amino acids, which it defaults to, since the CCD does not contain all one letter codes for DNA and

@@ -8,7 +8,7 @@ using namespace biosim;
 BOOST_AUTO_TEST_SUITE(suite_ss)
 
 BOOST_AUTO_TEST_CASE(ss_ctor) {
-  std::vector<che::cchb_dssp> v;
+  che::sequence<che::cchb_dssp> v;
   che::ss s(v);
   BOOST_CHECK(s.get_sequence().empty());
   BOOST_CHECK(s.get_sses().empty());

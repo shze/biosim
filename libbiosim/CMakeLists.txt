@@ -12,6 +12,7 @@ set(LIBBIOSIM_SOURCES
   che/ts.cpp
   che/io/file_fasta.cpp
   che/io/file_psipredv.cpp
+  che/io/file_qs.cpp
   che/io/file_sse_pool.cpp
   tools/file.cpp
   tools/incrementor.cpp
@@ -20,5 +21,5 @@ set(LIBBIOSIM_SOURCES
 
 add_library(biosim STATIC ${LIBBIOSIM_SOURCES})
 
-find_package(Boost REQUIRED COMPONENTS regex)
+find_package(Boost REQUIRED COMPONENTS regex system filesystem)
 target_link_libraries(biosim ${Boost_LIBRARIES})

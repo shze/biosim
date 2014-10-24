@@ -22,6 +22,8 @@ namespace biosim {
 
     // get identifier
     char cchb_dssp::get_identifier() const { return _impl->_id; }
+    // get identifier char
+    char cchb_dssp::get_identifier_char() const { return get_identifier(); }
     // get specificity
     cchb_dssp::specificity_type cchb_dssp::get_specificity() const { return _impl->_specificity; }
     // return if an unknown (unspecified) compound; only for unknown, not for gap.

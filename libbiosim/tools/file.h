@@ -3,9 +3,16 @@
 
 #include <string>
 #include <list>
+#include <stdexcept>
 
 namespace biosim {
   namespace tools {
+    // exception specific for file formats
+    struct unknown_file_format : std::runtime_error {
+      explicit unknown_file_format(std::string const &__filename)
+          : std::runtime_error("File format not recognized for: " + __filename) {}
+    }; // struct unknown_file_format
+
     // file io specific functions
     class file {
     public:

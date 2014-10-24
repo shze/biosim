@@ -31,11 +31,11 @@ namespace biosim {
       ps _ps; // sequence
     }; // class ts
 
-    // output operator for molecule
+    // output operator for ts
     inline std::ostream &operator<<(std::ostream &__out, ts const &__ts) {
       std::string id(__ts.get_identifier());
       id.erase(std::remove(id.begin(), id.end(), '\n'), id.end());
-      __out << __ts.get_storage() << ": " << id << " length=" << __ts.get_length() << "\n" << __ts.get_ps();
+      __out << __ts.get_storage() << ": " << id << " length=" << __ts.get_length() << "\n" << __ts.get_ps() << "\n";
       return __out;
     } // operator<<()
   } // namespace che

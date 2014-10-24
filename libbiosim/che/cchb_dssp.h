@@ -30,6 +30,8 @@ namespace biosim {
 
       // get identifier
       char get_identifier() const;
+      // get identifier char
+      char get_identifier_char() const;
       // get specificity
       specificity_type get_specificity() const;
       // return if an unknown (unspecified) compound; only for unknown, not for gap.

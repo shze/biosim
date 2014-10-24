@@ -140,7 +140,7 @@ namespace biosim {
       } // convert_to_ps()
       // (static) convert a string of id_chars to an ss
       ss file_fasta::convert_to_ss(std::string __s) {
-        std::vector<cchb_dssp> ss_sequence;
+        sequence<cchb_dssp> ss_sequence;
         for(auto const &id_char : __s) {
           if(!std::isspace(id_char)) { // ignore whitespace
             ss_sequence.emplace_back(id_char);
