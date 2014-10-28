@@ -5,7 +5,7 @@
 namespace biosim {
   namespace che {
     // construct cc with id; id is assumed unique; throws if not found
-    cc::cc(std::string __id) : _impl(find(__id)) {}
+    cc::cc(std::string const &__id) : _impl(find(__id)) {}
     // ctor from id_char and monomer_type, assumed unique; use const ref for args b/c they're no sink args
     cc::cc(char const &__id_char, monomer_type const &__monomer) : _impl(find(__id_char, __monomer)) {}
     // ctor from specificity and monomer_type; assumed not unique, constructs first
@@ -98,7 +98,7 @@ namespace biosim {
           _weights(__weights) {}
 
     // (static) find compound with id; id is assumed unique; throws if no object was found
-    std::shared_ptr<cc::data const> cc::find(std::string __id) {
+    std::shared_ptr<cc::data const> cc::find(std::string const &__id) {
       try {
         return data_enum::get_instances().at(__id).get_object();
       } catch(std::out_of_range &e) {
@@ -126,7 +126,8 @@ namespace biosim {
       return itr->second.get_object();
     } // find()
     // (static) find compound with specificity and monomer_type; NOT assumed unique, only the first compound is returned
-    std::shared_ptr<cc::data const> cc::find(specificity_type __specificity, monomer_type __monomer_type) {
+    std::shared_ptr<cc::data const> cc::find(specificity_type const &__specificity,
+                                             monomer_type const &__monomer_type) {
       auto itr = std::find_if(data_enum::get_instances().begin(), data_enum::get_instances().end(),
                               [&](std::pair<std::string, tools::enumerate<std::shared_ptr<data const>>> p) {
         return p.second.get_object()->_specificity == __specificity &&

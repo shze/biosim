@@ -1,0 +1,64 @@
+#ifndef math_interval_scheduler_maximize_h
+#define math_interval_scheduler_maximize_h
+
+#include "math/interval_scheduler.h"
+#include "tools/less.h"
+
+namespace biosim {
+  namespace math {
+    // interval scheduling algorithm maximizing the number of intervals by selecting the earliest ending intervals
+    template <typename T>
+    class interval_scheduler_maximize : public interval_scheduler<T> {
+    public:
+      // method to select a non-overlapping subset of intervals from the input set
+      std::set<interval<T>> schedule(std::set<interval<T>> __intervals) {
+        // sort pool by ending, use multiset as multiple interval could end at the same position
+        using interval_max_less = tools::less<interval<T>, interval<T>::less_max>;
+        using interval_max_less_multiset = std::multiset<interval<T>, interval_max_less>;
+        interval_max_less_multiset end_sorted_intervals(__intervals.begin(), __intervals.end());
+
+        // create an empty set that will collect all sequence intervals that are converted into the result sequence
+        std::set<interval<T>> maximized_intervals;
+
+        // while not empty: take first, remove all overlapping
+        DEBUG << "end_sorted_intervals.size=" << end_sorted_intervals.size()
+              << "; maximized_intervals.size=" << maximized_intervals.size() << " (begin)";
+        while(!end_sorted_intervals.empty()) {
+          // there might be multipe intervals ending at the same position as the first one; this converter is a simple
+          // method for converting non-overlapping intervals in a sequence, and for this scenario this is a non-issue;
+          // so if multiple intervals end at the same position, assume the first one is good enough and ignore the rest.
+          typename interval_max_less_multiset::const_iterator begin_itr(end_sorted_intervals.begin());
+          interval<T> new_interval(*begin_itr); // save sequence_interval somewhere outside the set
+          end_sorted_intervals.erase(begin_itr); // remove this sequence_interval from the set
+          maximized_intervals.insert(new_interval);
+          DEBUG << "end_sorted_intervals.size=" << end_sorted_intervals.size()
+                << "; maximized_intervals.size=" << maximized_intervals.size() << " (interval " << new_interval
+                << ": end_sorted_intervals->max_count_intervals)";
+
+          // remove all intervals that are still in end_sorted_intervals and overlap with new_interval; use itrs here
+          // and not a range-based for loop to only remove the specific interval, not all interval with this end
+          for(typename interval_max_less_multiset::const_iterator other_interval_itr(end_sorted_intervals.begin()),
+              itr_end(end_sorted_intervals.end());
+              other_interval_itr != itr_end;) {
+            if(new_interval.overlaps(*other_interval_itr)) {
+              // original other_interval_itr becomes invalid after erase(), assign next element itr that erase() returns
+              other_interval_itr = end_sorted_intervals.erase(other_interval_itr);
+              DEBUG << "end_sorted_intervals.size=" << end_sorted_intervals.size()
+                    << "; maximized_intervals.size=" << maximized_intervals.size() << " (overlapping interval "
+                    << *other_interval_itr << ": end_sorted_intervals->removed)";
+            } // if
+            else {
+              ++other_interval_itr;
+            } // else
+          } // for
+        } // while
+        DEBUG << "end_sorted_intervals.size=" << end_sorted_intervals.size()
+              << "; maximized_intervals.size=" << maximized_intervals.size() << " (finished)";
+
+        return maximized_intervals;
+      } // schedule()
+    }; // class interval_scheduler_maximize
+  } // namespace math
+} // namespace biosim
+
+#endif // math_interval_scheduler_maximize_h

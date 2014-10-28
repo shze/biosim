@@ -157,23 +157,6 @@ namespace biosim {
             << "]";
       return __out;
     } // operator<<()
-
-    // less for intervals; to sort intervals in containers differently than the default defined in operator<()
-    // take a function pointer, so that all less functions implemented in interval<T>::less_* can be used
-    template <typename T>
-    struct interval_less : std::binary_function<interval<T>, interval<T>, bool> {
-      using less_function = bool (*)(interval<T> const &, interval<T> const &); // make reading easier
-
-      less_function _less_function; // member to store the function to call for sorting
-
-      // ctor; no default value as it would be confusing; std::less works for interval as it uses the operator<()
-      interval_less(less_function __less_function) : _less_function(__less_function) {}
-
-      // function operator
-      bool operator()(interval<T> const &__interval1, interval<T> const &__interval2) {
-        return _less_function(__interval1, __interval2);
-      } // operator()
-    }; // struct interval_less
   } // namespace math
 } // namespace biosim
 

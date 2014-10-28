@@ -30,7 +30,7 @@ namespace biosim {
       using weight_map = std::map<std::string, double>; // simplify naming
 
       // ctor from id; id is assumed unique; throws if not found
-      explicit cc(std::string __id);
+      explicit cc(std::string const &__id);
       // ctor from id_char and monomer_type, assumed unique; use const ref for args b/c they're no sink args
       explicit cc(char const &__id_char, monomer_type const &__monomer = l_peptide_linking);
       // ctor from specificity and monomer_type; assumed not unique, constructs first
@@ -81,15 +81,16 @@ namespace biosim {
       }; // struct data
 
       // define identifier function for use with enumerate; friend and not part of the class
-      friend std::string identifier(std::shared_ptr<data const> const &__data_ptr) { return __data_ptr->_id; }
+      friend std::string const &identifier(std::shared_ptr<data const> const &__data_ptr) { return __data_ptr->_id; }
 
       using data_enum = tools::enumerate<std::shared_ptr<data const>>; // simplify naming
       // find compound with id; id is assumed unique
-      static std::shared_ptr<data const> find(std::string __id);
+      static std::shared_ptr<data const> find(std::string const &__id);
       // find compound with id_char and monomer_type; combination is assumed unique
       static std::shared_ptr<data const> find(char const &__id_char, monomer_type const &__monomer_type);
       // find compound with specificity and monomer_type; NOT assumed unique, only the first compound is returned
-      static std::shared_ptr<data const> find(specificity_type __specificity, monomer_type __monomer_type);
+      static std::shared_ptr<data const> find(specificity_type const &__specificity,
+                                              monomer_type const &__monomer_type);
       static bool _initialized; // static variable to initialize data_enum with a minimal set of data objects
       // constructs data objects of the enumerated instance set, i.e. all single letter AA, see:
       // http://www.ebi.ac.uk/pdbe-srv/pdbechem/

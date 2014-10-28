@@ -71,9 +71,9 @@ namespace biosim {
 
       using data_enum = tools::enumerate<std::shared_ptr<data const>>; // simplify naming
       // find compound with id; id is assumed unique
-      static std::shared_ptr<data const> find(char __id);
+      static std::shared_ptr<data const> find(char const &__id);
       // find compound with specificity; NOT assumed unique, only the first compound is returned
-      static std::shared_ptr<data const> find(specificity_type __specificity);
+      static std::shared_ptr<data const> find(specificity_type const &__specificity);
       static bool _initialized; // static variable to initialize data_enum with a minimal set of data objects
       // constructs data objects of the enumerated instance set; subset of states from DSSP is used, see:
       // http://en.wikipedia.org/wiki/DSSP_%28protein%29

@@ -67,7 +67,7 @@ namespace biosim {
         : _id(__id), _specificity(specificity_defined), _weights(__weights) {}
 
     // (static) find compound with id; id is assumed unique; throws if no object was found
-    std::shared_ptr<cchb_dssp::data const> cchb_dssp::find(char __id) {
+    std::shared_ptr<cchb_dssp::data const> cchb_dssp::find(char const &__id) {
       try {
         return data_enum::get_instances().at(std::string(1, __id)).get_object();
       } catch(std::out_of_range &e) {
@@ -75,7 +75,7 @@ namespace biosim {
       }
     } // find()
     // (static) find compound with specificity; NOT assumed unique, only the first compound is returned
-    std::shared_ptr<cchb_dssp::data const> cchb_dssp::find(specificity_type __specificity) {
+    std::shared_ptr<cchb_dssp::data const> cchb_dssp::find(specificity_type const &__specificity) {
       auto itr = std::find_if(data_enum::get_instances().begin(), data_enum::get_instances().end(),
                               [&](std::pair<std::string, tools::enumerate<std::shared_ptr<data const>>> p) {
         return p.second.get_object()->_specificity == __specificity;

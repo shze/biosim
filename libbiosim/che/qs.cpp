@@ -16,13 +16,13 @@ namespace biosim {
       return chain_ids;
     } // get_chain_id_list()
     // if the ts with the given chain_id exists
-    bool qs::has_ts(std::string __chain_id) const { return _ts.find(__chain_id) != _ts.end(); }
+    bool qs::has_ts(std::string const &__chain_id) const { return _ts.find(__chain_id) != _ts.end(); }
     // if the ss with the given chain_id exists
-    bool qs::has_ss(std::string __chain_id) const { return _ss.find(__chain_id) != _ss.end(); }
+    bool qs::has_ss(std::string const &__chain_id) const { return _ss.find(__chain_id) != _ss.end(); }
     // get ts with given chain_id, throws out of range if no ts with this chain_id exists
-    ts const &qs::get_ts(std::string __chain_id) const { return _ts.at(__chain_id); }
+    ts const &qs::get_ts(std::string const &__chain_id) const { return _ts.at(__chain_id); }
     // get ss with given chain_id, throws out of range if no ts with this chain_id exists
-    ss const &qs::get_ss(std::string __chain_id) const { return _ss.at(__chain_id); }
+    ss const &qs::get_ss(std::string const &__chain_id) const { return _ss.at(__chain_id); }
     // add molecule to ts, assign next available chain_id, and returns the chain_id
     std::string qs::add(ts __ts) {
       std::string chain_id = "A"; // determine next available chain_id, start from A
