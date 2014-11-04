@@ -9,7 +9,7 @@ namespace biosim {
   namespace math {
     // holds an interval (range); see http://stackoverflow.com/questions/1089192/c-stl-range-container
     // implements an closed interval [a, b] = {x | a <= x <= b}, see http://en.wikipedia.org/wiki/Interval_(mathematics)
-    template <typename T>
+    template <class T>
     class interval {
     private:
       T _min, _max; // min, max of the interval
@@ -108,8 +108,8 @@ namespace biosim {
         if(__interval1.is_continuous(__interval2) || __interval2.is_continuous(__interval1) ||
            __interval1.overlaps(__interval2)) {
           // create a merged interval
-          interval merged_interval(std::min(__interval1._min, __interval2._min),
-                                   std::max(__interval1._max, __interval2._max));
+          interval<T> merged_interval(std::min(__interval1._min, __interval2._min),
+                                      std::max(__interval1._max, __interval2._max));
           merged_intervals.push_back(merged_interval);
         } // if
         // if intervals are not continuous, return an empty list
@@ -151,7 +151,7 @@ namespace biosim {
     }; // class interval
 
     // output operator for interval; inline to avoid multiple definitions error when .h is included multiple times
-    template <typename T>
+    template <class T>
     inline std::ostream &operator<<(std::ostream &__out, interval<T> const &__interval) {
       __out << "[" << __interval.get_min() << ", " << __interval.get_max() << "; epsilon=" << interval<T>::get_epsilon()
             << "]";

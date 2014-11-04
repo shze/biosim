@@ -15,12 +15,13 @@ namespace biosim {
       // ctor from pool
       explicit ss(std::set<cchb_dssp_interval> __pool);
       // get secondary structure sequence
-      sequence<cchb_dssp> const &get_sequence() const;
+      sequence<cchb_dssp> get_sequence() const;
       // get secondary structure intervals
       std::set<cchb_dssp_interval> const &get_sses() const;
 
     private:
       sequence<cchb_dssp> _sequence; // secondary structure sequence
+      bool _sequence_generated; // if the sequence was generated from the sse intervals
       std::set<cchb_dssp_interval> _sses; // secondary structure elements
     }; // class ss
 

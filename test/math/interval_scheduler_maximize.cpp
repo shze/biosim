@@ -8,7 +8,7 @@ BOOST_AUTO_TEST_SUITE(suite_interval_scheduler_maximize)
 
 BOOST_AUTO_TEST_CASE(interval_scheduler_maximize) {
   std::set<math::interval<int>> intervals;
-  math::interval_scheduler_maximize<int> s;
+  math::interval_scheduler_maximize<math::interval<int>> s;
   s.schedule(intervals);
 }
 

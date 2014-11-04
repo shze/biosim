@@ -8,11 +8,11 @@
 namespace biosim {
   namespace che {
     // sequence
-    template <typename T>
+    template <class T>
     class sequence : public std::vector<T> {};
 
     // output operator for sequence
-    template <typename T>
+    template <class T>
     inline std::ostream &operator<<(std::ostream &__out, sequence<T> const &__seq) {
       for(auto const &component : __seq) { // component is of type T
         __out << component.get_identifier_char(); // T is required to have T::get_identifier_char()

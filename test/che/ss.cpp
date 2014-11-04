@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(ss_ctor) {
 
   pool.insert(che::cchb_dssp_interval(5, 10, che::cchb_dssp('H')));
   s = che::ss(pool);
-  BOOST_CHECK(s.get_sequence().empty());
+  BOOST_CHECK(s.get_sequence().size() == 11); // sse position is 0-based, sequence is 0-4 C, 5-10 H, length is 11
   BOOST_CHECK(s.get_sses().size() == 1);
 }
 

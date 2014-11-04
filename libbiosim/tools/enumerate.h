@@ -6,7 +6,7 @@
 namespace biosim {
   namespace tools {
     // enumerate is wrapper of T; it uses identifier() to get an identifier string for a T
-    template <typename T>
+    template <class T>
     class enumerate {
     public:
       // ctor
@@ -36,7 +36,7 @@ namespace biosim {
     }; // class enumerate
 
     // output operator for enumerate<T>
-    template <typename T>
+    template <class T>
     inline std::ostream &operator<<(std::ostream &__out, enumerate<T> const &__rhs) {
       __out << __rhs.get_object();
       return __out;

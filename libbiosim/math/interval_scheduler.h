@@ -7,11 +7,11 @@
 namespace biosim {
   namespace math {
     // interface for interval scheduling algorithms
-    template <typename T>
+    template <class T>
     class interval_scheduler {
     public:
       // method to select a non-overlapping subset of intervals from the input set
-      virtual std::set<interval<T>> schedule(std::set<interval<T>> __intervals) = 0;
+      virtual std::set<T> schedule(std::set<T> __intervals) = 0;
     }; // class interval_scheduler
   } // namespace math
 } // namespace biosim

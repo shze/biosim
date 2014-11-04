@@ -20,20 +20,28 @@ BOOST_AUTO_TEST_CASE(sequence_interval_overlapping_subset) {
       iv3(5, 5, che::cchb_dssp('H'));
 
   BOOST_CHECK(iv1.get_overlapping_subset(sses.begin(), sses.end()).size() == 1);
-  BOOST_CHECK(iv2.get_overlapping_subset(sses.begin(), sses.end()).empty());
+  BOOST_CHECK(iv2.get_overlapping_subset(sses.begin(), sses.end()).size() == 1);
   BOOST_CHECK(iv3.get_overlapping_subset(sses.begin(), sses.end()).empty());
 
   BOOST_CHECK(iv1.get_overlapping_subset(sses.begin(), sses.end(), true).size() == 1);
   BOOST_CHECK(iv2.get_overlapping_subset(sses.begin(), sses.end(), true).size() == 1);
   BOOST_CHECK(iv3.get_overlapping_subset(sses.begin(), sses.end(), true).empty());
 
+  BOOST_CHECK(iv1.get_overlapping_subset(sses.begin(), sses.end(), false).size() == 1);
+  BOOST_CHECK(iv2.get_overlapping_subset(sses.begin(), sses.end(), false).empty());
+  BOOST_CHECK(iv3.get_overlapping_subset(sses.begin(), sses.end(), false).empty());
+
   BOOST_CHECK(iv1.overlaps(sses.begin(), sses.end()));
-  BOOST_CHECK(iv2.overlaps(sses.begin(), sses.end()) == false);
+  BOOST_CHECK(iv2.overlaps(sses.begin(), sses.end()));
   BOOST_CHECK(iv3.overlaps(sses.begin(), sses.end()) == false);
 
   BOOST_CHECK(iv1.overlaps(sses.begin(), sses.end(), true));
   BOOST_CHECK(iv2.overlaps(sses.begin(), sses.end(), true));
   BOOST_CHECK(iv3.overlaps(sses.begin(), sses.end(), true) == false);
+
+  BOOST_CHECK(iv1.overlaps(sses.begin(), sses.end(), false));
+  BOOST_CHECK(iv2.overlaps(sses.begin(), sses.end(), false) == false);
+  BOOST_CHECK(iv3.overlaps(sses.begin(), sses.end(), false) == false);
 }
 
 BOOST_AUTO_TEST_CASE(sequence_interval_less_dimension_min_max) {
