@@ -76,7 +76,8 @@ namespace biosim {
             std::stringstream ss(match_identifier);
             std::string first_line;
             std::getline(ss, first_line); // read until linebreak from stream into string
-            LOG << "Sequence type not identified, ignoring sequence: " << first_line;
+            LOG << "Sequence type not identified, ignoring sequence: " << __filename << "/" << sequence_no << ": "
+                << first_line;
           } // else
         } // for
 

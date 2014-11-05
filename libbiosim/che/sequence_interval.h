@@ -66,7 +66,7 @@ namespace biosim {
         return !get_overlapping_subset(__begin, __end, __all_types_overlap).empty();
       } // overlaps()
 
-      // convert a set of sequence_intervals into a sequence
+      // convert a set of sequence intervals into a sequence
       static che::sequence<T> to_sequence(std::set<che::sequence_interval<T>> const &__intervals,
                                           size_t const &__length) {
         // find unknown; used to fill ss_symbols
@@ -90,6 +90,47 @@ namespace biosim {
 
         return seq;
       } // to_sequence
+
+      // convert a sequence into a set of sequence intervals
+      static std::set<che::sequence_interval<T>> to_sequence_intervals(che::sequence<T> const &__sequence) {
+        // create intervals for all types
+        std::list<sequence_interval<T>> sequence_interval_list; // first create list to extend the last intervals
+        for(size_t pos(0); pos < __sequence.size(); ++pos) {
+          if(sequence_interval_list.empty()) {
+            sequence_interval<T> new_sequence_interval(pos, pos, __sequence[pos]);
+            DEBUG << "sequence_interval_list empty, adding new sequence_interval " << new_sequence_interval;
+            sequence_interval_list.push_back(new_sequence_interval);
+            continue; // to avoid the else and intendation
+          } // if
+
+          sequence_interval<T> &last_sequence_interval(sequence_interval_list.back()); // reference is important!
+          if(last_sequence_interval.get_type().get_identifier() == __sequence[pos].get_identifier()) {
+            last_sequence_interval.set_max(pos);
+          } // if
+          else {
+            // print this once to tell how much we extended when we find something different, instead of printing for
+            // every extend in the if part above
+            DEBUG << "identifier was equal, extended sequence_interval " << last_sequence_interval;
+
+            sequence_interval<T> new_sequence_interval(pos, pos, __sequence[pos]);
+            DEBUG << "identifier is different, adding new sequence_interval " << new_sequence_interval;
+            sequence_interval_list.push_back(new_sequence_interval);
+          } // else
+        } // for
+        // print this once instead of for every single extend
+        DEBUG << "identifier was equal, extended sequence_interval " << sequence_interval_list.back();
+
+        // insert all sequence_intervals except ones with unknown type into sequence_interval_set
+        std::set<che::sequence_interval<T>> sequence_interval_set;
+        T unknown(T::specificity_unknown);
+        for(auto this_sequence_interval : sequence_interval_list) {
+          if(this_sequence_interval.get_type().get_identifier() != unknown.get_identifier()) { // do NOT insert unknown
+            sequence_interval_set.insert(this_sequence_interval);
+          } // if
+        } // for
+
+        return sequence_interval_set;
+      } // to_sequence_intervals()
     }; // class sequence_interval
 
     // output operator for sequence_interval

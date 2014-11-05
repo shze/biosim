@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE(ss_ctor) {
   v.emplace_back('H');
   s = che::ss(v);
   BOOST_CHECK(s.get_sequence().size() == 1);
-  BOOST_CHECK(s.get_sses().empty());
+  BOOST_CHECK(s.get_sses().size() == 1);
 
   std::set<che::cchb_dssp_interval> pool;
   s = che::ss(pool);

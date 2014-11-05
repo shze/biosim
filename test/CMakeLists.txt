@@ -12,6 +12,7 @@ set(SOURCES_UNIT_TESTER
   che/ts.cpp
   che/io/file_fasta.cpp
   che/io/file_psipredv.cpp
+  che/io/file_qs.cpp
   che/io/file_sse_pool.cpp
   math/interval.cpp
   math/interval_scheduler_maximize.cpp
