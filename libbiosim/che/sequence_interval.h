@@ -21,28 +21,6 @@ namespace biosim {
       // get the T describing the type
       T const &get_type() const { return _type; }
 
-      // returns if interval1 is less than i.e. before (starts further left, at a smaller number) interval2
-      static bool less_min_max(sequence_interval<T> const &__interval1, sequence_interval<T> const &__interval2) {
-        return math::interval<size_t>::less_min_max(__interval1, __interval2);
-      } // less_min_max()
-      // returns if the length of interval1 is less than the length of interval2
-      static bool less_length(sequence_interval<T> const &__interval1, sequence_interval<T> const &__interval2) {
-        return math::interval<size_t>::less_length(__interval1, __interval2);
-      } // less_length()
-      // returns if interval1 ends before before interval2 (ends further left, at a smaller number)
-      static bool less_max(sequence_interval<T> const &__interval1, sequence_interval<T> const &__interval2) {
-        return math::interval<size_t>::less_max(__interval1, __interval2);
-      } // less_max()
-
-      // returns if both intervals have same min and max positions
-      static bool equal_min_max(sequence_interval<T> const &__interval1, sequence_interval<T> const &__interval2) {
-        return math::interval<size_t>::equal_min_max(__interval1, __interval2);
-      } // equal_min_max()
-      // returns if both intervals have same length
-      static bool equal_length(sequence_interval<T> const &__interval1, sequence_interval<T> const &__interval2) {
-        return math::interval<size_t>::equal_length(__interval1, __interval2);
-      } // equal_length()
-
       // test if this interval and interval2 overlap, depending on type; overwrites interval::overlaps()
       bool overlaps(sequence_interval<T> const &__interval2, bool __all_types_overlap = true) const {
         return __interval2.interval::overlaps(*this) && (__all_types_overlap || get_type() == __interval2.get_type());

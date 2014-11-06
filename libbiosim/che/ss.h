@@ -12,8 +12,8 @@ namespace biosim {
     public:
       // ctor from secondary structure sequence
       explicit ss(sequence<cchb_dssp> __sequence);
-      // ctor from pool
-      explicit ss(std::set<cchb_dssp_interval> __pool);
+      // ctor from pool and optional sequence length, default 0
+      explicit ss(std::set<cchb_dssp_interval> __pool, size_t __sequence_length = 0);
       // get secondary structure sequence
       sequence<cchb_dssp> get_sequence() const;
       // get secondary structure intervals
@@ -23,6 +23,7 @@ namespace biosim {
       sequence<cchb_dssp> _sequence; // secondary structure sequence
       bool _sequence_generated; // if the sequence was generated from the sse intervals
       std::set<cchb_dssp_interval> _sses; // secondary structure elements
+      size_t _length; // sequence length if created from sses, 0=ends with last sse; otherwise same as sequence length
     }; // class ss
 
     // output operator for ss

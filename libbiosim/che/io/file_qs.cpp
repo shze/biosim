@@ -12,7 +12,7 @@ namespace biosim {
         _readers[".psipred_ss"] = &file_psipredv::read;
         _readers[".psipred_ss2"] = &file_psipredv::read;
         _readers[".rdbProf"] = &file_psipredv::read;
-        _readers[".jufo"] = &file_psipredv::read;
+        _readers[".jufo9d_ss"] = &file_psipredv::read;
         _readers[".pdb"] = &file_sse_pool::read; // add pdb, sequence length is defined, and no overlapping sse
         // don't add sse_pool, sequence length is not defined (missing coil intervals), and overlap possible
       } // ctor

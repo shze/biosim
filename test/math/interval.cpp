@@ -120,51 +120,51 @@ BOOST_AUTO_TEST_CASE(interval_overlap) {
 BOOST_AUTO_TEST_CASE(interval_less_min_max) {
   math::interval<int> iv1(1, 3), iv2(1, 4), iv3(2, 3);
 
-  BOOST_CHECK(math::interval<int>::less_min_max(iv1, iv1) == false);
+  BOOST_CHECK(less_min_max(iv1, iv1) == false);
 
-  BOOST_CHECK(math::interval<int>::less_min_max(iv1, iv2) == true);
-  BOOST_CHECK(math::interval<int>::less_min_max(iv2, iv1) == false);
+  BOOST_CHECK(less_min_max(iv1, iv2) == true);
+  BOOST_CHECK(less_min_max(iv2, iv1) == false);
 
-  BOOST_CHECK(math::interval<int>::less_min_max(iv1, iv3) == true);
-  BOOST_CHECK(math::interval<int>::less_min_max(iv3, iv1) == false);
+  BOOST_CHECK(less_min_max(iv1, iv3) == true);
+  BOOST_CHECK(less_min_max(iv3, iv1) == false);
 }
 
 BOOST_AUTO_TEST_CASE(interval_less_length) {
   math::interval<int> iv1(1, 3), iv2(1, 4), iv3(2, 4);
 
-  BOOST_CHECK(math::interval<int>::less_length(iv1, iv1) == false);
+  BOOST_CHECK(less_length(iv1, iv1) == false);
 
-  BOOST_CHECK(math::interval<int>::less_length(iv1, iv2) == true);
-  BOOST_CHECK(math::interval<int>::less_length(iv2, iv1) == false);
+  BOOST_CHECK(less_length(iv1, iv2) == true);
+  BOOST_CHECK(less_length(iv2, iv1) == false);
 
-  BOOST_CHECK(math::interval<int>::less_length(iv1, iv3) == false);
-  BOOST_CHECK(math::interval<int>::less_length(iv3, iv1) == false);
+  BOOST_CHECK(less_length(iv1, iv3) == false);
+  BOOST_CHECK(less_length(iv3, iv1) == false);
 }
 
 BOOST_AUTO_TEST_CASE(interval_less_max) {
   math::interval<int> iv1(1, 3), iv2(1, 4), iv3(2, 4);
 
-  BOOST_CHECK(math::interval<int>::less_max(iv1, iv1) == false);
+  BOOST_CHECK(less_max(iv1, iv1) == false);
 
-  BOOST_CHECK(math::interval<int>::less_max(iv1, iv2) == true);
-  BOOST_CHECK(math::interval<int>::less_max(iv2, iv1) == false);
+  BOOST_CHECK(less_max(iv1, iv2) == true);
+  BOOST_CHECK(less_max(iv2, iv1) == false);
 
-  BOOST_CHECK(math::interval<int>::less_max(iv2, iv3) == false);
-  BOOST_CHECK(math::interval<int>::less_max(iv3, iv2) == false);
+  BOOST_CHECK(less_max(iv2, iv3) == false);
+  BOOST_CHECK(less_max(iv3, iv2) == false);
 }
 
 BOOST_AUTO_TEST_CASE(interval_equal_min_max) {
   math::interval<int> iv1(1, 3), iv2(1, 4), iv3(2, 4);
-  BOOST_CHECK(math::interval<int>::equal_min_max(iv1, iv1));
-  BOOST_CHECK(!math::interval<int>::equal_min_max(iv1, iv2));
-  BOOST_CHECK(!math::interval<int>::equal_min_max(iv1, iv3));
+  BOOST_CHECK(equal_min_max(iv1, iv1));
+  BOOST_CHECK(equal_min_max(iv1, iv2) == false);
+  BOOST_CHECK(equal_min_max(iv1, iv3) == false);
 }
 
 BOOST_AUTO_TEST_CASE(interval_equal_length) {
   math::interval<int> iv1(1, 3), iv2(1, 4), iv3(2, 4);
-  BOOST_CHECK(math::interval<int>::equal_length(iv1, iv1));
-  BOOST_CHECK(!math::interval<int>::equal_length(iv1, iv2));
-  BOOST_CHECK(math::interval<int>::equal_length(iv1, iv3));
+  BOOST_CHECK(equal_length(iv1, iv1));
+  BOOST_CHECK(equal_length(iv1, iv2) == false);
+  BOOST_CHECK(equal_length(iv1, iv3));
 }
 
 BOOST_AUTO_TEST_CASE(interval_merge) {

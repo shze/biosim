@@ -66,34 +66,12 @@ namespace biosim {
                (__interval2._max >= _min && __interval2._max <= _max);
       } // overlaps()
 
-      // returns if interval1 is less than i.e. before (starts further left, at a smaller number) interval2
-      static bool less_min_max(interval<T> const &__interval1, interval<T> const &__interval2) {
-        return __interval1._min < __interval2._min ||
-               (__interval1._min == __interval2._min && __interval1._max < __interval2._max);
-      } // less_min_max()
-      // returns if the length of interval1 is less than the length of interval2
-      static bool less_length(interval<T> const &__interval1, interval<T> const &__interval2) {
-        return __interval1.get_length() < __interval2.get_length();
-      } // less_length()
-      // returns if interval1 ends before before interval2 (ends further left, at a smaller number)
-      static bool less_max(interval<T> const &__interval1, interval<T> const &__interval2) {
-        return __interval1._max < __interval2._max;
-      } // less_max()
       // returns true if this interval is less than the rhs interval
       bool operator<(interval<T> const &__rhs) const {
         bool const result(less_min_max(*this, __rhs));
         DEBUG << "operator<(): " << *this << " < " << __rhs << ", result=" << result;
         return result;
       } // operator<()
-
-      // returns if both intervals have same min and max positions
-      static bool equal_min_max(interval<T> const &__interval1, interval<T> const &__interval2) {
-        return __interval1._min == __interval2._min && __interval1._max == __interval2._max;
-      } // equal_min_max()
-      // returns if both intervals have same length
-      static bool equal_length(interval<T> const &__interval1, interval<T> const &__interval2) {
-        return __interval1.get_length() == __interval2.get_length();
-      } // equal_length()
       // returns true if this interval is equal to the rhs interval
       bool operator==(interval<T> const &__rhs) const {
         bool const result(equal_min_max(*this, __rhs));
@@ -149,6 +127,34 @@ namespace biosim {
         return merged_intervals;
       } // merge()
     }; // class interval
+
+    // returns if interval1 is less than i.e. before (starts further left, at a smaller number) interval2
+    template <class T>
+    bool less_min_max(T const &__interval1, T const &__interval2) {
+      return __interval1.get_min() < __interval2.get_min() ||
+             (__interval1.get_min() == __interval2.get_min() && __interval1.get_max() < __interval2.get_max());
+    } // less_min_max()
+    // returns if the length of interval1 is less than the length of interval2
+    template <class T>
+    bool less_length(T const &__interval1, T const &__interval2) {
+      return __interval1.get_length() < __interval2.get_length();
+    } // less_length()
+    // returns if interval1 ends before before interval2 (ends further left, at a smaller number)
+    template <class T>
+    bool less_max(T const &__interval1, T const &__interval2) {
+      return __interval1.get_max() < __interval2.get_max();
+    } // less_max()
+
+    // returns if both intervals have same min and max positions
+    template <class T>
+    bool equal_min_max(T const &__interval1, T const &__interval2) {
+      return __interval1.get_min() == __interval2.get_min() && __interval1.get_max() == __interval2.get_max();
+    } // equal_min_max()
+    // returns if both intervals have same length
+    template <class T>
+    bool equal_length(T const &__interval1, T const &__interval2) {
+      return __interval1.get_length() == __interval2.get_length();
+    } // equal_length()
 
     // output operator for interval; inline to avoid multiple definitions error when .h is included multiple times
     template <class T>

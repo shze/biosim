@@ -171,7 +171,8 @@ namespace biosim {
             } // else
 
             // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
-            cc_sequence.resize(terminal_residue_sequence_number, cc(cc::specificity_unknown, cc::l_peptide_linking));
+            cc_sequence.resize(std::max(cc_sequence.size(), terminal_residue_sequence_number),
+                               cc(cc::specificity_unknown, cc::l_peptide_linking));
             cc_sequence[initial_residue_sequence_number - 1] = cc(initial_residue_name);
             cc_sequence[terminal_residue_sequence_number - 1] = cc(terminal_residue_name);
 
@@ -234,7 +235,8 @@ namespace biosim {
             } // else
 
             // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
-            cc_sequence.resize(terminal_residue_sequence_number, cc(cc::specificity_unknown, cc::l_peptide_linking));
+            cc_sequence.resize(std::max(cc_sequence.size(), terminal_residue_sequence_number),
+                               cc(cc::specificity_unknown, cc::l_peptide_linking));
             cc_sequence[initial_residue_sequence_number - 1] = cc(initial_residue_name);
             cc_sequence[terminal_residue_sequence_number - 1] = cc(terminal_residue_name);
 
@@ -322,7 +324,8 @@ namespace biosim {
           } // else if
         } // for
 
-        return cc_sequence.empty() ? qs() : qs(ts(__filename, ">lcl|sequence", cc_sequence), ss(pool));
+        return cc_sequence.empty() ? qs()
+                                   : qs(ts(__filename, ">lcl|sequence", cc_sequence), ss(pool, cc_sequence.size()));
       } // read()
     } // namespace io
   } // namespace che

@@ -14,7 +14,7 @@ namespace biosim {
       // method to select a non-overlapping subset of intervals from the input set
       std::set<T> schedule(std::set<T> __intervals) {
         // sort pool by ending, use multiset as multiple intervals could end at the same position
-        using interval_max_less_multiset = std::multiset<T, tools::less<T, T::less_max>>;
+        using interval_max_less_multiset = std::multiset<T, tools::less<T, less_max<T>>>;
         interval_max_less_multiset end_sorted_intervals(__intervals.begin(), __intervals.end());
 
         // create an empty set that will collect all sequence intervals that are converted into the result sequence
