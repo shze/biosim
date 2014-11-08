@@ -11,6 +11,8 @@ namespace biosim {
       public:
         // creates a quarternary structure from a given file
         static qs read(std::string const &__filename);
+        // creates a quarternary structure from a given file and extends the sequence to the given reference length
+        static qs read(std::string const &__filename, qs const &__reference);
       }; // class file_sse_pool
     } // namespace io
   } // namespace che

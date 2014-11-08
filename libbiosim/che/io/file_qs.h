@@ -16,6 +16,9 @@ namespace biosim {
         // default ctor
         file_qs();
 
+        // add reader function to read sse pool files
+        void add_sse_pool_reader(qs const &__reference);
+
         // creates a qs from a given file
         qs read(std::string const &__filename);
       }; // class file_qs

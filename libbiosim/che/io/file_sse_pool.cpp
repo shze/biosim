@@ -8,8 +8,10 @@
 namespace biosim {
   namespace che {
     namespace io {
-      // (static) creates a quarternary structure from a given file
-      qs file_sse_pool::read(std::string const &__filename) {
+      // creates a quarternary structure from a given file
+      qs file_sse_pool::read(const std::string &__filename) { return read(__filename, qs()); }
+      // creates a quarternary structure from a given file and extends the sequence to the given reference length
+      qs file_sse_pool::read(const std::string &__filename, qs const &__reference) {
         // regex for a single data line of the sse pool format; groups will be used to construct sequences;
         // this regex will not match the begin ('bcl::assemble::SSEPool') and end lines ('END') of a sse pool file to
         // allow reading pdb files as well;
@@ -323,6 +325,12 @@ namespace biosim {
             } // for
           } // else if
         } // for
+
+        // extend the sequences to the reference length
+        if(!__reference.get_chain_id_list().empty()) {
+          cc_sequence.resize(std::max(cc_sequence.size(), __reference.get_ss("A").get_sequence().size()),
+                             cc(cc::specificity_unknown, cc::l_peptide_linking));
+        }
 
         return cc_sequence.empty() ? qs()
                                    : qs(ts(__filename, ">lcl|sequence", cc_sequence), ss(pool, cc_sequence.size()));

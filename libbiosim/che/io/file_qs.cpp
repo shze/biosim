@@ -13,9 +13,19 @@ namespace biosim {
         _readers[".psipred_ss2"] = &file_psipredv::read;
         _readers[".rdbProf"] = &file_psipredv::read;
         _readers[".jufo9d_ss"] = &file_psipredv::read;
-        _readers[".pdb"] = &file_sse_pool::read; // add pdb, sequence length is defined, and no overlapping sse
+        // add pdb, sequence length defined, no overlapping sse; cast b/c compiler does not know which read() to use
+        _readers[".pdb"] = static_cast<qs (*)(std::string const &)>(&file_sse_pool::read);
         // don't add sse_pool, sequence length is not defined (missing coil intervals), and overlap possible
       } // ctor
+
+      // add reader function to read sse pool files
+      void file_qs::add_sse_pool_reader(qs const &__reference) {
+        _readers[".pool"] = [&](std::string const &__filename) -> qs {
+          DEBUG << "Extend length of ss sequence to " << __reference.get_ss("A").get_sequence().size()
+                << " to match reference";
+          return file_sse_pool::read(__filename, __reference);
+        }; // lambda
+      } // add_sse_pool_reader()
 
       // creates a qs from a given file
       qs file_qs::read(std::string const &__filename) {
