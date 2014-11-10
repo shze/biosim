@@ -40,5 +40,12 @@ namespace biosim {
       _ss.insert(std::pair<std::string, ss>(chain_id, __ss));
       return chain_id;
     } // add()
+    // set a ts and ss to have a specific chain_id
+    void qs::set(std::string const &__chain_id, ts __ts, ss __ss) {
+      _ts[__chain_id] = __ts;
+      // for ss use erase() and insert(), because operator[] requires a default ctor which ss does not have
+      _ss.erase(__chain_id);
+      _ss.insert(std::pair<std::string, ss>(__chain_id, __ss));
+    } // set()
   } // namespace che
 } // namespace biosim

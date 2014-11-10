@@ -8,6 +8,23 @@
 namespace biosim {
   namespace che {
     namespace io {
+      // stores all chain-dependent information that a pool file contains
+      struct chain_data {
+        // default ctor
+        chain_data()
+            : last_helix_serial_number(0),
+              last_seqres_serial_number(0),
+              last_seqres_residue_count(0),
+              cc_sequence(),
+              pool() {}
+
+        size_t last_helix_serial_number; // starts with 1, and will be increased by 1 for each helix
+        size_t last_seqres_serial_number; // starts with 1, and will be increased by 1 for each SEQRES lines
+        size_t last_seqres_residue_count; // 0=not set
+        ps cc_sequence; // amino acid sequence
+        std::set<cchb_dssp_interval> pool; // secondary structure definition lines
+      }; // struct chain_data
+
       // creates a quarternary structure from a given file
       qs file_sse_pool::read(const std::string &__filename) { return read(__filename, qs()); }
       // creates a quarternary structure from a given file and extends the sequence to the given reference length
@@ -31,33 +48,17 @@ namespace biosim {
         // 27=Strand sense with respect to previous;
         // there is additional information on a SHEET line that is not in explicit groups, but in a generic
         // placeholder at the end of the SHEET part of the regex.
-        // SEQRES line groups explanation:
-        // 28=SEQRES; 29=Serial number of SEQRES record for current chain; 30=Chain id; 31=Number of residues in chain;
-        // 31+N=Residue name N for N=1..13;
         static boost::regex const regex_sse_pool_line(
             // 1      2           3     4     5   6          7   8     9   10         11 12         13      14
             "(HELIX)  ([0-9 ]{3}) (...) (...) (.) ([0-9 ]{4})(.) (...) (.) ([0-9 ]{4})(.)([0-9 ]{2})(.{30}) ([0-9 ]{5})"
             ".*|" // match any space that go beyond the 76 chars specified in the regex, or match the SHEET line
             // 15     16          17   18          19    20 21         22  23    24 25         26 27
-            "(SHEET)  ([0-9 ]{3}) (...)([0-9 ]{2}) (...) (.)([0-9 ]{4})(.) (...) (.)([0-9 ]{4})(.)([0-9 ]{2}).*|"
-            // 28      29          30  31           32(1) 33(2) 34(3) 35(4) 36(5) 37(6) 38(7) 39(8) 40(9) 41(10)42(11)
-            "(SEQRES)  ([0-9 ]{2}) (.) ([0-9 ]{4})  (...) (...) (...) (...) (...) (...) (...) (...) (...) (...) (...) "
-            //   43(12)44(13)
-            "(...) (...).*");
+            "(SHEET)  ([0-9 ]{3}) (...)([0-9 ]{2}) (...) (.)([0-9 ]{4})(.) (...) (.)([0-9 ]{4})(.)([0-9 ]{2}).*|");
 
         std::list<std::string> file_lines(tools::file::read_to_string_list(__filename));
         DEBUG << "Read sse pool file content:\n" << boost::algorithm::join(file_lines, "\n");
 
-        // create variables to store the data read from the file
-        ps cc_sequence;
-        std::set<cchb_dssp_interval> pool;
-
-        // variables to keep track of the numbers of helices; don't track strand# b/c it may be unknown when predicted
-        size_t last_helix_serial_number(0); // starts with 1, and will be increased by 1 for each helix
-        size_t last_seqres_serial_number(0); // starts with 1, and will be increased by 1 for each SEQRES lines
-        size_t last_seqres_residue_count(0); // 0=not set
-        char chain_id;
-        bool chain_id_set(false);
+        std::map<char, chain_data> chains; // local variable to store the data read from the file
 
         DEBUG << "Parsing sse pool file";
         for(auto &line : file_lines) { // process each line from the file
@@ -65,9 +66,8 @@ namespace biosim {
           line.append(std::max(80 - line.length(), (size_t)0), ' ');
 
           boost::smatch match;
-          // regex_match returns true if all chars of line were matched;
-          // if that is true, the match size should be 45 (all match + groups), i.e. the second part is likely redundant
-          if(!boost::regex_match(line, match, regex_sse_pool_line) || match.size() != 45) {
+          // regex_match returns true if all chars of line were matched
+          if(!boost::regex_match(line, match, regex_sse_pool_line)) {
             DEBUG << "No match: " << line;
             continue;
           } // if
@@ -110,16 +110,36 @@ namespace biosim {
                   << helix_type_string << "' comment='" << boost::trim_copy(comment) << "' helix_length='"
                   << helix_length_string << "'";
 
+            // both chain ids should be identical
+            if(initial_residue_chain_id != terminal_residue_chain_id) {
+              DEBUG << "Ignoring line, initial_residue_chain_id='" << initial_residue_chain_id
+                    << "' differing from terminal_residue_chain_id='" << terminal_residue_chain_id << "'";
+              continue;
+            } // if
+            // add chain id if it isn't found in the map
+            if(chains.find(initial_residue_chain_id) == chains.end()) {
+              chains[initial_residue_chain_id] = chain_data();
+            } // if
+
             // convert strings to size_t and catch exceptions for ones which have a default or way the calculating
             size_t helix_serial_number;
             try {
               helix_serial_number = boost::lexical_cast<size_t>(helix_serial_number_string);
             } // try
             catch(boost::bad_lexical_cast const &__e) {
-              helix_serial_number = last_helix_serial_number + 1;
+              helix_serial_number = chains[initial_residue_chain_id].last_helix_serial_number + 1;
               DEBUG << "Could not convert helix_serial_number='" << helix_serial_number_string
                     << "' to number, using default helix_serial_number='" << helix_serial_number << "'";
             } // catch
+            // helix serial number should be incremented by 1 from last helix serial number
+            if(helix_serial_number != chains[initial_residue_chain_id].last_helix_serial_number + 1) {
+              DEBUG << "Found helix_serial_number='" << helix_serial_number
+                    << "' differing from expected helix_serial_number='"
+                    << (chains[initial_residue_chain_id].last_helix_serial_number + 1)
+                    << "', using helix_serial_number from file.";
+            } // if
+            // update the helix counting variable
+            chains[initial_residue_chain_id].last_helix_serial_number = helix_serial_number;
 
             // we could convert helix_type_string into size_t, but realistically no checks can be done b/c a pool
             // often comes from prediction and the helix_type is not known
@@ -134,23 +154,6 @@ namespace biosim {
               DEBUG << "Could not convert helix_length='" << helix_length_string
                     << "' to number, using calculated helix_length='" << helix_length << "'";
             } // catch
-
-            // helix serial number should be incremented by 1 from last helix serial number
-            if(helix_serial_number != last_helix_serial_number + 1) {
-              DEBUG << "Found helix_serial_number='" << helix_serial_number
-                    << "' differing from expected helix_serial_number='" << (last_helix_serial_number + 1)
-                    << "', using helix_serial_number from file.";
-            } // if
-            // update the helix counting variable
-            last_helix_serial_number = helix_serial_number;
-
-            // both chain ids should be identical
-            if(initial_residue_chain_id != terminal_residue_chain_id) {
-              DEBUG << "Ignoring line, initial_residue_chain_id='" << initial_residue_chain_id
-                    << "' differing from terminal_residue_chain_id='" << terminal_residue_chain_id << "'";
-              continue;
-            } // if
-
             // check helix_length is consist with residue sequence numbers
             if(helix_length != terminal_residue_sequence_number - initial_residue_sequence_number + 1) {
               size_t const expected_helix_length(terminal_residue_sequence_number - initial_residue_sequence_number +
@@ -160,27 +163,18 @@ namespace biosim {
               helix_length = expected_helix_length;
             } // if
 
-            if(chain_id_set) {
-              if(initial_residue_chain_id != chain_id) {
-                DEBUG << "Ignoring line, initial_residue_chain_id='" << initial_residue_chain_id
-                      << "' differing from previous chain_id='" << chain_id << "'";
-                continue;
-              } // if
-            } // if
-            else {
-              chain_id = initial_residue_chain_id;
-              chain_id_set = true;
-            } // else
-
             // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
-            cc_sequence.resize(std::max(cc_sequence.size(), terminal_residue_sequence_number),
-                               cc(cc::specificity_unknown, cc::l_peptide_linking));
-            cc_sequence[initial_residue_sequence_number - 1] = cc(initial_residue_name);
-            cc_sequence[terminal_residue_sequence_number - 1] = cc(terminal_residue_name);
+            chains[initial_residue_chain_id].cc_sequence.resize(
+                std::max(chains[initial_residue_chain_id].cc_sequence.size(), terminal_residue_sequence_number),
+                cc(cc::specificity_unknown, cc::l_peptide_linking));
+            chains[initial_residue_chain_id].cc_sequence[initial_residue_sequence_number - 1] =
+                cc(initial_residue_name);
+            chains[initial_residue_chain_id].cc_sequence[terminal_residue_sequence_number - 1] =
+                cc(terminal_residue_name);
 
             // create and insert sequence_interval into the pool
-            pool.insert(cchb_dssp_interval(initial_residue_sequence_number - 1, terminal_residue_sequence_number - 1,
-                                           cchb_dssp('H')));
+            chains[initial_residue_chain_id].pool.insert(cchb_dssp_interval(
+                initial_residue_sequence_number - 1, terminal_residue_sequence_number - 1, cchb_dssp('H')));
           } // if
           else if(match[15].matched) { // if the 'SHEET' part matches, a sheet line was found
             DEBUG << "Found SHEET line";
@@ -223,117 +217,46 @@ namespace biosim {
                     << "' differing from terminal_residue_chain_id='" << terminal_residue_chain_id << "'";
               continue;
             } // if
-
-            if(chain_id_set) {
-              if(initial_residue_chain_id != chain_id) {
-                DEBUG << "Ignoring line, initial_residue_chain_id='" << initial_residue_chain_id
-                      << "' differing from previous chain_id='" << chain_id << "'";
-                continue;
-              } // if
+            // add chain id if it isn't found in the map
+            if(chains.find(initial_residue_chain_id) == chains.end()) {
+              chains[initial_residue_chain_id] = chain_data();
             } // if
-            else {
-              chain_id = initial_residue_chain_id;
-              chain_id_set = true;
-            } // else
 
             // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
-            cc_sequence.resize(std::max(cc_sequence.size(), terminal_residue_sequence_number),
-                               cc(cc::specificity_unknown, cc::l_peptide_linking));
-            cc_sequence[initial_residue_sequence_number - 1] = cc(initial_residue_name);
-            cc_sequence[terminal_residue_sequence_number - 1] = cc(terminal_residue_name);
+            chains[initial_residue_chain_id].cc_sequence.resize(
+                std::max(chains[initial_residue_chain_id].cc_sequence.size(), terminal_residue_sequence_number),
+                cc(cc::specificity_unknown, cc::l_peptide_linking));
+            chains[initial_residue_chain_id].cc_sequence[initial_residue_sequence_number - 1] =
+                cc(initial_residue_name);
+            chains[initial_residue_chain_id].cc_sequence[terminal_residue_sequence_number - 1] =
+                cc(terminal_residue_name);
 
             // create and insert sequence_interval into the pool
-            pool.insert(cchb_dssp_interval(initial_residue_sequence_number - 1, terminal_residue_sequence_number - 1,
-                                           cchb_dssp('E')));
-          } // else if
-          else if(match[28].matched) { // if the 'SEQRES' part matches, a sequence residue line was found
-            DEBUG << "Found SEQRES line";
-
-            // get strings from all submatches except the residues
-            std::string const seqres_serial_number_string(boost::trim_copy(std::string(match[29])));
-            char const seqres_chain_id(boost::lexical_cast<char>(match[30]));
-            std::string const seqres_residue_count_string(boost::trim_copy(std::string(match[31])));
-
-            // print the submatches as strings before consistency checks and converting to size_t
-            DEBUG << "Submatches: seqres_serial_number='" << seqres_serial_number_string << "' seqres_chain_id='"
-                  << seqres_chain_id << "' seqres_residue_count='" << seqres_residue_count_string << "' residue_names='"
-                  << match[32] << "|" << match[33] << "|" << match[34] << "|" << match[35] << "|" << match[36] << "|"
-                  << match[37] << "|" << match[38] << "|" << match[39] << "|" << match[40] << "|" << match[41] << "|"
-                  << match[42] << "|" << match[43] << "|" << match[44] << "'";
-
-            size_t seqres_serial_number;
-            try {
-              seqres_serial_number = boost::lexical_cast<size_t>(seqres_serial_number_string);
-            } // try
-            catch(boost::bad_lexical_cast const &__e) {
-              seqres_serial_number = last_seqres_serial_number + 1;
-              DEBUG << "Could not convert seqres_serial_number='" << seqres_serial_number_string
-                    << "' to number, using calculated seqres_serial_number='" << seqres_serial_number << "'";
-            } // catch
-
-            // check helix_length is consist with residue sequence numbers
-            if(seqres_serial_number != last_seqres_serial_number + 1) {
-              size_t const expected_seqres_serial_number(last_seqres_serial_number + 1);
-              DEBUG << "Found seqres_serial_number='" << seqres_serial_number << "' differing from expected "
-                    << "seqres_serial_number='" << expected_seqres_serial_number << "', ignoring seqres_serial_number.";
-              seqres_serial_number = expected_seqres_serial_number;
-            } // if
-
-            last_seqres_serial_number = seqres_serial_number; // update the SEQRES serial number variable
-
-            size_t seqres_residue_count(0);
-            try {
-              seqres_residue_count = boost::lexical_cast<size_t>(seqres_residue_count_string);
-            } // try
-            catch(boost::bad_lexical_cast const &__e) {
-              // keep seqres_residue_count set to 0
-              DEBUG << "Could not convert seqres_residue_count='" << seqres_residue_count_string << "' to number";
-            } // catch
-
-            if(last_seqres_residue_count != 0) {
-              if(last_seqres_residue_count != seqres_residue_count) {
-                // just ignore the seqres_residue_count if it's different, do not skip this line
-                DEBUG << "Found seqres_residue_count='" << seqres_residue_count << "' differing from expected "
-                      << "seqres_residue_count='" << last_seqres_residue_count << "', ignoring seqres_residue_count.";
-              } // if
-            } // if
-            else {
-              last_seqres_residue_count = seqres_residue_count; // if last_seqres_residue_count is still 0, save it
-            }
-
-            if(chain_id_set) {
-              if(seqres_chain_id != chain_id) {
-                // if a previous chain_id was set, and this one is different, ignore line, it could be a different chain
-                DEBUG << "Ignoring line, seqres_chain_id='" << seqres_chain_id << "' differing from previous chain_id='"
-                      << chain_id << "'";
-                continue;
-              } // if
-            } // if
-            else {
-              chain_id = seqres_chain_id;
-              chain_id_set = true;
-            } // else
-
-            // loop through all 13 residue name groups and check if there's a residue or spaces
-            for(size_t pos(32); pos <= 44; ++pos) {
-              std::string const residue_name(boost::trim_copy(std::string(match[pos])));
-              if(residue_name.empty()) {
-                continue; // ignore empty names, likely at the end of the SEQRES definition
-              } // if
-
-              cc_sequence.emplace_back(cc(residue_name));
-            } // for
+            chains[initial_residue_chain_id].pool.insert(cchb_dssp_interval(
+                initial_residue_sequence_number - 1, terminal_residue_sequence_number - 1, cchb_dssp('E')));
           } // else if
         } // for
 
-        // extend the sequences to the reference length
-        if(!__reference.get_chain_id_list().empty()) {
-          cc_sequence.resize(std::max(cc_sequence.size(), __reference.get_ss("A").get_sequence().size()),
-                             cc(cc::specificity_unknown, cc::l_peptide_linking));
-        }
+        qs s; // final result
 
-        return cc_sequence.empty() ? qs()
-                                   : qs(ts(__filename, ">lcl|sequence", cc_sequence), ss(pool, cc_sequence.size()));
+        size_t sequence_no(1); // start with 1
+        for(auto chain_pair : chains) {
+          // extend the sequences to the reference length
+          std::string chain_id_string(1, chain_pair.first);
+          if(__reference.has_ss(chain_id_string)) {
+            chain_pair.second.cc_sequence.resize(std::max(chain_pair.second.cc_sequence.size(),
+                                                          __reference.get_ss(chain_id_string).get_sequence().size()),
+                                                 cc(cc::specificity_unknown, cc::l_peptide_linking));
+          } // if
+
+          // add to final result
+          s.set(chain_id_string, ts(__filename + "/" + std::to_string(sequence_no), ">lcl|sequence", chain_pair.second.cc_sequence),
+                ss(chain_pair.second.pool, chain_pair.second.cc_sequence.size()));
+          
+          ++sequence_no; // increase sequence_no, b/c it's not done in the for loop header
+        } // for
+
+        return s;
       } // read()
     } // namespace io
   } // namespace che

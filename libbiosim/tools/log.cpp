@@ -26,7 +26,9 @@ namespace biosim {
     log_message::~log_message() {
       // only print message if level of message is at least (i.e. equal or lower than) current output level
       if(_level <= _current_output_level) {
-        _string_stream << "\n"; // add a final line break
+        if(_string_stream.str().back() != '\n') { // only add a final line break if there is not already one
+          _string_stream << "\n";
+        } // if
 
         // avoid cerr, dtor may get called during exit code, and cerr may be partially or fully destroyed by then
         fwrite(_string_stream.str().c_str(), _string_stream.str().size(), 1, stderr);

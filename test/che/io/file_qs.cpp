@@ -30,8 +30,8 @@ BOOST_AUTO_TEST_CASE(file_qs_read) {
   BOOST_CHECK(q.get_ss("A").get_sses().size() == 10);
 
   q = reader.read("../test/data/T0666_3UX4A_fixedbcl_dssp.pdb");
-  BOOST_CHECK(q.get_ts("A").get_length() == 195);
-  BOOST_CHECK(q.get_ss("A").get_sequence().size() == 195);
+  BOOST_CHECK(q.get_ts("A").get_length() == 187);
+  BOOST_CHECK(q.get_ss("A").get_sequence().size() == 187);
   BOOST_CHECK(q.get_ss("A").get_sses().size() == 7);
 }
 

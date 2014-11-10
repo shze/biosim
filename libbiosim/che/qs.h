@@ -27,6 +27,8 @@ namespace biosim {
       std::string add(ts __ts);
       // add corresponding ts and ss to qs; assign next available chain_id, and returns the chain_id
       std::string add(ts __ts, ss __ss);
+      // set a ts and ss to have a specific chain_id
+      void set(std::string const &__chain_id, ts __ts, ss __ss);
 
     private:
       std::map<std::string, ts> _ts; // maps chain_id -> ts
@@ -35,8 +37,9 @@ namespace biosim {
 
     // output operator for qs
     inline std::ostream &operator<<(std::ostream &__out, qs const &__qs) {
+      __out << "Quarternary structure: chains=" << __qs.get_chain_id_list().size() << "\n";
       for(auto const &chain_id : __qs.get_chain_id_list()) {
-        __out << "Chain: " << chain_id << "\n";
+        __out << "Chain " << chain_id << "\n";
         if(__qs.has_ts(chain_id)) {
           __out << __qs.get_ts(chain_id);
         } // if

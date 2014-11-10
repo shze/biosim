@@ -28,9 +28,9 @@ namespace biosim {
 
     // output operator for ss
     inline std::ostream &operator<<(std::ostream &__out, ss const &__ss) {
-      __out << __ss.get_sequence();
+      __out << __ss.get_sequence() << "\n";
       for(auto const &sse : __ss.get_sses()) {
-        __out << "\n" << sse;
+        __out << sse << "\n";
       } // for
       return __out;
     } // operator<<()
