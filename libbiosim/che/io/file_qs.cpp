@@ -1,4 +1,5 @@
 #include "che/io/file_qs.h"
+#include "che/io/file_fasta.h"
 #include "che/io/file_psipredv.h"
 #include "che/io/file_sse_pool.h"
 #include <boost/filesystem.hpp>
@@ -9,6 +10,7 @@ namespace biosim {
     namespace io {
       // default ctor
       file_qs::file_qs() : _readers() {
+        _readers[".fasta"] = &file_fasta::read;
         _readers[".psipred_ss"] = &file_psipredv::read;
         _readers[".psipred_ss2"] = &file_psipredv::read;
         _readers[".rdbProf"] = &file_psipredv::read;

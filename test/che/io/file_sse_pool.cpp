@@ -24,6 +24,15 @@ BOOST_AUTO_TEST_CASE(file_sse_pool_read) {
   BOOST_CHECK(q2.get_ss("A").get_sequence().size() == 195);
   BOOST_CHECK(q2.get_ss("A").get_sses().size() == 17);
 
+  q = che::io::file_sse_pool::read("../test/data/3IM3-biomolecule-bcl.pool");
+  BOOST_CHECK(q.get_chain_id_list().size() == 2);
+  BOOST_CHECK(q.get_ts("A").get_length() == 49);
+  BOOST_CHECK(q.get_ss("A").get_sequence().size() == 49);
+  BOOST_CHECK(q.get_ss("A").get_sses().size() == 3);
+  BOOST_CHECK(q.get_ts("B").get_length() == 49);
+  BOOST_CHECK(q.get_ss("B").get_sequence().size() == 49);
+  BOOST_CHECK(q.get_ss("B").get_sses().size() == 3);
+  
   q = che::io::file_sse_pool::read("../test/data/T0666_3UX4A_fixedbcl_dssp.pdb");
   BOOST_CHECK(q.get_chain_id_list().size() == 1);
   BOOST_CHECK(q.get_ts("A").get_length() == 187);

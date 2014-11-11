@@ -1,0 +1,8 @@
+bcl::assemble::SSEPool
+HELIX    1   1 LEU A    2  GLN A   10  1                                   9    
+HELIX    2   2 ILE A   14  THR A   27  1                                  14    
+HELIX    3   3 PRO A   33  ALA A   49  1                                  17    
+HELIX    4   4 LEU B    2  GLN B   10  1                                   9    
+HELIX    5   5 ILE B   14  THR B   27  1                                  14    
+HELIX    6   6 PRO B   33  ALA B   49  1                                  17    
+END
