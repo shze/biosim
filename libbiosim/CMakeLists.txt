@@ -17,6 +17,7 @@ set(LIBBIOSIM_SOURCES
   tools/file.cpp
   tools/incrementor.cpp
   tools/log.cpp
+  tools/string.cpp
 )
 
 add_library(biosim STATIC ${LIBBIOSIM_SOURCES})

@@ -21,8 +21,6 @@ namespace biosim {
         static qs read(std::string const &__filename);
 
       private:
-        // return the set of unique chars in the given string without whitespace
-        static std::set<char> get_unique_chars_ignore_whitespace(std::string __s);
         // convert a string of id_chars to a ps
         static ps convert_to_ps(std::string __s);
         // convert a string of id_chars to an ss

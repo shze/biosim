@@ -3,6 +3,7 @@
 #include <boost/algorithm/string.hpp>
 #include "tools/file.h"
 #include "tools/log.h"
+#include "tools/string.h"
 
 namespace biosim {
   namespace che {
@@ -39,9 +40,11 @@ namespace biosim {
           DEBUG << "Sequence:\n" << match_sequence;
 
           // try to detect which symbol type this sequence has, and based on that fill the sequence into the molecule
-          std::set<char> charset_cc(get_unique_chars_ignore_whitespace(cc::get_identifier_char_string()));
-          std::set<char> charset_cchb_dssp(get_unique_chars_ignore_whitespace(cchb_dssp::get_identifier_char_string()));
-          std::set<char> charset_match(get_unique_chars_ignore_whitespace(match_sequence));
+          tools::char_function char_isspace = (int (*)(int)) & std::isspace;
+          std::set<char> charset_cc(tools::get_unique_char_set_ignore(cc::get_identifier_char_string(), char_isspace));
+          std::set<char> charset_cchb_dssp(
+              tools::get_unique_char_set_ignore(cchb_dssp::get_identifier_char_string(), char_isspace));
+          std::set<char> charset_match(tools::get_unique_char_set_ignore(match_sequence, char_isspace));
           bool is_cc_sequence(std::includes(charset_cc.begin(), charset_cc.end(), charset_match.begin(),
                                             charset_match.end())); // true if charset_match is subset of charset_cc
           bool is_cchb_dssp_sequence(
@@ -116,18 +119,6 @@ namespace biosim {
 
         return all_molecules;
       } // read()
-
-      // (static) return the set of unique chars in the given string without whitespace
-      std::set<char> file_fasta::get_unique_chars_ignore_whitespace(std::string __s) {
-        std::set<char> unique;
-        for(auto const &c : __s) {
-          if(!std::isspace(c)) { // ignore whitespace
-            unique.insert(c);
-          } // if
-        } // for
-
-        return unique;
-      } // get_unique_chars_ignore_whitespace()
 
       // (static) convert a string of id_chars to a ps
       ps file_fasta::convert_to_ps(std::string __s) {
