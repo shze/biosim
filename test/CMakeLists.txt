@@ -19,6 +19,7 @@ set(SOURCES_UNIT_TESTER
   tools/enumerate.cpp
   tools/file.cpp
   tools/incrementor.cpp
+  tools/string.cpp
   unit_tester.cpp
 )
 
