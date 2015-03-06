@@ -26,7 +26,7 @@ namespace biosim {
         find(p.first); // just to make sure all are found b/c it throws otherwise
       } // for
 
-      std::shared_ptr<cc::data const> unknown_compound(find(specificity_unknown, first_compound->_monomer_type));
+      std::shared_ptr<cc::data const> unknown_compound(find(specificity_type::unknown, first_compound->_monomer_type));
       _impl = std::make_shared<data>(unknown_compound->_id, unknown_compound->_id_char, first_compound->_specificity,
                                      first_compound->_monomer_type, __weights);
     } // ctor
@@ -38,9 +38,9 @@ namespace biosim {
     // get specificity
     cc::specificity_type cc::get_specificity() const { return _impl->_specificity; }
     // return if an unknown (unspecified) compound; only for unknown, not for gap.
-    bool cc::is_unknown() const { return _impl->_specificity == specificity_unknown; }
+    bool cc::is_unknown() const { return _impl->_specificity == specificity_type::unknown; }
     // return if gap
-    bool cc::is_gap() const { return _impl->_specificity == specificity_gap; }
+    bool cc::is_gap() const { return _impl->_specificity == specificity_type::gap; }
     // get monomer type
     cc::monomer_type cc::get_monomer_type() const { return _impl->_monomer_type; }
     // get profile weights
@@ -107,7 +107,7 @@ namespace biosim {
     } // find()
     // (static) find compound with id_char and monomer_type; combination is assumed unique
     std::shared_ptr<cc::data const> cc::find(char const &__id_char, monomer_type const &__monomer_type) {
-      std::shared_ptr<cc::data const> unknown_compound(find(specificity_unknown, __monomer_type));
+      std::shared_ptr<cc::data const> unknown_compound(find(specificity_type::unknown, __monomer_type));
       auto itr = std::find_if(data_enum::get_instances().begin(), data_enum::get_instances().end(),
                               [&](std::pair<std::string, tools::enumerate<std::shared_ptr<data const>>> p) {
         // first two parts are testing id_char, monomer_type; last two are testing that we only find primary compounds
@@ -120,7 +120,7 @@ namespace biosim {
 
       if(itr == data_enum::get_instances().end()) {
         throw cc_data_not_found(std::string("no data found with id_char=") + __id_char + " and monomer_type=" +
-                                std::to_string(__monomer_type));
+                                std::to_string((int)__monomer_type));
       } // if
 
       return itr->second.get_object();
@@ -135,8 +135,8 @@ namespace biosim {
       });
 
       if(itr == data_enum::get_instances().end()) {
-        throw cc_data_not_found("no data found with specificity_type=" + std::to_string(__specificity) +
-                                " and monomer_type=" + std::to_string(__monomer_type));
+        throw cc_data_not_found("no data found with specificity_type=" + std::to_string((int)__specificity) +
+                                " and monomer_type=" + std::to_string((int)__monomer_type));
       } // if
 
       return itr->second.get_object();
@@ -177,9 +177,9 @@ namespace biosim {
       // PYRROLYSINE single-letter: K or O; three-letter: PYH or PYL;
       // SELENOCYSTEINE single-letter: C or U; three-letter: CSE or SEC;
       // unknown AA (special primary single-letter AA)
-      data_enum::add(std::make_shared<data>("UNK", 'X', specificity_unknown)); // l_peptide_linking by default
+      data_enum::add(std::make_shared<data>("UNK", 'X', specificity_type::unknown)); // l_peptide_linking by default
       // gap (special primary single-letter AA); there seem to be no three letter gap id; used one letter codes: -~.
-      data_enum::add(std::make_shared<data>("---", '-', specificity_gap));
+      data_enum::add(std::make_shared<data>("---", '-', specificity_type::gap));
 
       // add some common non-primary AAs
       data_enum::add(std::make_shared<data>("PYH", "LYS")); // PYRROLYSINE
@@ -187,18 +187,18 @@ namespace biosim {
       data_enum::add(std::make_shared<data>("MSE", "MET")); // SELENOMETHIONINE
 
       // add deoxyribonucleotides
-      data_enum::add(std::make_shared<data>("DA", 'A', specificity_defined, dna_linking));
-      data_enum::add(std::make_shared<data>("DC", 'C', specificity_defined, dna_linking));
-      data_enum::add(std::make_shared<data>("DG", 'G', specificity_defined, dna_linking));
-      data_enum::add(std::make_shared<data>("DT", 'T', specificity_defined, dna_linking));
-      data_enum::add(std::make_shared<data>("DI", 'I', specificity_defined, dna_linking));
+      data_enum::add(std::make_shared<data>("DA", 'A', specificity_type::defined, monomer_type::dna_linking));
+      data_enum::add(std::make_shared<data>("DC", 'C', specificity_type::defined, monomer_type::dna_linking));
+      data_enum::add(std::make_shared<data>("DG", 'G', specificity_type::defined, monomer_type::dna_linking));
+      data_enum::add(std::make_shared<data>("DT", 'T', specificity_type::defined, monomer_type::dna_linking));
+      data_enum::add(std::make_shared<data>("DI", 'I', specificity_type::defined, monomer_type::dna_linking));
 
       // add ribonucleotides
-      data_enum::add(std::make_shared<data>("A", 'A', specificity_defined, rna_linking));
-      data_enum::add(std::make_shared<data>("C", 'C', specificity_defined, rna_linking));
-      data_enum::add(std::make_shared<data>("G", 'G', specificity_defined, rna_linking));
-      data_enum::add(std::make_shared<data>("U", 'U', specificity_defined, rna_linking));
-      data_enum::add(std::make_shared<data>("I", 'I', specificity_defined, rna_linking));
+      data_enum::add(std::make_shared<data>("A", 'A', specificity_type::defined, monomer_type::rna_linking));
+      data_enum::add(std::make_shared<data>("C", 'C', specificity_type::defined, monomer_type::rna_linking));
+      data_enum::add(std::make_shared<data>("G", 'G', specificity_type::defined, monomer_type::rna_linking));
+      data_enum::add(std::make_shared<data>("U", 'U', specificity_type::defined, monomer_type::rna_linking));
+      data_enum::add(std::make_shared<data>("I", 'I', specificity_type::defined, monomer_type::rna_linking));
 
       return true;
     } // initialize()

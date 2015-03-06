@@ -1,7 +1,7 @@
 #ifndef che_io_file_sse_pool_h
 #define che_io_file_sse_pool_h
 
-#include "che/qs.h"
+#include "che/assembly.h"
 
 namespace biosim {
   namespace che {
@@ -9,10 +9,10 @@ namespace biosim {
       // reads sse pool and pdb files (only helix, sheet and seqres lines)
       class file_sse_pool {
       public:
-        // creates a quarternary structure from a given file
-        static qs read(std::string const &__filename);
-        // creates a quarternary structure from a given file and extends the sequence to the given reference length
-        static qs read(std::string const &__filename, qs const &__reference);
+        // read ps and ss from a given file
+        static assembly read(std::string const &__filename);
+        // read ps and ss from a given file and extends the ps to the given reference length
+        static assembly read(std::string const &__filename, assembly const &__reference);
       }; // class file_sse_pool
     } // namespace io
   } // namespace che

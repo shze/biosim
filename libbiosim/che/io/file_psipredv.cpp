@@ -8,8 +8,8 @@
 namespace biosim {
   namespace che {
     namespace io {
-      // (static) creates a quarternary structure from a given file
-      qs file_psipredv::read(std::string const &__filename) {
+      // (static) reads ps and ss from a given file
+      assembly file_psipredv::read(std::string const &__filename) {
         // regex for a single data line of the psipred vertical format; comment or empty lines do not match this regex;
         // groups will be used to construct sequences.
         static boost::regex const regex_psipredv_line(
@@ -50,7 +50,8 @@ namespace biosim {
           } // if
         } // for
 
-        return cc_sequence.empty() ? qs() : qs(ts(__filename, ">lcl|sequence", cc_sequence), ss(cchb_sequence));
+        return cc_sequence.empty() ? assembly()
+                                   : assembly(molecule(__filename, ">lcl|sequence", cc_sequence), ss(cchb_sequence));
       } // read()
     } // namespace io
   } // namespace che

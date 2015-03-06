@@ -9,7 +9,7 @@ namespace biosim {
   namespace che {
     namespace io {
       // (static) reads sequences from a given file
-      qs file_fasta::read(std::string const &__filename) {
+      assembly file_fasta::read(std::string const &__filename) {
         // regex string for matching a single fasta sequence (identifier/sequence pair) out of a multifasta
         // each iteration matches a single fasta with [0] the complete match, [1] the identifier, [2] the sequence
         static boost::regex const regex_multifasta(
@@ -24,8 +24,8 @@ namespace biosim {
 
         size_t sequence_no(1);
         // collect all sequences to try to match them after all of them are read
-        std::list<std::pair<std::string, ss>> all_ss; // pairs of (id, ss); no map, so order is preserved
-        std::list<ts> all_ts; // ts containing ps
+        std::list<std::pair<std::string, ss>> sss; // pairs of (id, ss); no map, so order is preserved
+        std::list<molecule> molecules; // molecules containing id, ps
 
         // loop over all identifier/sequence pairs
         boost::sregex_iterator itr(file_content.begin(), file_content.end(), regex_multifasta), itr_end;
@@ -49,7 +49,7 @@ namespace biosim {
                                             charset_match.end())); // true if charset_match is subset of charset_cc
           bool is_cchb_dssp_sequence(
               std::includes(charset_cchb_dssp.begin(), charset_cchb_dssp.end(), charset_match.begin(),
-                            charset_match.end())); // true if charset_match is subset of charset_cchb
+                            charset_match.end())); // true if charset_match is subset of charset_cchb_dssp
 
           std::string const file_id(__filename + "/" + std::to_string(sequence_no)); // used for all sequence types
 
@@ -66,16 +66,16 @@ namespace biosim {
                   << gap.get_identifier() << "' with '" << unknown.get_identifier() << "'.";
             } // if
 
-            all_ss.emplace_back(file_id, convert_to_ss(match_sequence)); // store for now
+            sss.emplace_back(file_id, convert_to_ss(match_sequence)); // store for now
           } else if(is_cc_sequence) {
             LOG << "Detected sequence type for " << __filename << "/" << sequence_no << ": cc sequence.";
 
             // if file had no/empty identifier, use default
-            ts new_ts(file_id, match_identifier.empty() ? ">lcl|sequence" : match_identifier);
-            new_ts.set_ps(convert_to_ps(match_sequence));
-            all_ts.push_back(new_ts); // store for now
+            molecule new_molecule(file_id, match_identifier.empty() ? ">lcl|sequence" : match_identifier);
+            new_molecule.set_ps(convert_to_ps(match_sequence));
+            molecules.push_back(new_molecule); // store for now
           } // if
-          else { // do not throw exception here, the user of this class has to check how many molecules were found
+          else { // do not throw exception here, the user of this class has to check how many assemblies were found
             std::stringstream ss(match_identifier);
             std::string first_line;
             std::getline(ss, first_line); // read until linebreak from stream into string
@@ -84,40 +84,41 @@ namespace biosim {
           } // else
         } // for
 
-        qs all_molecules;
+        assembly assemblies;
 
-        // iterate over all_ss and all_ts to match them based on their length
-        DEBUG << "Trying to match " << all_ts.size() << " cc sequences with " << all_ss.size() << " dssp sequences.";
-        for(auto current_ts : all_ts) {
+        // iterate over sss and molecules to match them based on their length
+        DEBUG << "Trying to match " << molecules.size() << " cc sequences with " << sss.size() << " dssp sequences.";
+        for(auto current_molecule : molecules) {
           // try to find a matching secondary structure sequence
           bool inserted(false);
-          for(auto itr(all_ss.begin()), itr_end(all_ss.end()); itr != itr_end; ++itr) {
-            if(itr->second.get_sequence().size() == current_ts.get_length()) {
+          for(auto itr(sss.begin()), itr_end(sss.end()); itr != itr_end; ++itr) {
+            if(itr->second.get_sequence().size() == current_molecule.get_length()) {
               LOG << "Assuming " << shorten_file_storage(itr->first) << " is the dssp assignment for "
-                  << shorten_file_storage(current_ts.get_storage()) << ".";
-              all_molecules.add(current_ts, itr->second);
+                  << shorten_file_storage(current_molecule.get_storage()) << ".";
+              assemblies.add(current_molecule, itr->second);
               inserted = true;
-              all_ss.erase(itr);
+              sss.erase(itr);
               break;
             } // if
           } // for
 
           if(!inserted) { // if not found, just insert the cc sequence without secondary structure
-            DEBUG << "No matching dssp assignment found for " << current_ts.get_storage();
-            all_molecules.add(current_ts);
+            DEBUG << "No matching dssp assignment found for " << current_molecule.get_storage();
+            assemblies.add(current_molecule);
           } // if
         } // for
 
-        DEBUG << "Inserting " << all_ss.size() << " unmatched dssp sequences.";
-        for(auto p : all_ss) {
-          ts new_ts(p.first, ">lcl|sequence");
+        DEBUG << "Inserting " << sss.size() << " unmatched dssp sequences.";
+        for(auto p : sss) {
+          molecule new_molecule(p.first, ">lcl|sequence");
           ps new_ps;
-          new_ps.resize(p.second.get_sequence().size(), cc(cc::specificity_unknown, cc::l_peptide_linking));
-          new_ts.set_ps(new_ps);
-          all_molecules.add(new_ts, p.second);
+          new_ps.resize(p.second.get_sequence().size(),
+                        cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
+          new_molecule.set_ps(new_ps);
+          assemblies.add(new_molecule, p.second);
         } // for
 
-        return all_molecules;
+        return assemblies;
       } // read()
 
       // (static) convert a string of id_chars to a ps

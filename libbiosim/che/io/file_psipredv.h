@@ -1,7 +1,7 @@
 #ifndef che_io_file_psipredv_h
 #define che_io_file_psipredv_h
 
-#include "che/qs.h"
+#include "che/assembly.h"
 
 namespace biosim {
   namespace che {
@@ -9,8 +9,8 @@ namespace biosim {
       // reads psipred vformat files, see: http://webdocs.cs.ualberta.ca/~lingroup/Software/PSAtip/format.php#ss
       class file_psipredv {
       public:
-        // creates a quarternary structure from a given file
-        static qs read(std::string const &__filename);
+        // reads ps and ss from a given file
+        static assembly read(std::string const &__filename);
       }; // class file_psipredv
     } // namespace io
   } // namespace che

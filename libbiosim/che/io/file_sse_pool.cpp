@@ -25,10 +25,10 @@ namespace biosim {
         std::set<cchb_dssp_interval> pool; // secondary structure definition lines
       }; // struct chain_data
 
-      // creates a quarternary structure from a given file
-      qs file_sse_pool::read(const std::string &__filename) { return read(__filename, qs()); }
-      // creates a quarternary structure from a given file and extends the sequence to the given reference length
-      qs file_sse_pool::read(const std::string &__filename, qs const &__reference) {
+      // read ps and ss from a given file
+      assembly file_sse_pool::read(const std::string &__filename) { return read(__filename, assembly()); }
+      // read ps and ss from a given file and extends the ps to the given reference length
+      assembly file_sse_pool::read(const std::string &__filename, assembly const &__reference) {
         // regex for a single data line of the sse pool format; groups will be used to construct sequences;
         // this regex will not match the begin ('bcl::assemble::SSEPool') and end lines ('END') of a sse pool file to
         // allow reading pdb files as well;
@@ -121,7 +121,7 @@ namespace biosim {
               chains[initial_residue_chain_id] = chain_data();
             } // if
 
-            // convert strings to size_t and catch exceptions for ones which have a default or way the calculating
+            // convert strings to size_t and catch exceptions for ones which have a default or a way of calculating
             size_t helix_serial_number;
             try {
               helix_serial_number = boost::lexical_cast<size_t>(helix_serial_number_string);
@@ -166,7 +166,7 @@ namespace biosim {
             // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
             chains[initial_residue_chain_id].cc_sequence.resize(
                 std::max(chains[initial_residue_chain_id].cc_sequence.size(), terminal_residue_sequence_number),
-                cc(cc::specificity_unknown, cc::l_peptide_linking));
+                cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
             chains[initial_residue_chain_id].cc_sequence[initial_residue_sequence_number - 1] =
                 cc(initial_residue_name);
             chains[initial_residue_chain_id].cc_sequence[terminal_residue_sequence_number - 1] =
@@ -225,7 +225,7 @@ namespace biosim {
             // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
             chains[initial_residue_chain_id].cc_sequence.resize(
                 std::max(chains[initial_residue_chain_id].cc_sequence.size(), terminal_residue_sequence_number),
-                cc(cc::specificity_unknown, cc::l_peptide_linking));
+                cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
             chains[initial_residue_chain_id].cc_sequence[initial_residue_sequence_number - 1] =
                 cc(initial_residue_name);
             chains[initial_residue_chain_id].cc_sequence[terminal_residue_sequence_number - 1] =
@@ -237,26 +237,28 @@ namespace biosim {
           } // else if
         } // for
 
-        qs s; // final result
+        assembly a; // final result
 
         size_t sequence_no(1); // start with 1
         for(auto chain_pair : chains) {
           // extend the sequences to the reference length
           std::string chain_id_string(1, chain_pair.first);
           if(__reference.has_ss(chain_id_string)) {
-            chain_pair.second.cc_sequence.resize(std::max(chain_pair.second.cc_sequence.size(),
-                                                          __reference.get_ss(chain_id_string).get_sequence().size()),
-                                                 cc(cc::specificity_unknown, cc::l_peptide_linking));
+            chain_pair.second.cc_sequence.resize(
+                std::max(chain_pair.second.cc_sequence.size(),
+                         __reference.get_ss(chain_id_string).get_sequence().size()),
+                cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
           } // if
 
           // add to final result
-          s.set(chain_id_string, ts(__filename + "/" + std::to_string(sequence_no), ">lcl|sequence", chain_pair.second.cc_sequence),
+          a.set(chain_id_string, molecule(__filename + "/" + std::to_string(sequence_no), ">lcl|sequence",
+                                          chain_pair.second.cc_sequence),
                 ss(chain_pair.second.pool, chain_pair.second.cc_sequence.size()));
-          
+
           ++sequence_no; // increase sequence_no, b/c it's not done in the for loop header
         } // for
 
-        return s;
+        return a;
       } // read()
     } // namespace io
   } // namespace che

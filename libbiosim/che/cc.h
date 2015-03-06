@@ -23,16 +23,16 @@ namespace biosim {
     class cc {
     public:
       // specificity defined as enum for easier comparison; only one specificity allowed, no combinations.
-      enum specificity_type { specificity_defined, specificity_unknown, specificity_gap };
+      enum class specificity_type { defined, unknown, gap };
       // type of monomer, defined as chemical component type in the CCD; used to differentiate compounds of different
       // subgroups with overlapping identifier chars i.e. one letter codes.
-      enum monomer_type { non_polymer, l_peptide_linking, dna_linking, rna_linking };
+      enum class monomer_type { non_polymer, l_peptide_linking, dna_linking, rna_linking };
       using weight_map = std::map<std::string, double>; // simplify naming
 
       // ctor from id; id is assumed unique; throws if not found
       explicit cc(std::string const &__id);
       // ctor from id_char and monomer_type, assumed unique; use const ref for args b/c they're no sink args
-      explicit cc(char const &__id_char, monomer_type const &__monomer = l_peptide_linking);
+      explicit cc(char const &__id_char, monomer_type const &__monomer = monomer_type::l_peptide_linking);
       // ctor from specificity and monomer_type; assumed not unique, constructs first
       cc(specificity_type __specificity, monomer_type __monomer_type);
       // ctor from weight set
@@ -62,8 +62,8 @@ namespace biosim {
       // contains the cc data; type that is enumerated
       struct data {
         // ctor for primary unique-single-letter AA
-        data(std::string __id, char __id_char, specificity_type __specificity = specificity_defined,
-             monomer_type __monomer_type = l_peptide_linking);
+        data(std::string __id, char __id_char, specificity_type __specificity = specificity_type::defined,
+             monomer_type __monomer_type = monomer_type::l_peptide_linking);
         // ctor for profile derived-single-letter AA
         data(std::string __id, std::string __base_id);
         // ctor for profile unique-single-letter AA; ctor does not check if base ids have same specificity and

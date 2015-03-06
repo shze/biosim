@@ -1,7 +1,7 @@
 #ifndef che_io_file_fasta_h
 #define che_io_file_fasta_h
 
-#include "che/qs.h"
+#include "che/assembly.h"
 #include <set>
 
 namespace biosim {
@@ -18,7 +18,7 @@ namespace biosim {
       class file_fasta {
       public:
         // reads sequences from a given file
-        static qs read(std::string const &__filename);
+        static assembly read(std::string const &__filename);
 
       private:
         // convert a string of id_chars to a ps

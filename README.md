@@ -22,3 +22,14 @@
 * Use exceptions, derive from std::runtime_exception; don't use boost::exceptions, they don't mix well, 
   see: http://stackoverflow.com/questions/25759293/
 * Make single argument ctor explicit.
+* Use enum class instead of enum for simple enumerations to create identifiers in separate namespace.
+
+##Code Design
+
+* Applications follow the Unix philosophy of small, focused tools.
+* To reduce code size, the biosim lib is not linked tp applications with --whole-archive (gcc) or -force_load (clang). 
+  Thus self-registering static instances cannot be used; they would be removed during linking optimizations, b/c they 
+  are not explicitly called, 
+  see: http://stackoverflow.com/questions/805555/; http://stackoverflow.com/questions/16294842/; 
+  or http://stackoverflow.com/questions/17470350/.__
+  Therefore, each enumerated class requires two changes: class and explicit enumeration.

@@ -5,14 +5,14 @@ project(libbiosim)
 include_directories(${CMAKE_CURRENT_LIST_DIR}) 
 
 set(LIBBIOSIM_SOURCES
+  che/assembly.cpp
   che/cc.cpp
   che/cchb_dssp.cpp
-  che/qs.cpp
+  che/molecule.cpp
   che/ss.cpp
-  che/ts.cpp
+  che/io/file_assembly.cpp
   che/io/file_fasta.cpp
   che/io/file_psipredv.cpp
-  che/io/file_qs.cpp
   che/io/file_sse_pool.cpp
   tools/file.cpp
   tools/incrementor.cpp
