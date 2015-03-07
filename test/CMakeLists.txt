@@ -16,6 +16,7 @@ set(SOURCES_UNIT_TESTER
   che/io/file_sse_pool.cpp
   math/interval.cpp
   math/interval_scheduler_maximize.cpp
+  score/cm.cpp
   tools/enumerate.cpp
   tools/file.cpp
   tools/incrementor.cpp
