@@ -14,6 +14,8 @@ set(LIBBIOSIM_SOURCES
   che/io/file_fasta.cpp
   che/io/file_psipredv.cpp
   che/io/file_sse_pool.cpp
+  score/cm.cpp
+  score/cm_assembly_ssq3.cpp
   tools/file.cpp
   tools/incrementor.cpp
   tools/log.cpp

@@ -31,5 +31,5 @@
   Thus self-registering static instances cannot be used; they would be removed during linking optimizations, b/c they 
   are not explicitly called, 
   see: http://stackoverflow.com/questions/805555/; http://stackoverflow.com/questions/16294842/; 
-  or http://stackoverflow.com/questions/17470350/.__
+  or http://stackoverflow.com/questions/17470350/.  
   Therefore, each enumerated class requires two changes: class and explicit enumeration.

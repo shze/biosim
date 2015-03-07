@@ -2,6 +2,7 @@
 #define score_function_h
 
 #include <string>
+#include <stdexcept>
 
 namespace biosim {
   namespace score {
@@ -31,6 +32,12 @@ namespace biosim {
       // compares the given two instances of T
       double operator()(T const &__t1, T const &__t2) const { return compare(__t1, __t2); }
     }; // cm_function
+
+    // exception for compare function errors
+    struct compare_error : std::runtime_error {
+      explicit compare_error(std::string const &__msg)
+          : std::runtime_error("Cannot calculate compare score: " + __msg) {}
+    }; // struct compare_error
   } // namespace score
 } // namespace biosim
 
