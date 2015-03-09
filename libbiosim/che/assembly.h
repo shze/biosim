@@ -37,7 +37,7 @@ namespace biosim {
 
     // output operator for assembly
     inline std::ostream &operator<<(std::ostream &__out, assembly const &__a) {
-      __out << "Quarternary structure: chains=" << __a.get_chain_id_list().size() << "\n";
+      __out << "Assembly structure: chains=" << __a.get_chain_id_list().size() << "\n";
       for(auto const &chain_id : __a.get_chain_id_list()) {
         __out << "Chain " << chain_id << "\n";
         if(__a.has_molecule(chain_id)) {

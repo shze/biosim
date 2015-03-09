@@ -4,4 +4,4 @@ list(APPEND CMAKE_CXX_FLAGS "-std=c++11")
 
 add_subdirectory(libbiosim)
 add_subdirectory(test)
-#add_subdirectory(src)
+add_subdirectory(src)
