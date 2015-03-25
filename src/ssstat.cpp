@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) { // main must not be in a namespace
   if(po_var_map.count("help") || (po_var_map.count("ref") == 0 || po_var_map.count("ss") == 0)) {
     LOG << "This program compares 1..n ss definitions to one reference/native ss by calculating different measures.";
     LOG << "Supported file types are .fasta, .psipred_ss, .psipred_ss2, .rdbProf, .jufo9d_ss, and .pdb;";
-    LOG << "Only for ss predictions, .pool files are supported additionally.";
+    LOG << "Only for non-reference ss definitions, .pool files are supported additionally.";
     LOG << po_desc_main << "\n";
     return 0;
   } // if

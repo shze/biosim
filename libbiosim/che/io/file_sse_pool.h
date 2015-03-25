@@ -6,7 +6,7 @@
 namespace biosim {
   namespace che {
     namespace io {
-      // reads sse pool and pdb files (only helix, sheet and seqres lines)
+      // reads sse pool files (only helix and sheet lines)
       class file_sse_pool {
       public:
         // read ps and ss from a given file

@@ -33,7 +33,7 @@ namespace biosim {
         // this regex will not match the begin ('bcl::assemble::SSEPool') and end lines ('END') of a sse pool file to
         // allow reading pdb files as well;
         // for the line specification, see: http://www.cgl.ucsf.edu/chimera/docs/UsersGuide/tutorials/pdbintro.html
-        // and http://www.wwpdb.org/documentation/format23/sect3.html;
+        // and http://www.rcsb.org/pdb/static.do?p=file_formats/pdb/index.html;
         // all pdb lines have to be 80 char long, see http://deposit.rcsb.org/adit/docs/pdb_atom_format.html;
         // read_to_string_list() trims the whitespace at begin and end, so if the line length is less than 80 chars,
         // a line will be extended to that length; if the line has more whitespace than 80 chars, it will be ignored.
