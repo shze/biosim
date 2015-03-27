@@ -28,23 +28,26 @@ namespace biosim {
 
       public:
         // processes the input strings
-        void process(std::string const &__serial_number_string, std::string const &__chain_id,
+        void process(std::string const &__serial_number_string, std::string const &__chain_id_string,
                      std::string const &__residue_count_string, std::vector<std::string> const &__residues) {
-          // print the submatches as strings before consistency checks and converting to size_t
-          DEBUG << "Submatches: seqres_serial_number='" << __serial_number_string << "' seqres_chain_id='" << __chain_id
-                << "' seqres_residue_count='" << __residue_count_string << "' residue_names='"
-                << boost::algorithm::join(__residues, "|") << "'";
-
-          char const chain_id(boost::lexical_cast<char>(__chain_id));
+          // trim strings and convert chain id string to char
+          std::string const trimmed_serial_number_string(boost::trim_copy(__serial_number_string));
+          std::string const trimmed_residue_count_string(boost::trim_copy(std::string(__residue_count_string)));
+          char const chain_id(boost::lexical_cast<char>(__chain_id_string));
           auto chain_itr(_chains.find(chain_id)); // if equal to _chains.end(), this chain_id is not in the map
+
+          // print the submatches as strings before consistency checks and converting to size_t
+          DEBUG << "Submatches: seqres_serial_number='" << trimmed_serial_number_string << "' seqres_chain_id='"
+                << chain_id << "' seqres_residue_count='" << trimmed_residue_count_string << "' residue_names='"
+                << boost::algorithm::join(__residues, "|") << "'";
 
           size_t serial_number;
           try {
-            serial_number = boost::lexical_cast<size_t>(__serial_number_string);
+            serial_number = boost::lexical_cast<size_t>(trimmed_serial_number_string);
           } // try
           catch(boost::bad_lexical_cast const &__e) {
             serial_number = chain_itr == _chains.end() ? 1 : chain_itr->second._last_serial_number + 1;
-            DEBUG << "Could not convert seqres_serial_number='" << __serial_number_string
+            DEBUG << "Could not convert seqres_serial_number='" << trimmed_serial_number_string
                   << "' to number, using calculated seqres_serial_number='" << serial_number << "'";
           } // catch
 
@@ -58,11 +61,11 @@ namespace biosim {
 
           size_t residue_count(0); // initialize to 0, b/c it might not be set if an exception occurs
           try {
-            residue_count = boost::lexical_cast<size_t>(__residue_count_string);
+            residue_count = boost::lexical_cast<size_t>(trimmed_residue_count_string);
           } // try
           catch(boost::bad_lexical_cast const &__e) {
             // keep seqres_residue_count set to 0
-            DEBUG << "Could not convert seqres_residue_count='" << __residue_count_string << "' to number";
+            DEBUG << "Could not convert seqres_residue_count='" << trimmed_residue_count_string << "' to number";
           } // catch
 
           if(chain_itr != _chains.end()) {
@@ -103,16 +106,137 @@ namespace biosim {
         } // get_chain_ids()
 
         // returns the ps
-        ps get_sequence(char const &__chain_id) { return _chains[__chain_id]._cc_sequence; } // get_sequence()
+        ps get_sequence(char const &__chain_id) { return _chains[__chain_id]._cc_sequence; }
       }; // class seqres_data
 
       // stores the ss definition data
       class ssdef_data {
+      private:
+        // stores the ss definition data for a single chain
+        struct ssdef_chain_data {
+          size_t _last_helix_serial_number; // last seen helix serial number
+          ps _cc_sequence; // converted sequence data
+          std::set<cchb_dssp_interval> _pool; // converted ss definitions
+        }; // struct ssdef_chain_data
+
+        std::map<char, ssdef_chain_data> _chains; // map chain_id->chain_data
+
       public:
         // processes the input strings
-        void process_helix() {}
+        void process_helix(std::string const &__serial_number_string, std::string const &__id,
+                           std::string const &__initial_residue_name,
+                           std::string const &__initial_residue_chain_id_string,
+                           std::string const &__initial_residue_sequence_number_string,
+                           std::string const &__initial_residue_insertion_code,
+                           std::string const &__terminal_residue_name,
+                           std::string const &__terminal_residue_chain_id_string,
+                           std::string const &__terminal_residue_sequence_number_string,
+                           std::string const &__terminal_residue_insertion_code, std::string const &__type_string,
+                           std::string const &__comment, std::string const &__length_string) {
+          // check if contents are valid for conversion;
+          // exception 1: lexical_cast on char should be fine, as the submatches are only single char strings;
+          // exception 2: always try to convert residue sequence numbers, if there's no other way of knowing them
+          // (if converting residue sequence numbers does not work, lexical_cast will throw an exception)
+          std::string const serial_number_string(boost::trim_copy(__serial_number_string));
+          std::string const id(boost::trim_copy(__id));
+          char const initial_residue_chain_id(boost::lexical_cast<char>(__initial_residue_chain_id_string));
+          size_t const initial_residue_sequence_number(
+              boost::lexical_cast<size_t>(boost::trim_copy(__initial_residue_sequence_number_string)));
+          char const initial_residue_insertion_code(boost::lexical_cast<char>(__initial_residue_insertion_code));
+          char const terminal_residue_chain_id(boost::lexical_cast<char>(__terminal_residue_chain_id_string));
+          size_t const terminal_residue_sequence_number(
+              boost::lexical_cast<size_t>(boost::trim_copy(__terminal_residue_sequence_number_string)));
+          char const terminal_residue_insertion_code(boost::lexical_cast<char>(__terminal_residue_insertion_code));
+          std::string const type_string(boost::trim_copy(__type_string));
+          std::string const length_string(boost::trim_copy(__length_string));
+
+          // print the submatches as strings before consistency checks and converting to size_t
+          DEBUG << "Submatches: helix_serial_number='" << serial_number_string << "' helix_id='" << id
+                << "' initial_residue='" << __initial_residue_name << "|" << initial_residue_chain_id << "|"
+                << initial_residue_sequence_number << "|" << initial_residue_insertion_code << "' terminal_residue='"
+                << __terminal_residue_name << "|" << terminal_residue_chain_id << "|"
+                << terminal_residue_sequence_number << "|" << terminal_residue_insertion_code << "' helix_type='"
+                << type_string << "' comment='" << boost::trim_copy(__comment) << "' helix_length='" << length_string
+                << "'";
+
+          // both chain ids should be identical
+          if(initial_residue_chain_id != terminal_residue_chain_id) {
+            DEBUG << "Ignoring line, initial_residue_chain_id='" << initial_residue_chain_id
+                  << "' differing from terminal_residue_chain_id='" << terminal_residue_chain_id << "'";
+            return;
+          } // if
+          char chain_id(initial_residue_chain_id);
+          auto chain_itr(_chains.find(chain_id)); // if equal to _chains.end(), this chain_id is not in the map
+
+          // convert strings to size_t and catch exceptions for ones which have a default or way the calculating
+          size_t serial_number;
+          try {
+            serial_number = boost::lexical_cast<size_t>(serial_number_string);
+          } // try
+          catch(boost::bad_lexical_cast const &__e) {
+            serial_number = chain_itr == _chains.end() ? 1 : chain_itr->second._last_helix_serial_number + 1;
+            DEBUG << "Could not convert helix_serial_number='" << serial_number_string
+                  << "' to number, using calculated helix_serial_number='" << serial_number << "'";
+          } // catch
+
+          // helix serial number should be incremented by 1 from last helix serial number
+          if(chain_itr != _chains.end() && serial_number != chain_itr->second._last_helix_serial_number + 1) {
+            size_t const expected_serial_number(chain_itr->second._last_helix_serial_number + 1);
+            DEBUG << "Found helix_serial_number='" << serial_number << "' differing from expected helix_serial_number='"
+                  << expected_serial_number << "', ignoring helix_serial_number from file.";
+            serial_number = expected_serial_number;
+          } // if
+
+          size_t length;
+          try {
+            length = boost::lexical_cast<size_t>(length_string);
+          } // try
+          catch(boost::bad_lexical_cast const &__e) {
+            // + 1, b/c the initial_residue_sequence_number is part of the helix
+            length = terminal_residue_sequence_number - initial_residue_sequence_number + 1;
+            DEBUG << "Could not convert helix_length='" << length_string
+                  << "' to number, using calculated helix_length='" << length << "'";
+          } // catch
+
+          // check length is consist with residue sequence numbers
+          if(length != terminal_residue_sequence_number - initial_residue_sequence_number + 1) {
+            size_t const expected_length(terminal_residue_sequence_number - initial_residue_sequence_number + 1);
+            DEBUG << "Found helix_length='" << length << "' differing expected helix_length='" << length
+                  << "', ignoring helix_length.";
+            length = expected_length;
+          } // if
+
+          // we could convert type_string into size_t, but to check we'd need to calculate hydrogen bonds;
+          // no way to check id and {initial,terminal}_residue_insertion_code
+
+          // save everything
+          _chains[chain_id]._last_helix_serial_number = serial_number;
+          // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
+          _chains[chain_id]._cc_sequence.resize(
+              std::max(_chains[chain_id]._cc_sequence.size(), terminal_residue_sequence_number),
+              cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
+          _chains[chain_id]._cc_sequence[initial_residue_sequence_number - 1] = cc(__initial_residue_name);
+          _chains[chain_id]._cc_sequence[terminal_residue_sequence_number - 1] = cc(__terminal_residue_name);
+          // create and insert sequence_interval into the pool
+          _chains[chain_id]._pool.insert(cchb_dssp_interval(initial_residue_sequence_number - 1,
+                                                            terminal_residue_sequence_number - 1, cchb_dssp('H')));
+        } // process_helix()
         // processes the input strings
         void process_strand() {}
+
+        // get chain ids
+        std::list<char> get_chain_ids() {
+          std::list<char> chain_ids;
+          for(auto p : _chains) {
+            chain_ids.emplace_back(p.first);
+          } // for
+          return chain_ids;
+        } // get_chain_ids()
+
+        // returns the ps
+        ps get_sequence(char const &__chain_id) { return _chains[__chain_id]._cc_sequence; }
+        // return the pool
+        std::set<cchb_dssp_interval> get_pool(char const &__chain_id) { return _chains[__chain_id]._pool; }
       }; // class ssdef_data
 
       // stores the model data
@@ -296,7 +420,8 @@ namespace biosim {
           } // else if
           else if(match[54].matched) {
             DEBUG << "Found HELIX line: " << match[54];
-            ssdef.process_helix();
+            ssdef.process_helix(match[55], match[56], match[57], match[58], match[59], match[60], match[61], match[62],
+                                match[63], match[64], match[65], match[66], match[67]);
           } // else if
           else if(match[68].matched) {
             DEBUG << "Found SHEET line: " << match[68];
