@@ -53,7 +53,7 @@ namespace biosim {
             "(HELIX)  ([0-9 ]{3}) (...) (...) (.) ([0-9 ]{4})(.) (...) (.) ([0-9 ]{4})(.)([0-9 ]{2})(.{30}) ([0-9 ]{5})"
             ".*|" // match any space that go beyond the 76 chars specified in the regex, or match the SHEET line
             // 15     16          17   18          19    20 21         22  23    24 25         26 27
-            "(SHEET)  ([0-9 ]{3}) (...)([0-9 ]{2}) (...) (.)([0-9 ]{4})(.) (...) (.)([0-9 ]{4})(.)([0-9 ]{2}).*|");
+            "(SHEET)  ([0-9 ]{3}) (...)([0-9 ]{2}) (...) (.)([0-9 ]{4})(.) (...) (.)([0-9 ]{4})(.)([0-9 -]{2}).*|");
 
         std::list<std::string> file_lines(tools::file::read_to_string_list(__filename));
         DEBUG << "Read sse pool file content:\n" << boost::algorithm::join(file_lines, "\n");

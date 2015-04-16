@@ -44,43 +44,37 @@ namespace biosim {
           size_t serial_number;
           try {
             serial_number = boost::lexical_cast<size_t>(trimmed_serial_number_string);
+            // check previously stored value
+            if(chain_itr != _chains.end() && serial_number != chain_itr->second._last_serial_number + 1) {
+              size_t const expected_serial_number(chain_itr->second._last_serial_number + 1);
+              DEBUG << "Found seqres_serial_number='" << serial_number << "' differing from expected "
+                    << "seqres_serial_number='" << expected_serial_number << "', using expected seqres_serial_number.";
+              serial_number = expected_serial_number;
+            } // if
           } // try
           catch(boost::bad_lexical_cast const &__e) {
+            // default to 1, if we have not seen this chain_id previously
             serial_number = chain_itr == _chains.end() ? 1 : chain_itr->second._last_serial_number + 1;
             DEBUG << "Could not convert seqres_serial_number='" << trimmed_serial_number_string
-                  << "' to number, using calculated seqres_serial_number='" << serial_number << "'";
+                  << "' to number, using expected seqres_serial_number='" << serial_number << "'";
           } // catch
 
-          // check helix_length is consist with residue sequence numbers
-          if(chain_itr != _chains.end() && serial_number != chain_itr->second._last_serial_number + 1) {
-            size_t const expected_serial_number(chain_itr->second._last_serial_number + 1);
-            DEBUG << "Found seqres_serial_number='" << serial_number << "' differing from expected "
-                  << "seqres_serial_number='" << expected_serial_number << "', ignoring seqres_serial_number.";
-            serial_number = expected_serial_number;
-          } // if
-
-          size_t residue_count(0); // initialize to 0, b/c it might not be set if an exception occurs
+          size_t residue_count;
           try {
             residue_count = boost::lexical_cast<size_t>(trimmed_residue_count_string);
-          } // try
-          catch(boost::bad_lexical_cast const &__e) {
-            // keep seqres_residue_count set to 0
-            DEBUG << "Could not convert seqres_residue_count='" << trimmed_residue_count_string << "' to number";
-          } // catch
-
-          if(chain_itr != _chains.end()) {
-            size_t expected_residue_count(chain_itr->second._last_residue_count); // last residue count
-            if(residue_count == 0) {
+            // check previously stored value
+            if(chain_itr != _chains.end() && residue_count != chain_itr->second._last_residue_count) {
+              size_t const expected_residue_count(chain_itr->second._last_residue_count);
               DEBUG << "Found seqres_residue_count='" << residue_count << "' differing from expected "
-                    << "seqres_residue_count='" << expected_residue_count << "', ignoring seqres_residue_count.";
+                    << "seqres_residue_count='" << expected_residue_count << "', using expected seqres_residue_count.";
               residue_count = expected_residue_count;
             } // if
-            else if(residue_count != chain_itr->second._last_residue_count) {
-              // just ignore the residue_count if it's different, do not skip this SEQRES line
-              DEBUG << "Found seqres_residue_count='" << residue_count << "' differing from expected "
-                    << "seqres_residue_count='" << expected_residue_count << "', ignoring seqres_residue_count.";
-            } // else if
-          } // if
+          } // try
+          catch(boost::bad_lexical_cast const &__e) {
+            residue_count = chain_itr == _chains.end() ? 0 : chain_itr->second._last_residue_count;
+            DEBUG << "Could not convert seqres_residue_count='" << trimmed_residue_count_string << "' to number, using"
+                  << "expected residue_count='" << residue_count << "'";
+          } // catch
 
           // save everything
           _chains[chain_id]._last_serial_number = serial_number;
@@ -115,6 +109,9 @@ namespace biosim {
         // stores the ss definition data for a single chain
         struct ssdef_chain_data {
           size_t _last_helix_serial_number; // last seen helix serial number
+          std::string _last_strand_id; // last seen strand id
+          size_t _last_strand_number_in_sheet; // last seen strand number in this sheet (out of number strands in sheet)
+          size_t _last_number_strands_in_sheet; // last seen number of strands in this sheet
           ps _cc_sequence; // converted sequence data
           std::set<cchb_dssp_interval> _pool; // converted ss definitions
         }; // struct ssdef_chain_data
@@ -124,13 +121,11 @@ namespace biosim {
       public:
         // processes the input strings
         void process_helix(std::string const &__serial_number_string, std::string const &__id,
-                           std::string const &__initial_residue_name,
-                           std::string const &__initial_residue_chain_id_string,
-                           std::string const &__initial_residue_sequence_number_string,
+                           std::string const &__initial_residue_name, std::string const &__initial_residue_chain_id,
+                           std::string const &__initial_residue_sequence_number,
                            std::string const &__initial_residue_insertion_code,
-                           std::string const &__terminal_residue_name,
-                           std::string const &__terminal_residue_chain_id_string,
-                           std::string const &__terminal_residue_sequence_number_string,
+                           std::string const &__terminal_residue_name, std::string const &__terminal_residue_chain_id,
+                           std::string const &__terminal_residue_sequence_number,
                            std::string const &__terminal_residue_insertion_code, std::string const &__type_string,
                            std::string const &__comment, std::string const &__length_string) {
           // check if contents are valid for conversion;
@@ -139,13 +134,13 @@ namespace biosim {
           // (if converting residue sequence numbers does not work, lexical_cast will throw an exception)
           std::string const serial_number_string(boost::trim_copy(__serial_number_string));
           std::string const id(boost::trim_copy(__id));
-          char const initial_residue_chain_id(boost::lexical_cast<char>(__initial_residue_chain_id_string));
+          char const initial_residue_chain_id(boost::lexical_cast<char>(__initial_residue_chain_id));
           size_t const initial_residue_sequence_number(
-              boost::lexical_cast<size_t>(boost::trim_copy(__initial_residue_sequence_number_string)));
+              boost::lexical_cast<size_t>(boost::trim_copy(__initial_residue_sequence_number)));
           char const initial_residue_insertion_code(boost::lexical_cast<char>(__initial_residue_insertion_code));
-          char const terminal_residue_chain_id(boost::lexical_cast<char>(__terminal_residue_chain_id_string));
+          char const terminal_residue_chain_id(boost::lexical_cast<char>(__terminal_residue_chain_id));
           size_t const terminal_residue_sequence_number(
-              boost::lexical_cast<size_t>(boost::trim_copy(__terminal_residue_sequence_number_string)));
+              boost::lexical_cast<size_t>(boost::trim_copy(__terminal_residue_sequence_number)));
           char const terminal_residue_insertion_code(boost::lexical_cast<char>(__terminal_residue_insertion_code));
           std::string const type_string(boost::trim_copy(__type_string));
           std::string const length_string(boost::trim_copy(__length_string));
@@ -172,6 +167,13 @@ namespace biosim {
           size_t serial_number;
           try {
             serial_number = boost::lexical_cast<size_t>(serial_number_string);
+            // check previously stored value
+            if(chain_itr != _chains.end() && serial_number != chain_itr->second._last_helix_serial_number + 1) {
+              size_t const expected_serial_number(chain_itr->second._last_helix_serial_number + 1);
+              DEBUG << "Found helix_serial_number='" << serial_number << "' differing from expected "
+                    << "helix_serial_number='" << expected_serial_number << "', using expected helix_serial_number.";
+              serial_number = expected_serial_number;
+            } // if
           } // try
           catch(boost::bad_lexical_cast const &__e) {
             serial_number = chain_itr == _chains.end() ? 1 : chain_itr->second._last_helix_serial_number + 1;
@@ -179,32 +181,23 @@ namespace biosim {
                   << "' to number, using calculated helix_serial_number='" << serial_number << "'";
           } // catch
 
-          // helix serial number should be incremented by 1 from last helix serial number
-          if(chain_itr != _chains.end() && serial_number != chain_itr->second._last_helix_serial_number + 1) {
-            size_t const expected_serial_number(chain_itr->second._last_helix_serial_number + 1);
-            DEBUG << "Found helix_serial_number='" << serial_number << "' differing from expected helix_serial_number='"
-                  << expected_serial_number << "', ignoring helix_serial_number from file.";
-            serial_number = expected_serial_number;
-          } // if
-
           size_t length;
           try {
             length = boost::lexical_cast<size_t>(length_string);
+            // check consistency with other values
+            if(length != terminal_residue_sequence_number - initial_residue_sequence_number + 1) {
+              size_t const expected_length(terminal_residue_sequence_number - initial_residue_sequence_number + 1);
+              DEBUG << "Found helix_length='" << length << "' differing expected helix_length='" << length
+                    << "', using expected helix_length.";
+              length = expected_length;
+            } // if
           } // try
           catch(boost::bad_lexical_cast const &__e) {
             // + 1, b/c the initial_residue_sequence_number is part of the helix
             length = terminal_residue_sequence_number - initial_residue_sequence_number + 1;
-            DEBUG << "Could not convert helix_length='" << length_string
-                  << "' to number, using calculated helix_length='" << length << "'";
+            DEBUG << "Could not convert helix_length='" << length_string << "' to number, using calculated "
+                  << "helix_length='" << length << "'";
           } // catch
-
-          // check length is consist with residue sequence numbers
-          if(length != terminal_residue_sequence_number - initial_residue_sequence_number + 1) {
-            size_t const expected_length(terminal_residue_sequence_number - initial_residue_sequence_number + 1);
-            DEBUG << "Found helix_length='" << length << "' differing expected helix_length='" << length
-                  << "', ignoring helix_length.";
-            length = expected_length;
-          } // if
 
           // we could convert type_string into size_t, but to check we'd need to calculate hydrogen bonds;
           // no way to check id and {initial,terminal}_residue_insertion_code
@@ -222,7 +215,115 @@ namespace biosim {
                                                             terminal_residue_sequence_number - 1, cchb_dssp('H')));
         } // process_helix()
         // processes the input strings
-        void process_strand() {}
+        void process_strand(std::string const &__strand_number_in_sheet_string, std::string const &__id,
+                            std::string const &__number_strands_in_sheet_string,
+                            std::string const &__initial_residue_name, std::string const &__initial_residue_chain_id,
+                            std::string const &__initial_residue_sequence_number,
+                            std::string const &__initial_residue_insertion_code,
+                            std::string const &__terminal_residue_name, std::string const &__terminal_residue_chain_id,
+                            std::string const &__terminal_residue_sequence_number,
+                            std::string const &__terminal_residue_insertion_code,
+                            std::string const &__strand_sense_string) {
+          // check if contents are valid for conversion;
+          // exception 1: lexical_cast on char should be fine, as the submatches are only single char strings;
+          // exception 2: always try to convert residue sequence numbers, if there's no other way of knowing them
+          // (if converting residue sequence numbers does not work, lexical_cast will throw an exception)
+          std::string const strand_number_in_sheet_string(boost::trim_copy(__strand_number_in_sheet_string));
+          std::string const id(boost::trim_copy(__id));
+          std::string const number_strands_in_sheet_string(boost::trim_copy(__number_strands_in_sheet_string));
+          char const initial_residue_chain_id(boost::lexical_cast<char>(__initial_residue_chain_id));
+          size_t const initial_residue_sequence_number(
+              boost::lexical_cast<size_t>(boost::trim_copy(__initial_residue_sequence_number)));
+          char const initial_residue_insertion_code(boost::lexical_cast<char>(__initial_residue_insertion_code));
+          char const terminal_residue_chain_id(boost::lexical_cast<char>(__terminal_residue_chain_id));
+          size_t const terminal_residue_sequence_number(
+              boost::lexical_cast<size_t>(boost::trim_copy(__terminal_residue_sequence_number)));
+          char const terminal_residue_insertion_code(boost::lexical_cast<char>(__terminal_residue_insertion_code));
+          std::string const strand_sense_string(boost::trim_copy(__strand_sense_string));
+
+          // print the submatches as strings before consistency checks and converting to size_t
+          DEBUG << "Submatches: strand_number_in_sheet='" << strand_number_in_sheet_string << "' sheet_id='" << id
+                << "' number_strands_in_sheet='" << number_strands_in_sheet_string << "' initial_residue='"
+                << __initial_residue_name << "|" << initial_residue_chain_id << "|" << initial_residue_sequence_number
+                << "|" << initial_residue_insertion_code << "' terminal_residue='" << __terminal_residue_name << "|"
+                << terminal_residue_chain_id << "|" << terminal_residue_sequence_number << "|"
+                << terminal_residue_insertion_code << "' strand_sense='" << strand_sense_string << "'";
+
+          // both chain ids should be identical
+          if(initial_residue_chain_id != terminal_residue_chain_id) {
+            DEBUG << "Ignoring line, initial_residue_chain_id='" << initial_residue_chain_id
+                  << "' differing from terminal_residue_chain_id='" << terminal_residue_chain_id << "'";
+            return;
+          } // if
+          char chain_id(initial_residue_chain_id);
+          auto chain_itr(_chains.find(chain_id)); // if equal to _chains.end(), this chain_id is not in the map
+
+          size_t strand_number_in_sheet;
+          try {
+            strand_number_in_sheet = boost::lexical_cast<size_t>(strand_number_in_sheet_string);
+            // if we handled a ssdef with this chain_id before, compare data from this line to previously stored values
+            if(chain_itr != _chains.end() && id == chain_itr->second._last_strand_id &&
+               strand_number_in_sheet != chain_itr->second._last_strand_number_in_sheet + 1) {
+              size_t const expected_strand_number_in_sheet(chain_itr->second._last_strand_number_in_sheet + 1);
+              DEBUG << "Found strand_number_in_sheet='" << strand_number_in_sheet << "' differing from expected "
+                    << "strand_number_in_sheet='" << expected_strand_number_in_sheet
+                    << "', using expected strand_number_in_sheet.";
+              strand_number_in_sheet = expected_strand_number_in_sheet;
+            } // if (no else, because we can't do anything in this case, we don't have old data or we cannot use it)
+          } // try
+          catch(boost::bad_lexical_cast const &__e) {
+            strand_number_in_sheet = chain_itr == _chains.end() || id != chain_itr->second._last_strand_id
+                                         ? 1
+                                         : chain_itr->second._last_strand_number_in_sheet + 1;
+            DEBUG << "Could not convert strand_number_in_sheet='" << strand_number_in_sheet_string
+                  << "' to number, using calculated strand_number_in_sheet='" << strand_number_in_sheet << "'";
+          } // catch
+
+          size_t number_strands_in_sheet;
+          try {
+            number_strands_in_sheet = boost::lexical_cast<size_t>(number_strands_in_sheet_string);
+            // if we handled a ssdef with this chain_id before, compare data from this line to previously stored values
+            if(chain_itr != _chains.end() && id == chain_itr->second._last_strand_id &&
+               number_strands_in_sheet != chain_itr->second._last_number_strands_in_sheet) {
+              size_t const expected_number_strands_in_sheet(chain_itr->second._last_number_strands_in_sheet);
+              DEBUG << "Found number_strands_in_sheet='" << number_strands_in_sheet << "' differing from expected "
+                    << "number_strands_in_sheet='" << expected_number_strands_in_sheet
+                    << "', using expected number_strands_in_sheet.";
+              number_strands_in_sheet = expected_number_strands_in_sheet;
+            } // if (no else, because we can't do anything in this case, we don't have old data or we cannot use it)
+          } // try
+          catch(boost::bad_lexical_cast const &__e) {
+            number_strands_in_sheet = chain_itr == _chains.end() || id != chain_itr->second._last_strand_id
+                                          ? 1
+                                          : chain_itr->second._last_number_strands_in_sheet;
+            DEBUG << "Could not convert number_strands_in_sheet='" << number_strands_in_sheet_string
+                  << "' to number, using expected number_strands_in_sheet='" << number_strands_in_sheet << "'";
+          } // catch
+
+          if(strand_number_in_sheet > number_strands_in_sheet) {
+            DEBUG << "Found strand_number_in_sheet='" << strand_number_in_sheet << "' larger than "
+                  << "number_strands_in_sheet='" << number_strands_in_sheet << "', increasing number_strands_in_sheet";
+            number_strands_in_sheet = strand_number_in_sheet;
+          } // if
+
+          // we could try to convert strand_sense_string into size_t, but no checks could be done realistically b/c
+          // we would need to evaluate atom positions; no checks are possible on initial_residue_insertion_code and
+          // terminal_residue_insertion_code either
+
+          // save everything
+          _chains[chain_id]._last_strand_id = id;
+          _chains[chain_id]._last_strand_number_in_sheet = strand_number_in_sheet;
+          _chains[chain_id]._last_number_strands_in_sheet = number_strands_in_sheet;
+          // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
+          _chains[chain_id]._cc_sequence.resize(
+              std::max(_chains[chain_id]._cc_sequence.size(), terminal_residue_sequence_number),
+              cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
+          _chains[chain_id]._cc_sequence[initial_residue_sequence_number - 1] = cc(__initial_residue_name);
+          _chains[chain_id]._cc_sequence[terminal_residue_sequence_number - 1] = cc(__terminal_residue_name);
+          // create and insert sequence_interval into the pool
+          _chains[chain_id]._pool.insert(cchb_dssp_interval(initial_residue_sequence_number - 1,
+                                                            terminal_residue_sequence_number - 1, cchb_dssp('E')));
+        } // process_strand()
 
         // get chain ids
         std::list<char> get_chain_ids() {
@@ -323,7 +424,7 @@ namespace biosim {
             "(HELIX)  ([0-9 ]{3}) (...) (...) (.) ([0-9 ]{4})(.) (...) (.) ([0-9 ]{4})(.)([0-9 ]{2})(.{30}) ([0-9 ]{5})"
             ".*|"
             // 68     69          70   71          72    73 74         75  76    77 78         79 80
-            "(SHEET)  ([0-9 ]{3}) (...)([0-9 ]{2}) (...) (.)([0-9 ]{4})(.) (...) (.)([0-9 ]{4})(.)([0-9 ]{2}).*|"
+            "(SHEET)  ([0-9 ]{3}) (...)([0-9 ]{2}) (...) (.)([0-9 ]{4})(.) (...) (.)([0-9 ]{4})(.)([0-9 -]{2}).*|"
             // connectivity annotation section
             // 81
             "(SSBOND).*|"
@@ -425,7 +526,8 @@ namespace biosim {
           } // else if
           else if(match[68].matched) {
             DEBUG << "Found SHEET line: " << match[68];
-            ssdef.process_strand();
+            ssdef.process_strand(match[69], match[70], match[71], match[72], match[73], match[74], match[75], match[76],
+                                 match[77], match[78], match[79], match[80]);
           } // else if
           else if(match[89].matched) {
             DEBUG << "Found MODEL line: " << match[89];
@@ -455,7 +557,7 @@ namespace biosim {
         for(auto c : seqres.get_chain_ids()) {
           a.set(std::string(c, 1),
                 molecule(__filename + "/" + std::to_string(sequence_no), ">lcl|sequence", seqres.get_sequence(c)),
-                ss(sequence<cchb_dssp>()));
+                ss(ssdef.get_pool(c)));
           ++sequence_no; // increase sequence_no, b/c it's not done in the for loop header
         }
 
