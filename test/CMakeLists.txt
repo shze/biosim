@@ -17,6 +17,7 @@ set(SOURCES_UNIT_TESTER
   math/interval.cpp
   math/interval_scheduler_maximize.cpp
   score/cm.cpp
+  score/cm_cc_blosum.cpp
   tools/enumerate.cpp
   tools/file.cpp
   tools/incrementor.cpp

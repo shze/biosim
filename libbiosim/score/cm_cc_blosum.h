@@ -41,6 +41,7 @@ namespace biosim {
 
     private:
       std::string _identifier; // id
+      bool _frequency_matrix_empty; // if _frequency_matrix contains values or not
       dbl_triangular_matrix _frequency_matrix; // frequency matrix
       std::pair<int_triangular_matrix, double> _bitscore_matrix; // pair of bitscore matrix and bitscore fraction
 
