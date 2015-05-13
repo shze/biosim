@@ -71,6 +71,11 @@ namespace biosim {
 
       // convert a sequence into a set of sequence intervals
       static std::set<che::sequence_interval<T>> to_sequence_intervals(che::sequence<T> const &__sequence) {
+        // return an empty set right away and avoid checking for empty sets in the logic below
+        if(__sequence.size() == 0) {
+          return std::set<che::sequence_interval<T>>();
+        } // if
+
         // create intervals for all types
         std::list<sequence_interval<T>> sequence_interval_list; // first create list to extend the last intervals
         for(size_t pos(0); pos < __sequence.size(); ++pos) {

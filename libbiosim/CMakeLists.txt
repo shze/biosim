@@ -17,6 +17,7 @@ set(LIBBIOSIM_SOURCES
   che/io/file_sse_pool.cpp
   score/cm.cpp
   score/cm_assembly_ssq3.cpp
+  score/cm_cc_blosum.cpp
   tools/file.cpp
   tools/incrementor.cpp
   tools/log.cpp
