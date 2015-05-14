@@ -20,9 +20,10 @@ namespace biosim {
       using int_triangular_matrix = boost::numeric::ublas::triangular_matrix<int, lower, row_major, std::vector<int>>;
 
       // default ctor, constructs a blosum62 scoring matrix
-      cm_cc_blosum();
+      explicit cm_cc_blosum(bool __use_dbl_bitscore = false);
       // ctor from frequency matrix
-      cm_cc_blosum(std::string const &__identifier, dbl_triangular_matrix const &__frequencies);
+      cm_cc_blosum(std::string const &__identifier, dbl_triangular_matrix const &__frequencies,
+                   bool __use_dbl_bitscore = false);
       // ctor from bitscore matrix
       cm_cc_blosum(std::string const &__identifier, int_triangular_matrix const &__bitscores,
                    double const &__bitscore_fraction);
@@ -30,20 +31,24 @@ namespace biosim {
       std::string get_identifier() const;
       // returns the frequency matrix
       dbl_triangular_matrix const &get_frequency_matrix() const;
-      // returns the bitscore matrix
-      int_triangular_matrix const &get_bitscore_matrix() const;
+      // returns of double bitscores are used
+      bool get_use_dbl_bitscore() const;
       // returns the bitscore fraction
       double const &get_bitscore_fraction() const;
+      // returns the double bitscore matrix
+      dbl_triangular_matrix const &get_dbl_bitscore_matrix() const;
+      // returns the int bitscore matrix
+      int_triangular_matrix const &get_int_bitscore_matrix() const;
       // compares the given two instances of cc
       double compare(che::cc const &__first, che::cc const &__second) const;
-      // compares the given two instances of cc using the frequency matrix
-      double frequency_compare(che::cc const &__first, che::cc const &__second) const;
 
     private:
       std::string _identifier; // id
-      bool _frequency_matrix_empty; // if _frequency_matrix contains values or not
       dbl_triangular_matrix _frequency_matrix; // frequency matrix
-      std::pair<int_triangular_matrix, double> _bitscore_matrix; // pair of bitscore matrix and bitscore fraction
+      bool _use_dbl_bitscore; // if double or int bitscores should be used in compare()
+      double _bitscore_fraction; // bitscore fraction
+      dbl_triangular_matrix _dbl_bitscore_matrix; // floating point bitscore matrix
+      int_triangular_matrix _int_bitscore_matrix; // int bitscore matrix
 
       // get the order in which data for cc is stored in the matrices as string of identifier chars
       static std::string get_cc_order();

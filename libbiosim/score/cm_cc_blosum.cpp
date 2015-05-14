@@ -4,53 +4,60 @@
 namespace biosim {
   namespace score {
     // default ctor, constructs a blosum62 scoring matrix
-    cm_cc_blosum::cm_cc_blosum()
+    cm_cc_blosum::cm_cc_blosum(bool __use_dbl_bitscore)
         : _identifier("blosum62"),
-          _frequency_matrix_empty(false),
           _frequency_matrix(get_frequency_matrix_blosum62()),
-          _bitscore_matrix(get_bitscore_matrix_blosum62()) {}
+          _use_dbl_bitscore(__use_dbl_bitscore),
+          _bitscore_fraction(get_bitscore_matrix_blosum62().second),
+          _dbl_bitscore_matrix(to_bitscore_matrix(_frequency_matrix) / _bitscore_fraction),
+          _int_bitscore_matrix(get_bitscore_matrix_blosum62().first) {}
     // ctor from frequency matrix
-    cm_cc_blosum::cm_cc_blosum(std::string const &__identifier, dbl_triangular_matrix const &__frequencies)
+    cm_cc_blosum::cm_cc_blosum(std::string const &__identifier, dbl_triangular_matrix const &__frequencies,
+                               bool __use_dbl_bitscore)
         : _identifier(__identifier),
-          _frequency_matrix_empty(false),
           _frequency_matrix(__frequencies),
-          _bitscore_matrix() {
-      int_triangular_matrix bits = to_int_bitscore_matrix(to_bitscore_matrix(_frequency_matrix));
-      _bitscore_matrix = std::pair<int_triangular_matrix, double>(bits, 1);
-    } // ctor
+          _use_dbl_bitscore(__use_dbl_bitscore),
+          _bitscore_fraction(1.0),
+          _dbl_bitscore_matrix(to_bitscore_matrix(_frequency_matrix)),
+          _int_bitscore_matrix(to_int_bitscore_matrix(_dbl_bitscore_matrix)) {}
     // ctor from bitscore matrix
     cm_cc_blosum::cm_cc_blosum(std::string const &__identifier, int_triangular_matrix const &__bitscores,
                                double const &__bitscore_fraction)
         : _identifier(__identifier),
-          _frequency_matrix_empty(true),
-          _frequency_matrix(get_cc_order().length(), get_cc_order().length()),
-          _bitscore_matrix(__bitscores, __bitscore_fraction) {}
+          _frequency_matrix(get_cc_order().length(), get_cc_order().length()), // empty, but correct size
+          _use_dbl_bitscore(false),
+          _bitscore_fraction(__bitscore_fraction),
+          _dbl_bitscore_matrix(_frequency_matrix), // set to empty, and _frequency_matrix is empty
+          _int_bitscore_matrix(__bitscores) {}
     // returns identifier
-    std::string cm_cc_blosum::get_identifier() const { return _identifier; }
+    std::string cm_cc_blosum::get_identifier() const {
+      return std::string(_identifier).append(_use_dbl_bitscore ? "_dbl" : "");
+    } // get_identifier()
     // returns the frequency matrix
     cm_cc_blosum::dbl_triangular_matrix const &cm_cc_blosum::get_frequency_matrix() const { return _frequency_matrix; }
-    // returns the bitscore matrix
-    cm_cc_blosum::int_triangular_matrix const &cm_cc_blosum::get_bitscore_matrix() const {
-      return _bitscore_matrix.first;
-    } // get_bitscore_matrix()
+    // returns of double bitscores are used
+    bool cm_cc_blosum::get_use_dbl_bitscore() const { return _use_dbl_bitscore; }
     // returns the bitscore fraction
-    double const &cm_cc_blosum::get_bitscore_fraction() const { return _bitscore_matrix.second; }
+    double const &cm_cc_blosum::get_bitscore_fraction() const { return _bitscore_fraction; }
+    // returns the double bitscore matrix
+    cm_cc_blosum::dbl_triangular_matrix const &cm_cc_blosum::get_dbl_bitscore_matrix() const {
+      return _dbl_bitscore_matrix;
+    } // get_dbl_bitscore_matrix()
+    // returns the int bitscore matrix
+    cm_cc_blosum::int_triangular_matrix const &cm_cc_blosum::get_int_bitscore_matrix() const {
+      return _int_bitscore_matrix;
+    } // get_int_bitscore_matrix()
     // compares the given two instances of cc
     double cm_cc_blosum::compare(che::cc const &__first, che::cc const &__second) const {
       size_t const first(get_cc_order().find(__first.get_identifier_char()));
       size_t const second(get_cc_order().find(__second.get_identifier_char()));
-      return first >= second ? _bitscore_matrix.first(first, second) : _bitscore_matrix.first(second, first);
-    } // compare()
-    // compares the given two instances of cc using the frequency matrix
-    double cm_cc_blosum::frequency_compare(che::cc const &__first, che::cc const &__second) const {
-      if(_frequency_matrix_empty) {
-        throw compare_error(get_identifier() + ": No frequency matrix data available.");
+      if(_use_dbl_bitscore) {
+        return first >= second ? _dbl_bitscore_matrix(first, second) : _dbl_bitscore_matrix(second, first);
       } // if
-
-      size_t const first(get_cc_order().find(__first.get_identifier_char()));
-      size_t const second(get_cc_order().find(__second.get_identifier_char()));
-      return first >= second ? _frequency_matrix(first, second) : _frequency_matrix(second, first);
-    } // frequency_compare()
+      else {
+        return first >= second ? _int_bitscore_matrix(first, second) : _int_bitscore_matrix(second, first);
+      } // else
+    } // compare()
 
     // get the order in which data for cc is stored in the matrices as string of identifier chars
     std::string cm_cc_blosum::get_cc_order() {
