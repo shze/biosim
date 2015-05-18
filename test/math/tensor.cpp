@@ -1,0 +1,109 @@
+#include <boost/test/unit_test.hpp>
+
+#include "math/tensor.h" // header to test
+#include "tools/log.h"
+
+using namespace biosim;
+
+BOOST_AUTO_TEST_SUITE(suite_tensor)
+
+BOOST_AUTO_TEST_CASE(tensor_rank0) {
+  double d(3.14);
+  math::tensor<double> dbl_tensor({});
+  BOOST_CHECK(dbl_tensor.get_rank() == 0);
+  BOOST_REQUIRE_THROW(dbl_tensor.get_size(0), std::out_of_range);
+  dbl_tensor({}) = d;
+  BOOST_CHECK(dbl_tensor({}) == d);
+  BOOST_REQUIRE_THROW(dbl_tensor({5}), std::out_of_range);
+
+  float f(2.17);
+  math::tensor<float> flt_tensor({});
+  BOOST_CHECK(flt_tensor.get_rank() == 0);
+  BOOST_REQUIRE_THROW(flt_tensor.get_size(0), std::out_of_range);
+  flt_tensor({}) = f;
+  BOOST_CHECK(flt_tensor({}) == f);
+  BOOST_REQUIRE_THROW(flt_tensor({5}), std::out_of_range);
+
+  int i(-10);
+  math::tensor<int> int_tensor({});
+  BOOST_CHECK(int_tensor.get_rank() == 0);
+  BOOST_REQUIRE_THROW(int_tensor.get_size(0), std::out_of_range);
+  int_tensor({}) = i;
+  BOOST_CHECK(int_tensor({}) == i);
+  BOOST_REQUIRE_THROW(int_tensor({5}), std::out_of_range);
+
+  size_t s(25);
+  math::tensor<size_t> szt_tensor({});
+  BOOST_CHECK(szt_tensor.get_rank() == 0);
+  BOOST_REQUIRE_THROW(szt_tensor.get_size(0), std::out_of_range);
+  szt_tensor({}) = s;
+  BOOST_CHECK(szt_tensor({}) == s);
+  BOOST_REQUIRE_THROW(szt_tensor({5}), std::out_of_range);
+}
+
+BOOST_AUTO_TEST_CASE(tensor_rank1) {
+  math::tensor<double> t({2});
+  BOOST_CHECK(t.get_rank() == 1);
+  BOOST_CHECK(t.get_size(0) == 2);
+  t({0}) = 10;
+  BOOST_CHECK(t({0}) == 10);
+  t({1}) = 11;
+  BOOST_CHECK(t({1}) == 11);
+  BOOST_REQUIRE_THROW(t({2}), std::out_of_range);
+  BOOST_REQUIRE_THROW(t({1, 5}), std::out_of_range);
+  BOOST_REQUIRE_THROW(t({}), std::out_of_range);
+}
+
+BOOST_AUTO_TEST_CASE(tensor_rank2) {
+  math::tensor<size_t> t({2, 3});
+  BOOST_CHECK(t.get_rank() == 2);
+  BOOST_CHECK(t.get_size(0) == 2);
+  BOOST_CHECK(t.get_size(1) == 3);
+
+  size_t input(10);
+  for(size_t pos0(0); pos0 < t.get_size(0); ++pos0) {
+    for(size_t pos1(0); pos1 < t.get_size(1); ++pos1, ++input) {
+      t({pos0, pos1}) = input;
+      BOOST_CHECK(t({pos0, pos1}) == input);
+    } // for
+  } // for
+}
+
+BOOST_AUTO_TEST_CASE(tensor_rank3) {
+  math::tensor<size_t> t({2, 3, 4});
+  BOOST_CHECK(t.get_rank() == 3);
+  BOOST_CHECK(t.get_size(0) == 2);
+  BOOST_CHECK(t.get_size(1) == 3);
+  BOOST_CHECK(t.get_size(2) == 4);
+
+  size_t input(10);
+  for(size_t pos0(0); pos0 < t.get_size(0); ++pos0) {
+    for(size_t pos1(0); pos1 < t.get_size(1); ++pos1) {
+      for(size_t pos2(0); pos2 < t.get_size(2); ++pos2, ++input) {
+        t({pos0, pos1, pos2}) = input;
+        BOOST_CHECK(t({pos0, pos1, pos2}) == input);
+      } // for
+    } // for
+  } // for
+}
+
+BOOST_AUTO_TEST_CASE(tensor_rank5) {
+  math::tensor<size_t> t({2, 2, 2, 2, 2});
+  std::vector<size_t> pos(5, 0);
+  size_t input(10);
+  while(pos[0] < t.get_size(0)) {
+    t(pos) = input;
+    BOOST_CHECK(t(pos) == input);
+
+    ++input;
+    size_t dim(t.get_rank() - 1);
+    ++pos[dim];
+    while(pos[dim] >= t.get_size(dim) && dim > 0) {
+      pos[dim] = 0;
+      --dim;
+      ++pos[dim];
+    } // while
+  } // while
+}
+
+BOOST_AUTO_TEST_SUITE_END()

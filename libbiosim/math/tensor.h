@@ -9,8 +9,8 @@ namespace biosim {
     // tensor class for arbitary rank, but rank and size is fixed on construction;
     // for the math, see http://math.stackexchange.com/questions/73144/;
     // design:
-    // set rank and sizes of dimensions as parameters of ctor; do not use variadic function args, b/c their number 
-    // cannot be determined, risking overrunning the end of the list; do not use a rank template parameter, b/c this 
+    // set rank and sizes of dimensions as parameters of ctor; do not use variadic function args, b/c their number
+    // cannot be determined, risking overrunning the end of the list; do not use a rank template parameter, b/c this
     // avoids assigning tensors of different ranks which is not a problem; do not use boost::multi_array b/c it allows
     // access to the subdimensions, which is not desired here.
     template <class T>
@@ -46,12 +46,12 @@ namespace biosim {
         for(size_t dim(0); dim < __pos.size(); ++dim) {
           real_pos += __pos[dim] * _vector_increments[dim];
         } // for
-        return _data[real_pos];
+        return _data.at(real_pos);
       } // operator()
       // returns a changeable reference to the T at the specified position
       T &operator()(std::vector<size_t> const &__pos) {
-        // avoid code duplication, see http://stackoverflow.com/questions/123758/;  
-        return const_cast<T &>(static_cast<const tensor<T> &>(*this).operator()(__pos)); 
+        // avoid code duplication, see http://stackoverflow.com/questions/123758/;
+        return const_cast<T &>(static_cast<const tensor<T> &>(*this).operator()(__pos));
       } // operator()
     }; // class tensor
   } // namespace math

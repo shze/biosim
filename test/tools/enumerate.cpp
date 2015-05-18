@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE(string_enum) {
   BOOST_CHECK(string_enum::get_instances().size() == 3);
   for(auto p : string_enum::get_instances()) {
     BOOST_CHECK(p.first == p.second.get_object());
-  }
+  } // for
 }
 
 BOOST_AUTO_TEST_CASE(int_enum) {
