@@ -28,7 +28,7 @@ namespace biosim {
     // add molecule to assembly, assign next available chain_id, and returns the chain_id
     std::string assembly::add(molecule __m) {
       std::string chain_id = "A"; // determine next available chain_id, start from A
-      tools::incrementor inc;
+      tools::incrementor<std::string> inc;
       while(_molecules.find(chain_id) != _molecules.end()) {
         chain_id = inc.next(chain_id);
       } // while

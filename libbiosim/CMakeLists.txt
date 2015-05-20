@@ -19,7 +19,6 @@ set(LIBBIOSIM_SOURCES
   score/cm_assembly_ssq3.cpp
   score/cm_cc_blosum.cpp
   tools/file.cpp
-  tools/incrementor.cpp
   tools/log.cpp
   tools/string.cpp
 )
