@@ -6,36 +6,45 @@ using namespace biosim;
 
 BOOST_AUTO_TEST_SUITE(suite_incrementor)
 
-BOOST_AUTO_TEST_CASE(number_increment) {
-  tools::incrementor<std::string> inc({{'0', '1', '2'}});
-  std::string s = "0";
-  s = inc.next(s);
-  BOOST_CHECK(s == "1");
-  s = inc.next(s);
-  BOOST_CHECK(s == "2");
-  s = inc.next(s);
-  BOOST_CHECK(s == "10");
-  s = inc.next(s, 4);
-  BOOST_CHECK(s == "21");
-  s = inc.next(s, 4);
-  BOOST_CHECK(s == "102");
+BOOST_AUTO_TEST_CASE(incrementor_ctor) {
+  BOOST_REQUIRE_THROW(tools::incrementor<std::string> inc({}), std::invalid_argument);
 }
 
-BOOST_AUTO_TEST_CASE(letter_increment) {
-  tools::incrementor<std::string> inc;
-  std::string s = "A";
-  s = inc.next(s);
-  BOOST_CHECK(s == "B");
-  s = inc.next(s);
-  BOOST_CHECK(s == "C");
-  s = inc.next(s, 26);
-  BOOST_CHECK(s == "AC");
+BOOST_AUTO_TEST_CASE(incrementor_increment_fixed_length) {
+  tools::incrementor<std::string> inc({{'A', 'B'}, {'A', 'B'}});
+  BOOST_REQUIRE_THROW(inc.next("A"), std::out_of_range);
+  BOOST_CHECK(inc.next("AA") == "AB");
+  BOOST_CHECK(inc.next("AB") == "BA");
+  BOOST_CHECK(inc.next("BA") == "BB");
+  BOOST_REQUIRE_THROW(inc.next("BB"), std::overflow_error);
 }
 
-BOOST_AUTO_TEST_CASE(increment_exception) {
-  tools::incrementor<std::string> inc;
-  std::string s = "0";
-  BOOST_REQUIRE_THROW(inc.next(s), std::out_of_range);
+BOOST_AUTO_TEST_CASE(incrementor_increment_flexible_length) {
+  tools::incrementor<std::string> inc_letter;
+  BOOST_CHECK(inc_letter.next("A") == "B");
+  BOOST_CHECK(inc_letter.next("B") == "C");
+  BOOST_CHECK(inc_letter.next("C", 26) == "AC");
+  BOOST_REQUIRE_THROW(inc_letter.next("0"), std::out_of_range);
+
+  tools::incrementor<std::string> inc_letter2({{'0', '1', '2'}});
+  BOOST_CHECK(inc_letter2.next("0") == "1");
+  BOOST_CHECK(inc_letter2.next("1") == "2");
+  BOOST_CHECK(inc_letter2.next("2") == "10");
+  BOOST_CHECK(inc_letter2.next("10", 4) == "21");
+  BOOST_CHECK(inc_letter2.next("21", 4) == "102");
+  BOOST_CHECK(inc_letter2.next("0", 11) == "102");
+
+  tools::incrementor<std::vector<size_t>> inc_digit({{0, 1, 2}});
+  BOOST_CHECK(inc_digit.next({0}) == std::vector<size_t>({1}));
+  BOOST_CHECK(inc_digit.next({1}) == std::vector<size_t>({2}));
+  BOOST_CHECK(inc_digit.next({2}) == std::vector<size_t>({1, 0}));
+  BOOST_CHECK(inc_digit.next({1, 0}, 4) == std::vector<size_t>({2, 1}));
+  BOOST_CHECK(inc_digit.next({2, 1}, 4) == std::vector<size_t>({1, 0, 2}));
+  BOOST_CHECK(inc_digit.next({0}, 11) == std::vector<size_t>({1, 0, 2}));
+
+  tools::incrementor<std::string> inc_empty({{}});
+  BOOST_REQUIRE_THROW(inc_empty.next("0"), std::out_of_range);
+  BOOST_REQUIRE_THROW(inc_empty.next("A"), std::out_of_range);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
