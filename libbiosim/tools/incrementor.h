@@ -22,30 +22,21 @@ namespace biosim {
       } // ctor
       // incrementing function
       T next(T __container, size_t increment = 1) const {
-        int pos(__container.size() - 1); // start at last element; use int because we're decreasing, and it can go < 0
-        if(_fixed_length && _alphabets.size() != __container.size()) {
+        if(_fixed_length && _alphabets.size() != __container.size()) { // check container size if fixed length container
           throw std::out_of_range("input length differs from alphabet count for fixed length input");
         } // if
+        for(size_t pos(0); pos < __container.size(); ++pos) { // check all positions have valid letters
+          std::vector<typename T::value_type> alphabet(_fixed_length ? _alphabets[pos] : _alphabets[0]);
+          if(std::find(alphabet.begin(), alphabet.end(), __container[pos]) == alphabet.end()) {
+            throw std::out_of_range("input contains letter outside of alphabet range");
+          } // if
+        } // for
+        int pos(__container.size() - 1); // start at last element; use int because we're decreasing, and it can go < 0
 
         while(increment) {
-          if(pos < 0 && _fixed_length) {
-            throw std::overflow_error("adding increment causes overflow for fixed length input");
-          } // if
-
           std::vector<typename T::value_type> alphabet(_fixed_length ? _alphabets[pos] : _alphabets[0]);
-          bool first_char_is_neutral(alphabet.size() > 0 && (alphabet[0] == '0' || alphabet[0] == 0));
-
-          if(pos < 0) {
-            DEBUG << "Inserting new element at the front of the container";
-            __container.insert(__container.begin(), first_char_is_neutral ? alphabet[1] : alphabet[0]);
-            pos++;
-            increment--; // decrease by 1, b/c we inserted the first element (b/c sometimes we have no neutral element)
-          } // if
-
           size_t current_letter_pos(std::find(alphabet.begin(), alphabet.end(), __container[pos]) - alphabet.begin());
-          if(current_letter_pos == alphabet.size()) {
-            throw std::out_of_range("input contains letter outside of alphabet range");
-          } else if(current_letter_pos + increment >= alphabet.size()) { // if we have carryover
+          if(current_letter_pos + increment >= alphabet.size()) { // if we have carryover
             DEBUG << "Increasing element at position " << pos << ", keeping carryover for next element";
             __container[pos] = alphabet[(current_letter_pos + increment) % alphabet.size()];
             increment = (current_letter_pos + increment) / alphabet.size();
@@ -55,6 +46,16 @@ namespace biosim {
             increment = 0;
           } // else
           pos--;
+          if(increment && pos < 0) {
+            if(_fixed_length) {
+              throw std::overflow_error("adding increment causes overflow for fixed length input");
+            } // if
+            DEBUG << "Inserting new element at the front of the container";
+            bool first_char_is_neutral(alphabet.size() > 0 && (alphabet[0] == '0' || alphabet[0] == 0));
+            __container.insert(__container.begin(), first_char_is_neutral ? alphabet[1] : alphabet[0]);
+            pos++;
+            increment--; // decrease by 1, b/c we inserted the first element (b/c sometimes we have no neutral element)
+          } // if
         } // while
 
         return __container;

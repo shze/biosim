@@ -2,6 +2,7 @@
 
 #include "math/tensor.h" // header to test
 #include "tools/log.h"
+#include "tools/incrementor.h"
 
 using namespace biosim;
 
@@ -89,20 +90,20 @@ BOOST_AUTO_TEST_CASE(tensor_rank3) {
 
 BOOST_AUTO_TEST_CASE(tensor_rank5) {
   math::tensor<size_t> t({2, 2, 2, 2, 2});
+  tools::incrementor<std::vector<size_t>> inc({{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}});
   std::vector<size_t> pos(5, 0);
   size_t input(10);
-  while(pos[0] < t.get_size(0)) {
+  bool done(false);
+  while(!done) {
     t(pos) = input;
     BOOST_CHECK(t(pos) == input);
 
     ++input;
-    size_t dim(t.get_rank() - 1);
-    ++pos[dim];
-    while(pos[dim] >= t.get_size(dim) && dim > 0) {
-      pos[dim] = 0;
-      --dim;
-      ++pos[dim];
-    } // while
+    try {
+      pos = inc.next(pos);
+    } catch(std::overflow_error &e) {
+      done = true;
+    }
   } // while
 }
 

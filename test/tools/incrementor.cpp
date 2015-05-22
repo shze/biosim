@@ -17,6 +17,7 @@ BOOST_AUTO_TEST_CASE(incrementor_increment_fixed_length) {
   BOOST_CHECK(inc.next("AB") == "BA");
   BOOST_CHECK(inc.next("BA") == "BB");
   BOOST_REQUIRE_THROW(inc.next("BB"), std::overflow_error);
+  BOOST_REQUIRE_THROW(inc.next("CA"), std::out_of_range);
 }
 
 BOOST_AUTO_TEST_CASE(incrementor_increment_flexible_length) {
