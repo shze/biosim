@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <stdexcept>
+#include "tools/incrementor.h"
 
 namespace biosim {
   namespace math {
@@ -17,16 +18,16 @@ namespace biosim {
     class tensor {
     private:
       std::vector<size_t> _sizes; // size of each dimension
-      std::vector<size_t> _vector_increments; // number of elements in each dimension; simplifies finding in _data
+      std::vector<size_t> _strides; // number of elements in each dimension; simplifies finding in _data
       std::vector<T> _data; // stores the actual data
 
     public:
       // ctor with size of each dimension
-      explicit tensor(std::vector<size_t> __sizes) : _sizes(__sizes), _vector_increments(_sizes.size()), _data() {
+      explicit tensor(std::vector<size_t> __sizes) : _sizes(__sizes), _strides(_sizes.size()), _data() {
         size_t total_size(1);
         for(int dim(_sizes.size() - 1); dim >= 0; --dim) {
           total_size *= _sizes[dim];
-          _vector_increments[dim] = dim == _sizes.size() - 1 ? 1 : _vector_increments[dim + 1] * _sizes[dim + 1];
+          _strides[dim] = dim == _sizes.size() - 1 ? 1 : _strides[dim + 1] * _sizes[dim + 1];
         }
         _data = std::vector<T>(total_size);
       }; // ctor
@@ -44,7 +45,7 @@ namespace biosim {
 
         size_t real_pos(0);
         for(size_t dim(0); dim < __pos.size(); ++dim) {
-          real_pos += __pos[dim] * _vector_increments[dim];
+          real_pos += __pos[dim] * _strides[dim];
         } // for
         return _data.at(real_pos);
       } // operator()
@@ -53,6 +54,68 @@ namespace biosim {
         // avoid code duplication, see http://stackoverflow.com/questions/123758/;
         return const_cast<T &>(static_cast<const tensor<T> &>(*this).operator()(__pos));
       } // operator()
+      // returns the subtensor with the given dimensions (0..rank - 1) at the given positions; elements are copied
+      tensor<T> sub(std::vector<size_t> const &__subt_dimensions, std::vector<size_t> const &__subt_positions) {
+        DEBUG << "Creating subtensor with rank=" << std::to_string(__subt_dimensions.size())
+              << " and positions=" << std::to_string(__subt_positions.size())
+              << " from tensor with rank=" << get_rank();
+        if(__subt_dimensions.size() + __subt_positions.size() != get_rank()) {
+          throw std::out_of_range("cannot get subtensor with rank=" + std::to_string(__subt_dimensions.size()) +
+                                  " and positions=" + std::to_string(__subt_positions.size()) +
+                                  "from tensor with rank=" + std::to_string(get_rank()));
+        } // if
+
+        std::vector<size_t> subt_sizes; // create and fill vector with sizes for subtensor
+        std::for_each(__subt_dimensions.begin(), __subt_dimensions.end(),
+                      [&](size_t const &__dim) { subt_sizes.push_back(get_size(__dim)); });
+        tensor<T> subt(subt_sizes); // create subtensor
+
+        if(__subt_dimensions.size() == 0) { // incrementor throws with empty alphabets for rank=0, so shortcut here
+          DEBUG << "Directly returning subtensor with rank=0";
+          subt({}) = this->operator()(__subt_positions);
+          return subt;
+        } // if
+
+        // create alphabets and start position for incrementor
+        std::vector<std::vector<size_t>> t_alphabets, subt_alphabets;
+        std::vector<size_t> t_pos(get_rank(), 0), subt_pos(__subt_dimensions.size(), 0);
+        // do not test current_subtensor_position in the condition, b/c the loop needs to continue with dim even if it
+        // is at the end; it never runs past the end b/c of the test/throw at the beginning
+        for(size_t dim(0), current_subt_pos(0); dim < get_rank(); ++dim) {
+          if(std::find(__subt_dimensions.begin(), __subt_dimensions.end(), dim) == __subt_dimensions.end()) {
+            DEBUG << "Add fixed alphabet from subtensor_position=" << current_subt_pos
+                  << " for tensor_dimension=" << dim;
+            t_alphabets.push_back(std::vector<size_t>({__subt_positions[current_subt_pos]}));
+            t_pos[dim] = __subt_positions[current_subt_pos];
+            ++current_subt_pos; // only increment if a pos is used, i.e. if this dim is not part of the subtensor
+          } // if
+          else {
+            DEBUG << "Add full alphabet for tensor_dimension=" << dim;
+            std::vector<size_t> tensor_alphabet_full(get_size(dim));
+            size_t element(0);
+            std::generate(tensor_alphabet_full.begin(), tensor_alphabet_full.end(), [&] { return element++; });
+            t_alphabets.push_back(tensor_alphabet_full); // add alphabet to tensor
+            subt_alphabets.push_back(tensor_alphabet_full); // and subtensor
+          } // else
+        } // for
+
+        // iterate/increment and copy
+        tools::incrementor<std::vector<size_t>> tensor_inc(t_alphabets), subtensor_inc(subt_alphabets);
+        bool done(false);
+        while(!done) {
+          subt(subt_pos) = this->operator()(t_pos);
+
+          try {
+            t_pos = tensor_inc.next(t_pos);
+            subt_pos = subtensor_inc.next(subt_pos);
+          } // try
+          catch(std::overflow_error &e) {
+            done = true;
+          } // catch
+        } // while
+
+        return subt;
+      } // sub()
     }; // class tensor
   } // namespace math
 } // namespace biosim
