@@ -38,16 +38,24 @@ namespace biosim {
       size_t get_size(size_t __dimension) { return _sizes.at(__dimension); }
       // returns a const reference to the T at the specified position
       T const &operator()(std::vector<size_t> const &__pos) const {
-        if(__pos.size() != _sizes.size()) {
+        if(__pos.size() != get_rank()) {
           throw std::out_of_range("tensor_rank=" + std::to_string(get_rank()) + " differs from access_vector_rank=" +
                                   std::to_string(__pos.size()));
         } // if
+        // check each dim is within size limits, only checking real_pos is insufficient
+        for(size_t dim(0); dim < get_rank(); ++dim) {
+          if(__pos[dim] >= _sizes[dim]) {
+            throw std::out_of_range("cannot access position>=size with position=" + std::to_string(__pos[dim]) +
+                                    " and size=" + std::to_string(_sizes[dim]) + " for dimension=" +
+                                    std::to_string(dim));
+          } // if
+        } // for
 
         size_t real_pos(0);
         for(size_t dim(0); dim < __pos.size(); ++dim) {
           real_pos += __pos[dim] * _strides[dim];
         } // for
-        return _data.at(real_pos);
+        return _data[real_pos];
       } // operator()
       // returns a changeable reference to the T at the specified position
       T &operator()(std::vector<size_t> const &__pos) {
@@ -62,7 +70,7 @@ namespace biosim {
         if(__subt_dimensions.size() + __subt_positions.size() != get_rank()) {
           throw std::out_of_range("cannot get subtensor with rank=" + std::to_string(__subt_dimensions.size()) +
                                   " and positions=" + std::to_string(__subt_positions.size()) +
-                                  "from tensor with rank=" + std::to_string(get_rank()));
+                                  " from tensor with rank=" + std::to_string(get_rank()));
         } // if
 
         std::vector<size_t> subt_sizes; // create and fill vector with sizes for subtensor
@@ -106,7 +114,9 @@ namespace biosim {
           subt(subt_pos) = this->operator()(t_pos);
 
           try {
+            DEBUG << "Incrementing tensor position";
             t_pos = tensor_inc.next(t_pos);
+            DEBUG << "Incrementing subtensor position";
             subt_pos = subtensor_inc.next(subt_pos);
           } // try
           catch(std::overflow_error &e) {

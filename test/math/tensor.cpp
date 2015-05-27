@@ -60,6 +60,7 @@ BOOST_AUTO_TEST_CASE(tensor_rank2) {
   BOOST_CHECK(t.get_rank() == 2);
   BOOST_CHECK(t.get_size(0) == 2);
   BOOST_CHECK(t.get_size(1) == 3);
+  BOOST_REQUIRE_THROW(t({0, 3}), std::out_of_range);
 
   size_t input(10);
   for(size_t pos0(0); pos0 < t.get_size(0); ++pos0) {
@@ -105,6 +106,87 @@ BOOST_AUTO_TEST_CASE(tensor_rank5) {
       done = true;
     }
   } // while
+}
+
+BOOST_AUTO_TEST_CASE(tensor_sub) {
+  math::tensor<size_t> t({3, 3, 3});
+  size_t input(10);
+  for(size_t pos0(0); pos0 < t.get_size(0); ++pos0) {
+    for(size_t pos1(0); pos1 < t.get_size(1); ++pos1) {
+      for(size_t pos2(0); pos2 < t.get_size(2); ++pos2, ++input) {
+        t({pos0, pos1, pos2}) = input;
+        BOOST_CHECK(t({pos0, pos1, pos2}) == input);
+      } // for
+    } // for
+  } // for
+
+  math::tensor<size_t> subt(t.sub({}, {0, 0, 0}));
+  BOOST_CHECK(subt.get_rank() == 0);
+  BOOST_CHECK(subt({}) == 10);
+  BOOST_REQUIRE_THROW(t.sub({}, {0, 1, 3}), std::out_of_range);
+  BOOST_REQUIRE_THROW(t.sub({}, {0, 1, 2, 4}), std::out_of_range);
+
+  subt = t.sub({0}, {1, 2});
+  BOOST_CHECK(subt.get_rank() == 1);
+  BOOST_CHECK(subt.get_size(0) == 3);
+  BOOST_CHECK(subt({0}) == 15);
+  BOOST_CHECK(subt({1}) == 24);
+  BOOST_CHECK(subt({2}) == 33);
+  subt = t.sub({1}, {1, 2});
+  BOOST_CHECK(subt.get_rank() == 1);
+  BOOST_CHECK(subt.get_size(0) == 3);
+  BOOST_CHECK(subt({0}) == 21);
+  BOOST_CHECK(subt({1}) == 24);
+  BOOST_CHECK(subt({2}) == 27);
+  subt = t.sub({2}, {1, 2});
+  BOOST_CHECK(subt.get_rank() == 1);
+  BOOST_CHECK(subt.get_size(0) == 3);
+  BOOST_CHECK(subt({0}) == 25);
+  BOOST_CHECK(subt({1}) == 26);
+  BOOST_CHECK(subt({2}) == 27);
+
+  subt = t.sub({0, 1}, {0});
+  BOOST_CHECK(subt.get_rank() == 2);
+  BOOST_CHECK(subt.get_size(0) == 3);
+  BOOST_CHECK(subt.get_size(1) == 3);
+  BOOST_CHECK(subt({0, 0}) == 10);
+  BOOST_CHECK(subt({0, 1}) == 13);
+  BOOST_CHECK(subt({0, 2}) == 16);
+  BOOST_CHECK(subt({1, 0}) == 19);
+  BOOST_CHECK(subt({2, 0}) == 28);
+  BOOST_CHECK(subt({2, 2}) == 34);
+  subt = t.sub({0, 2}, {0});
+  BOOST_CHECK(subt.get_rank() == 2);
+  BOOST_CHECK(subt.get_size(0) == 3);
+  BOOST_CHECK(subt.get_size(1) == 3);
+  BOOST_CHECK(subt({0, 0}) == 10);
+  BOOST_CHECK(subt({0, 1}) == 11);
+  BOOST_CHECK(subt({0, 2}) == 12);
+  BOOST_CHECK(subt({1, 0}) == 19);
+  BOOST_CHECK(subt({2, 0}) == 28);
+  BOOST_CHECK(subt({2, 2}) == 30);
+  subt = t.sub({1, 2}, {0});
+  BOOST_CHECK(subt.get_rank() == 2);
+  BOOST_CHECK(subt.get_size(0) == 3);
+  BOOST_CHECK(subt.get_size(1) == 3);
+  BOOST_CHECK(subt({0, 0}) == 10);
+  BOOST_CHECK(subt({0, 1}) == 11);
+  BOOST_CHECK(subt({0, 2}) == 12);
+  BOOST_CHECK(subt({1, 0}) == 13);
+  BOOST_CHECK(subt({2, 0}) == 16);
+  BOOST_CHECK(subt({2, 2}) == 18);
+  subt = t.sub({0, 1, 2}, {});
+  BOOST_CHECK(subt.get_rank() == 3);
+  BOOST_CHECK(subt.get_size(0) == 3);
+  BOOST_CHECK(subt.get_size(1) == 3);
+  BOOST_CHECK(subt.get_size(2) == 3);
+  for(size_t pos0(0); pos0 < t.get_size(0); ++pos0) {
+    for(size_t pos1(0); pos1 < t.get_size(1); ++pos1) {
+      for(size_t pos2(0); pos2 < t.get_size(2); ++pos2, ++input) {
+        BOOST_CHECK(t({pos0, pos1, pos2}) == subt({pos0, pos1, pos2}));
+      } // for
+    } // for
+  } // for
 }
 
 BOOST_AUTO_TEST_SUITE_END()
