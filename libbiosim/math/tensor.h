@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <stdexcept>
+#include <iterator>
 #include "tools/incrementor.h"
 
 namespace biosim {
@@ -34,8 +35,8 @@ namespace biosim {
 
       // returns the rank
       size_t get_rank() const { return _sizes.size(); }
-      // returns the size of the specific dimension; can throw the exceptions thrown by _sizes.at()
-      size_t get_size(size_t __dimension) { return _sizes.at(__dimension); }
+      // returns the size of the specific dimension, 0 if tensor doesn't have this dimension
+      size_t get_size(size_t __dimension) const { return __dimension < get_rank() ? _sizes[__dimension] : 0; }
       // returns a const reference to the T at the specified position
       T const &operator()(std::vector<size_t> const &__pos) const {
         if(__pos.size() != get_rank()) {
@@ -63,7 +64,7 @@ namespace biosim {
         return const_cast<T &>(static_cast<const tensor<T> &>(*this).operator()(__pos));
       } // operator()
       // returns the subtensor with the given dimensions (0..rank - 1) at the given positions; elements are copied
-      tensor<T> sub(std::vector<size_t> const &__subt_dimensions, std::vector<size_t> const &__subt_positions) {
+      tensor<T> sub(std::vector<size_t> const &__subt_dimensions, std::vector<size_t> const &__subt_positions) const {
         DEBUG << "Creating subtensor with rank=" << std::to_string(__subt_dimensions.size())
               << " and positions=" << std::to_string(__subt_positions.size())
               << " from tensor with rank=" << get_rank();
@@ -75,14 +76,8 @@ namespace biosim {
 
         std::vector<size_t> subt_sizes; // create and fill vector with sizes for subtensor
         std::for_each(__subt_dimensions.begin(), __subt_dimensions.end(),
-                      [&](size_t const &__dim) { subt_sizes.push_back(get_size(__dim)); });
+                      [&](size_t const &__dim) { subt_sizes.insert(subt_sizes.begin(), get_size(__dim)); });
         tensor<T> subt(subt_sizes); // create subtensor
-
-        if(__subt_dimensions.size() == 0) { // incrementor throws with empty alphabets for rank=0, so shortcut here
-          DEBUG << "Directly returning subtensor with rank=0";
-          subt({}) = this->operator()(__subt_positions);
-          return subt;
-        } // if
 
         // create alphabets and start position for incrementor
         std::vector<std::vector<size_t>> t_alphabets, subt_alphabets;
@@ -111,6 +106,8 @@ namespace biosim {
         tools::incrementor<std::vector<size_t>> tensor_inc(t_alphabets), subtensor_inc(subt_alphabets);
         bool done(false);
         while(!done) {
+          DEBUG << "Mapping tensor_position -> subtensor_position: (" << to_string(t_pos) << ") -> ("
+                << to_string(subt_pos) << ")";
           subt(subt_pos) = this->operator()(t_pos);
 
           try {
@@ -126,7 +123,83 @@ namespace biosim {
 
         return subt;
       } // sub()
+
+    private:
+      // converts a position vector to string; private b/c the formatting is specific and should not be used in general
+      static std::string to_string(std::vector<size_t> const &__pos) {
+        std::stringstream s;
+        if(!__pos.empty()) {
+          std::copy(__pos.begin(), --__pos.end(), std::ostream_iterator<size_t>(s, ", "));
+          s << __pos.back();
+        } // if
+        return s.str();
+      } // to_string()
     }; // class tensor
+
+    // output operator for tensor; inline to avoid multiple definitions error when .h is included multiple times
+    template <class T>
+    inline std::ostream &operator<<(std::ostream &__out, tensor<T> const &__tensor) {
+      __out << "tensor: rank=" << __tensor.get_rank() << ", sizes={";
+      if(__tensor.get_rank() > 0) {
+        __out << __tensor.get_size(0);
+        for(size_t dim(1); dim < __tensor.get_rank(); ++dim) {
+          __out << ", " << __tensor.get_size(dim);
+        } // for
+      } // if
+      __out << "}\n";
+
+      // special cases: rank {0, 1}
+      if(__tensor.get_rank() == 0) {
+        __out << __tensor({});
+        return __out;
+      } // if
+      if(__tensor.get_rank() == 1) {
+        for(size_t pos(0); pos < __tensor.get_size(0); ++pos) {
+          __out << __tensor({pos}) << " ";
+        } // for
+        return __out;
+      } // if
+
+      // prepare for creating all rank 2 subtensors
+      std::vector<size_t> subt_dim; // create subtensor dimensions, i.e. (up to) the last two dimensions
+      for(int dim(__tensor.get_rank() - 1); dim >= 0 && subt_dim.size() < 2; --dim) {
+        subt_dim.push_back(dim);
+      } // for
+      std::vector<std::vector<size_t>> tensor_alphabets; // create alphabets for other dims to iterate over them
+      for(int dim(__tensor.get_rank() - 3); dim >= 0; --dim) {
+        std::vector<size_t> tensor_alphabet(__tensor.get_size(dim));
+        size_t element(0);
+        std::generate(tensor_alphabet.begin(), tensor_alphabet.end(), [&] { return element++; });
+        tensor_alphabets.push_back(tensor_alphabet);
+      } // for
+
+      // iterate over all subtensors with rank 2
+      tools::incrementor<std::vector<size_t>> inc(tensor_alphabets);
+      std::vector<size_t> subt_pos(tensor_alphabets.size(), 0);
+      bool done(false);
+      while(!done) {
+        tensor<T> subt(__tensor.sub(subt_dim, subt_pos));
+        if(subt_pos.size() > 0) {
+          __out << "subtensor(";
+          std::copy(subt_pos.begin(), subt_pos.end(), std::ostream_iterator<size_t>(__out, ", "));
+          __out << "y, x)\n";
+        } // if
+        for(size_t pos0(0); pos0 < subt.get_size(0); ++pos0) {
+          for(size_t pos1(0); pos1 < subt.get_size(1); ++pos1) {
+            __out << subt({pos0, pos1}) << " ";
+          } // for
+          __out << "\n";
+        } // for
+
+        try {
+          subt_pos = inc.next(subt_pos);
+        } catch(std::overflow_error &e) {
+          done = true;
+        } // catch
+      } // while
+
+      return __out;
+    } // operator<<()
   } // namespace math
 } // namespace biosim
 

@@ -12,7 +12,7 @@ BOOST_AUTO_TEST_CASE(tensor_rank0) {
   double d(3.14);
   math::tensor<double> dbl_tensor({});
   BOOST_CHECK(dbl_tensor.get_rank() == 0);
-  BOOST_REQUIRE_THROW(dbl_tensor.get_size(0), std::out_of_range);
+  BOOST_CHECK(dbl_tensor.get_size(0) == 0);
   dbl_tensor({}) = d;
   BOOST_CHECK(dbl_tensor({}) == d);
   BOOST_REQUIRE_THROW(dbl_tensor({5}), std::out_of_range);
@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE(tensor_rank0) {
   float f(2.17);
   math::tensor<float> flt_tensor({});
   BOOST_CHECK(flt_tensor.get_rank() == 0);
-  BOOST_REQUIRE_THROW(flt_tensor.get_size(0), std::out_of_range);
+  BOOST_CHECK(flt_tensor.get_size(0) == 0);
   flt_tensor({}) = f;
   BOOST_CHECK(flt_tensor({}) == f);
   BOOST_REQUIRE_THROW(flt_tensor({5}), std::out_of_range);
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(tensor_rank0) {
   int i(-10);
   math::tensor<int> int_tensor({});
   BOOST_CHECK(int_tensor.get_rank() == 0);
-  BOOST_REQUIRE_THROW(int_tensor.get_size(0), std::out_of_range);
+  BOOST_CHECK(int_tensor.get_size(0) == 0);
   int_tensor({}) = i;
   BOOST_CHECK(int_tensor({}) == i);
   BOOST_REQUIRE_THROW(int_tensor({5}), std::out_of_range);
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(tensor_rank0) {
   size_t s(25);
   math::tensor<size_t> szt_tensor({});
   BOOST_CHECK(szt_tensor.get_rank() == 0);
-  BOOST_REQUIRE_THROW(szt_tensor.get_size(0), std::out_of_range);
+  BOOST_CHECK(szt_tensor.get_size(0) == 0);
   szt_tensor({}) = s;
   BOOST_CHECK(szt_tensor({}) == s);
   BOOST_REQUIRE_THROW(szt_tensor({5}), std::out_of_range);
@@ -63,6 +63,20 @@ BOOST_AUTO_TEST_CASE(tensor_rank2) {
   BOOST_REQUIRE_THROW(t({0, 3}), std::out_of_range);
 
   size_t input(10);
+  for(size_t pos0(0); pos0 < t.get_size(0); ++pos0) {
+    for(size_t pos1(0); pos1 < t.get_size(1); ++pos1, ++input) {
+      t({pos0, pos1}) = input;
+      BOOST_CHECK(t({pos0, pos1}) == input);
+    } // for
+  } // for
+
+  t = math::tensor<size_t>({1, 1});
+  BOOST_CHECK(t.get_rank() == 2);
+  BOOST_CHECK(t.get_size(0) == 1);
+  BOOST_CHECK(t.get_size(1) == 1);
+  BOOST_REQUIRE_THROW(t({0, 1}), std::out_of_range);
+
+  input = 10;
   for(size_t pos0(0); pos0 < t.get_size(0); ++pos0) {
     for(size_t pos1(0); pos1 < t.get_size(1); ++pos1, ++input) {
       t({pos0, pos1}) = input;
@@ -104,7 +118,7 @@ BOOST_AUTO_TEST_CASE(tensor_rank5) {
       pos = inc.next(pos);
     } catch(std::overflow_error &e) {
       done = true;
-    }
+    } // catch
   } // while
 }
 
@@ -180,6 +194,32 @@ BOOST_AUTO_TEST_CASE(tensor_sub) {
   BOOST_CHECK(subt.get_size(0) == 3);
   BOOST_CHECK(subt.get_size(1) == 3);
   BOOST_CHECK(subt.get_size(2) == 3);
+  for(size_t pos0(0); pos0 < t.get_size(0); ++pos0) {
+    for(size_t pos1(0); pos1 < t.get_size(1); ++pos1) {
+      for(size_t pos2(0); pos2 < t.get_size(2); ++pos2, ++input) {
+        BOOST_CHECK(t({pos0, pos1, pos2}) == subt({pos0, pos1, pos2}));
+      } // for
+    } // for
+  } // for
+  subt = t.sub({2, 1, 0}, {});
+  BOOST_CHECK(subt.get_rank() == 3);
+  BOOST_CHECK(subt.get_size(0) == 3);
+  BOOST_CHECK(subt.get_size(1) == 3);
+  BOOST_CHECK(subt.get_size(2) == 3);
+  for(size_t pos0(0); pos0 < t.get_size(0); ++pos0) {
+    for(size_t pos1(0); pos1 < t.get_size(1); ++pos1) {
+      for(size_t pos2(0); pos2 < t.get_size(2); ++pos2, ++input) {
+        BOOST_CHECK(t({pos0, pos1, pos2}) == subt({pos0, pos1, pos2}));
+      } // for
+    } // for
+  } // for
+
+  t = math::tensor<size_t>({2, 3, 4});
+  subt = t.sub({2, 1, 0}, {});
+  BOOST_CHECK(subt.get_rank() == 3);
+  BOOST_CHECK(subt.get_size(0) == 2);
+  BOOST_CHECK(subt.get_size(1) == 3);
+  BOOST_CHECK(subt.get_size(2) == 4);
   for(size_t pos0(0); pos0 < t.get_size(0); ++pos0) {
     for(size_t pos1(0); pos1 < t.get_size(1); ++pos1) {
       for(size_t pos2(0); pos2 < t.get_size(2); ++pos2, ++input) {

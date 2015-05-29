@@ -12,23 +12,39 @@ namespace biosim {
     template <class T>
     class incrementor {
     public:
-      // ctor taking alphabets, at least one is required; default ctor
-      explicit incrementor(std::vector<std::vector<typename T::value_type>> const &__alphabets = {
-                               get_uppercase_alphabet()})
-          : _alphabets(__alphabets), _fixed_length(__alphabets.size() > 1) {
-        if(__alphabets.empty()) {
-          throw std::invalid_argument("at least one alphabet is needed");
+      // ctor for flexible length inputs; default ctor
+      explicit incrementor(std::vector<typename T::value_type> const &__alphabet = get_uppercase_alphabet())
+          : _alphabets({__alphabet}), _fixed_length(false) {
+        if(__alphabet.empty()) {
+          throw std::invalid_argument("cannot increment with an empty alphabet");
         } // if
       } // ctor
+      // ctor for fixed length inputs, one alphabet for each input position
+      explicit incrementor(std::vector<std::vector<typename T::value_type>> const &__alphabets)
+          : _alphabets(__alphabets), _fixed_length(true) {
+        for(auto alphabet : _alphabets) { // allow construction with no alphabets, but a given alphabet cannot be empty
+          if(alphabet.empty()) {
+            throw std::invalid_argument("cannot increment with an empty alphabet");
+          } // if
+        } // for
+      } // ctor
+
       // incrementing function
       T next(T __container, size_t increment = 1) const {
-        if(_fixed_length && _alphabets.size() != __container.size()) { // check container size if fixed length container
+        // check _alphabets are not empty (alphabets cannot be empty for flexible length incrementors)
+        if(_alphabets.empty()) {
+          // must be overflow_error, b/c this is the error on which the loop exists incrementing for fixed length inputs
+          throw std::overflow_error("cannot insert new element without alphabet");
+        } // if
+        // an alphabet for each container position is required for fixed length container
+        if(_fixed_length && _alphabets.size() != __container.size()) {
           throw std::out_of_range("input length differs from alphabet count for fixed length input");
         } // if
-        for(size_t pos(0); pos < __container.size(); ++pos) { // check all positions have valid letters
+        // each container position must contain a letter from the corresponding alphabet
+        for(size_t pos(0); pos < __container.size(); ++pos) {
           std::vector<typename T::value_type> alphabet(_fixed_length ? _alphabets[pos] : _alphabets[0]);
           if(std::find(alphabet.begin(), alphabet.end(), __container[pos]) == alphabet.end()) {
-            throw std::out_of_range("input contains letter outside of alphabet range");
+            throw std::out_of_range("input contains letter not in alphabet");
           } // if
         } // for
         int pos(__container.size() - 1); // start at last element; use int because we're decreasing, and it can go < 0
@@ -66,6 +82,7 @@ namespace biosim {
         static std::string letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         return std::vector<char>(letters.begin(), letters.end());
       } // get_uppercase_alphabet()
+
     private:
       std::vector<std::vector<typename T::value_type>> _alphabets; // the ordered alphabet for incrementing
       bool _fixed_length; // if the increment function does not extend the length of a given argument
