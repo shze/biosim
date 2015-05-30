@@ -34,8 +34,8 @@ int main(int argc, char *argv[]) { // main must not be in a namespace
   } // if
 
   // set requested message level
-  tools::log_message::set_output_level(po_var_map.count("debug") ? tools::log_message::level_debug
-                                                                 : tools::log_message::level_info);
+  tools::log_message::set_output_level(po_var_map.count("debug") ? tools::log_message::level_type::debug
+                                                                 : tools::log_message::level_type::info);
 
   try {
     che::io::file_assembly reader;

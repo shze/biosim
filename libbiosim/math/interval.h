@@ -11,9 +11,6 @@ namespace biosim {
     // implements an closed interval [a, b] = {x | a <= x <= b}, see http://en.wikipedia.org/wiki/Interval_(mathematics)
     template <class T>
     class interval {
-    private:
-      T _min, _max; // min, max of the interval
-
     public:
       // default ctor
       interval()
@@ -126,6 +123,9 @@ namespace biosim {
 
         return merged_intervals;
       } // merge()
+
+    private:
+      T _min, _max; // min, max of the interval
     }; // class interval
 
     // returns if interval1 is less than i.e. before (starts further left, at a smaller number) interval2

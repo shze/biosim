@@ -17,11 +17,6 @@ namespace biosim {
     // access to the subdimensions, which is not desired here.
     template <class T>
     class tensor {
-    private:
-      std::vector<size_t> _sizes; // size of each dimension
-      std::vector<size_t> _strides; // number of elements in each dimension; simplifies finding in _data
-      std::vector<T> _data; // stores the actual data
-
     public:
       // ctor with size of each dimension
       explicit tensor(std::vector<size_t> __sizes) : _sizes(__sizes), _strides(_sizes.size()), _data() {
@@ -124,8 +119,7 @@ namespace biosim {
         return subt;
       } // sub()
 
-    private:
-      // converts a position vector to string; private b/c the formatting is specific and should not be used in general
+      // converts a position vector to string; member function b/c the formatting is specific, not for general use
       static std::string to_string(std::vector<size_t> const &__pos) {
         std::stringstream s;
         if(!__pos.empty()) {
@@ -134,19 +128,24 @@ namespace biosim {
         } // if
         return s.str();
       } // to_string()
+
+    private:
+      std::vector<size_t> _sizes; // size of each dimension
+      std::vector<size_t> _strides; // number of elements in each dimension; simplifies finding in _data
+      std::vector<T> _data; // stores the actual data
     }; // class tensor
 
     // output operator for tensor; inline to avoid multiple definitions error when .h is included multiple times
     template <class T>
     inline std::ostream &operator<<(std::ostream &__out, tensor<T> const &__tensor) {
-      __out << "tensor: rank=" << __tensor.get_rank() << ", sizes={";
+      __out << "tensor: rank=" << __tensor.get_rank() << ", sizes=(";
       if(__tensor.get_rank() > 0) {
         __out << __tensor.get_size(0);
         for(size_t dim(1); dim < __tensor.get_rank(); ++dim) {
           __out << ", " << __tensor.get_size(dim);
         } // for
       } // if
-      __out << "}\n";
+      __out << ")\n";
 
       // special cases: rank {0, 1}
       if(__tensor.get_rank() == 0) {

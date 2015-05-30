@@ -23,6 +23,7 @@
   see: http://stackoverflow.com/questions/25759293/
 * Make single argument ctor explicit.
 * Use enum class instead of enum for simple enumerations to create identifiers in separate namespace.
+* Place members at the end of a class.
 
 ##Code Design
 

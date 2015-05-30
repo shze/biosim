@@ -11,9 +11,6 @@ namespace biosim {
     // defines an interval of a sequence with a closed interval denoting the consecutive identical elements
     template <class T>
     class sequence_interval : public math::interval<size_t> { // derived from closed interval
-    private:
-      T _type; // type of all elements from [begin .. end] (closed interval)
-
     public:
       // ctor taking interval describing the dimension and a T describing the type; no default ctor
       sequence_interval(size_t __min, size_t __max, T __type) : interval(__min, __max), _type(__type) {}
@@ -114,6 +111,9 @@ namespace biosim {
 
         return sequence_interval_set;
       } // to_sequence_intervals()
+
+    private:
+      T _type; // type of all elements from [begin .. end] (closed interval)
     }; // class sequence_interval
 
     // output operator for sequence_interval
