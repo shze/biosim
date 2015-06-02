@@ -14,8 +14,12 @@ namespace biosim {
       explicit alignment(molecule __molecule);
       // ctor from a list of molecules
       explicit alignment(std::list<molecule> __molecules);
+      // get alignment length
+      size_t get_length() const;
+      // get alignment depth, i.e. number of molecules
+      size_t get_depth() const;
       // get aligned molecules
-      std::list<molecule> const &get_molecules();
+      std::list<molecule> const &get_molecules() const;
 
     private:
       std::list<molecule> _molecules; // list of aligned molecules
