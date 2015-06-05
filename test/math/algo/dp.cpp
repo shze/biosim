@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "math/dp.h" // header to test
+#include "math/algo/dp.h" // header to test
 
 using namespace biosim;
 
@@ -14,7 +14,7 @@ size_t fibonacci_function(math::tensor<size_t> const &__input, std::vector<size_
 BOOST_AUTO_TEST_SUITE(suite_dp)
 
 BOOST_AUTO_TEST_CASE(dp_fib) {
-  math::dp<size_t> fib;
+  math::algo::dp<size_t> fib;
   math::tensor<size_t> fibonacci_numbers(fib.calculate(math::tensor<size_t>({10}), &fibonacci_function));
   BOOST_CHECK(fibonacci_numbers({9}) == 55);
   BOOST_REQUIRE_THROW(fib.calculate(math::tensor<size_t>({10, 3}), &fibonacci_function), std::invalid_argument);

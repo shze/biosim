@@ -1,5 +1,5 @@
 #include "che/ss.h"
-#include "math/interval_scheduler_maximize.h"
+#include "math/algo/interval_scheduler_maximize.h"
 
 namespace biosim {
   namespace che {
@@ -18,7 +18,7 @@ namespace biosim {
         return _sequence;
       }
 
-      math::interval_scheduler_maximize<cchb_dssp_interval> scheduler;
+      math::algo::interval_scheduler_maximize<cchb_dssp_interval> scheduler;
       std::set<cchb_dssp_interval> optimized_sses(scheduler.schedule(_sses));
       return sequence_interval<cchb_dssp>::to_sequence(optimized_sses, _length);
     } // get_sequence()

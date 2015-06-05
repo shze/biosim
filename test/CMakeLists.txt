@@ -14,10 +14,10 @@ set(SOURCES_UNIT_TESTER
   che/io/file_fasta.cpp
   che/io/file_psipredv.cpp
   che/io/file_sse_pool.cpp
-  math/dp.cpp
   math/interval.cpp
-  math/interval_scheduler_maximize.cpp
   math/tensor.cpp
+  math/algo/dp.cpp
+  math/algo/interval_scheduler_maximize.cpp
   score/cm.cpp
   score/cm_cc_blosum.cpp
   tools/enumerate.cpp
