@@ -1,5 +1,5 @@
-#ifndef math_dp_h
-#define math_dp_h
+#ifndef math_algo_dp_h
+#define math_algo_dp_h
 
 #include "math/tensor.h"
 
@@ -43,4 +43,4 @@ namespace biosim {
   } // namespace math
 } // namespace biosim
 
-#endif // math_dp_h
+#endif // math_algo_dp_h

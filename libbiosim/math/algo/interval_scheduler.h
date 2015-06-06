@@ -1,5 +1,5 @@
-#ifndef math_interval_scheduler_h
-#define math_interval_scheduler_h
+#ifndef math_algo_interval_scheduler_h
+#define math_algo_interval_scheduler_h
 
 #include "math/interval.h"
 #include <set>
@@ -18,4 +18,4 @@ namespace biosim {
   } // namespace math
 } // namespace biosim
 
-#endif // math_interval_scheduler_h
+#endif // math_algo_interval_scheduler_h

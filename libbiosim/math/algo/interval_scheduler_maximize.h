@@ -1,5 +1,5 @@
-#ifndef math_interval_scheduler_maximize_h
-#define math_interval_scheduler_maximize_h
+#ifndef math_algo_interval_scheduler_maximize_h
+#define math_algo_interval_scheduler_maximize_h
 
 #include "math/algo/interval_scheduler.h"
 #include "tools/less.h"
@@ -64,4 +64,4 @@ namespace biosim {
   } // namespace math
 } // namespace biosim
 
-#endif // math_interval_scheduler_maximize_h
+#endif // math_algo_interval_scheduler_maximize_h

@@ -2,7 +2,7 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
 #include "che/io/file_assembly.h"
-#include "score/cm.h"
+#include "che/score/cm.h"
 
 using namespace biosim;
 
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) { // main must not be in a namespace
     } // for
 
     for(auto a : ss) {
-      for(auto p : score::assembly_compares::get_instances()) {
+      for(auto p : che::score::assembly_compares::get_instances()) {
         LOG << p.first << "=" << p.second.get_object()->compare(ref, a);
       } // for
     } // for

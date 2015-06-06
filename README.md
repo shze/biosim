@@ -25,6 +25,13 @@
 * Use enum class instead of enum for simple enumerations to create identifiers in separate namespace.
 * Place members at the end of a class.
 
+##Code Organization
+
+* tools:: only depends on standard C++ and external libaries, e.g. boost.
+* math:: can in addition depend on the tools:: namespace.
+* Other namespaces can in addition depend on the math:: namespace, but not any other namespace.
+* Sub-namespaces can depend on their super-namespace and their dependencies.
+
 ##Code Design
 
 * Applications follow the Unix philosophy of small, focused tools.

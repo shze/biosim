@@ -16,9 +16,9 @@ set(LIBBIOSIM_SOURCES
   che/io/file_pdb.cpp
   che/io/file_psipredv.cpp
   che/io/file_sse_pool.cpp
-  score/cm.cpp
-  score/cm_assembly_ssq3.cpp
-  score/cm_cc_blosum.cpp
+  che/score/cm.cpp
+  che/score/cm_assembly_ssq3.cpp
+  che/score/cm_cc_blosum.cpp
   tools/file.cpp
   tools/log.cpp
   tools/string.cpp
