@@ -16,19 +16,20 @@ namespace biosim {
         throw cc_data_not_found("weight_map empty");
       } // if
 
-      std::shared_ptr<cc::data const> first_compound(find(__weights.begin()->first));
-      if(__weights.size() == 1) {
-        _impl = first_compound;
-        return;
-      } // if
-
+      std::shared_ptr<cc::data const> first_compound(find(__weights.begin()->first)); // to get the monomer_type
+      double highest_weight(0.0);
+      std::shared_ptr<cc::data const> highest_weighted_compound(
+          find(specificity_type::unknown, first_compound->_monomer_type)); // initialize with unknown
       for(auto const &p : __weights) {
-        find(p.first); // just to make sure all are found b/c it throws otherwise
+        std::shared_ptr<cc::data const> compound(find(p.first));
+        if(p.second > highest_weight) {
+          highest_weight = p.second;
+          highest_weighted_compound = compound;
+        } // if
       } // for
 
-      std::shared_ptr<cc::data const> unknown_compound(find(specificity_type::unknown, first_compound->_monomer_type));
-      _impl = std::make_shared<data>(unknown_compound->_id, unknown_compound->_id_char, first_compound->_specificity,
-                                     first_compound->_monomer_type, __weights);
+      _impl = std::make_shared<data>(highest_weighted_compound->_id, highest_weighted_compound->_id_char,
+                                     cc::specificity_type::profile, first_compound->_monomer_type, __weights);
     } // ctor
 
     // get identifier

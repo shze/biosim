@@ -13,7 +13,7 @@ namespace biosim {
         // regex for a single data line of the psipred vertical format; comment or empty lines do not match this regex;
         // groups will be used to construct sequences.
         static boost::regex const regex_psipredv_line(
-            "([[:digit:]]+) +([[:upper:]]) +([[:upper:]])" // line#, aa one letter code, ss one letter code
+            " *([[:digit:]]+) +([[:upper:]]) +([[:upper:]])" // line#, aa one letter code, ss one letter code
             " +([[:digit:]](?:\\.[[:digit:]]+)?)" // this and the two following lines are the probabilities
             " +([[:digit:]](?:\\.[[:digit:]]+)?)" // for the 3 secondary structure types C, H, E
             " +([[:digit:]](?:\\.[[:digit:]]+)?)");

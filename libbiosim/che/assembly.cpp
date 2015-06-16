@@ -5,6 +5,8 @@ namespace biosim {
   namespace che {
     // default ctor
     assembly::assembly() : _molecules(), _ss() {}
+    // ctor from molecule
+    assembly::assembly(molecule __m) : _molecules(), _ss() { add(__m); }
     // ctor from molecule and ss
     assembly::assembly(molecule __m, ss __ss) : _molecules(), _ss() { add(__m, __ss); }
     // get list of all chain_ids

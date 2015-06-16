@@ -11,6 +11,8 @@ namespace biosim {
     public:
       // default ctor
       assembly();
+      // ctor from molecule
+      explicit assembly(molecule __m);
       // ctor from molecule and ss
       assembly(molecule __m, ss __ss);
       // get list of all chain_ids

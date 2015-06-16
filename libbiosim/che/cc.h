@@ -23,7 +23,7 @@ namespace biosim {
     class cc {
     public:
       // specificity defined as enum for easier comparison; only one specificity allowed, no combinations.
-      enum class specificity_type { defined, unknown, gap };
+      enum class specificity_type { defined, profile, unknown, gap };
       // type of monomer, defined as chemical component type in the CCD; used to differentiate compounds of different
       // subgroups with overlapping identifier chars i.e. one letter codes.
       enum class monomer_type { non_polymer, l_peptide_linking, dna_linking, rna_linking };

@@ -18,7 +18,7 @@ namespace biosim {
       std::list<std::string> lines;
       while(filestream.good()) {
         if(std::getline(filestream, buffer).good()) {
-          boost::trim(buffer);
+          boost::trim_right(buffer);
           lines.push_back(buffer);
         }
       }
