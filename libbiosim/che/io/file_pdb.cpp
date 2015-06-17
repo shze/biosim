@@ -555,9 +555,8 @@ namespace biosim {
 
         size_t sequence_no(1); // start with 1
         for(auto c : seqres.get_chain_ids()) {
-          a.set(std::string(c, 1),
-                molecule(__filename + "/" + std::to_string(sequence_no), ">lcl|sequence", seqres.get_sequence(c)),
-                ss(ssdef.get_pool(c)));
+          a.set(std::string(c, 1), molecule(__filename + "/" + std::to_string(sequence_no), ">lcl|sequence",
+                                            seqres.get_sequence(c), ss(ssdef.get_pool(c))));
           ++sequence_no; // increase sequence_no, b/c it's not done in the for loop header
         }
 

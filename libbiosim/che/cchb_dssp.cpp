@@ -27,9 +27,9 @@ namespace biosim {
     // get specificity
     cchb_dssp::specificity_type cchb_dssp::get_specificity() const { return _impl->_specificity; }
     // return if an unknown (unspecified) compound; only for unknown, not for gap.
-    bool cchb_dssp::is_unknown() const { return _impl->_specificity == specificity_unknown; }
+    bool cchb_dssp::is_unknown() const { return _impl->_specificity == specificity_type::unknown; }
     // return if gap
-    bool cchb_dssp::is_gap() const { return _impl->_specificity == specificity_gap; }
+    bool cchb_dssp::is_gap() const { return _impl->_specificity == specificity_type::gap; }
     // get profile weights
     cchb_dssp::weight_map cchb_dssp::get_weights() const { return _impl->_weights; }
 
@@ -64,7 +64,7 @@ namespace biosim {
     } // ctor
     // ctor for profile symbol
     cchb_dssp::data::data(char __id, weight_map __weights)
-        : _id(__id), _specificity(specificity_defined), _weights(__weights) {}
+        : _id(__id), _specificity(specificity_type::profile), _weights(__weights) {}
 
     // (static) find compound with id; id is assumed unique; throws if no object was found
     std::shared_ptr<cchb_dssp::data const> cchb_dssp::find(char const &__id) {
@@ -82,7 +82,7 @@ namespace biosim {
       });
 
       if(itr == data_enum::get_instances().end()) {
-        throw cchb_dssp_data_not_found("no data found with specificity_type=" + std::to_string(__specificity));
+        throw cchb_dssp_data_not_found("no data found with specificity_type=" + std::to_string((int)__specificity));
       } // if
 
       return itr->second.get_object();
@@ -92,8 +92,8 @@ namespace biosim {
     bool cchb_dssp::initialize() {
       data_enum::add(std::make_shared<data>('H'));
       data_enum::add(std::make_shared<data>('E'));
-      data_enum::add(std::make_shared<data>('C', specificity_unknown));
-      data_enum::add(std::make_shared<data>('-', specificity_gap));
+      data_enum::add(std::make_shared<data>('C', specificity_type::unknown));
+      data_enum::add(std::make_shared<data>('-', specificity_type::gap));
 
       data_enum::add(std::make_shared<data>('G', weight_map({{'H', 1.0}}))); // DSSP 3-10 helix
       data_enum::add(std::make_shared<data>('I', weight_map({{'H', 1.0}}))); // DSSP Pi helix

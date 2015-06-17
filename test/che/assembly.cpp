@@ -9,31 +9,32 @@ BOOST_AUTO_TEST_SUITE(suite_assembly)
 BOOST_AUTO_TEST_CASE(assembly_ctor) {
   che::assembly a;
   BOOST_CHECK(a.get_chain_id_list().empty());
+  BOOST_CHECK(a.has_molecule("A") == false);
   BOOST_REQUIRE_THROW(a.get_molecule("A"), std::out_of_range);
 
   che::molecule m;
-  che::sequence<che::cchb_dssp> v;
-  che::ss s(v);
-  a = che::assembly(m, s);
+  a = che::assembly(m);
   BOOST_CHECK(a.get_chain_id_list().size() == 1);
+  BOOST_CHECK(a.has_molecule("A") == true);
   BOOST_CHECK(a.get_molecule("A").get_ps().empty());
-  BOOST_CHECK(a.get_ss("A").get_sequence().empty());
 }
 
-BOOST_AUTO_TEST_CASE(assembly_add) {
+BOOST_AUTO_TEST_CASE(assembly_add_set) {
   che::molecule m;
   che::assembly a;
+  BOOST_CHECK(a.get_chain_id_list().size() == 0);
   BOOST_CHECK(a.add(m) == "A"); // check returned chain_id
   BOOST_CHECK(a.get_chain_id_list().size() == 1);
-  BOOST_CHECK(a.get_molecule("A").get_length() == 0);
-  BOOST_REQUIRE_THROW(a.get_ss("A"), std::out_of_range); // no ss created by add(ts)
 
-  che::sequence<che::cchb_dssp> v;
-  che::ss s(v);
-  BOOST_CHECK(a.add(m, s) == "B");
+  a.set("A", m);
+  BOOST_CHECK(a.get_chain_id_list().size() == 1);
+  BOOST_CHECK(a.has_molecule("B") == false);
+
+  a.set("C", m);
   BOOST_CHECK(a.get_chain_id_list().size() == 2);
-  BOOST_CHECK(a.get_molecule("B").get_length() == 0);
-  BOOST_CHECK(a.get_ss("B").get_sequence().empty());
+  BOOST_CHECK(a.has_molecule("B") == false);
+  BOOST_CHECK(a.has_molecule("C") == true);
+  BOOST_CHECK(a.has_molecule("D") == false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

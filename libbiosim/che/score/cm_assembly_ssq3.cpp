@@ -14,12 +14,12 @@ namespace biosim {
         size_t chain_count(0);
         double q3_sum(0.0);
         for(auto chain_id : unique_chain_ids) {
-          if(!__first.has_ss(chain_id) || !__second.has_ss(chain_id)) {
+          if(!__first.has_molecule(chain_id) || !__second.has_molecule(chain_id)) {
             DEBUG << get_identifier() << ": chain id '" << chain_id << "' does not exist in both structures, ignoring.";
             continue;
           }
 
-          q3_sum += compare(__first.get_ss(chain_id), __second.get_ss(chain_id));
+          q3_sum += compare(__first.get_molecule(chain_id).get_ss(), __second.get_molecule(chain_id).get_ss());
           ++chain_count;
         }
 

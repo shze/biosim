@@ -57,7 +57,7 @@ namespace biosim {
             LOG << "Detected sequence type for " << __filename << "/" << sequence_no << ": dssp sequence.";
 
             // if gap chars are found, but no unknown chars, replace all gap chars with unknown chars
-            cchb_dssp unknown(cchb_dssp::specificity_unknown), gap(cchb_dssp::specificity_gap);
+            cchb_dssp unknown(cchb_dssp::specificity_type::unknown), gap(cchb_dssp::specificity_type::gap);
             if(match_sequence.find(gap.get_identifier()) != std::string::npos &&
                match_sequence.find(unknown.get_identifier()) == std::string::npos) {
               std::replace(match_sequence.begin(), match_sequence.end(), gap.get_identifier(),
@@ -70,10 +70,9 @@ namespace biosim {
           } else if(is_cc_sequence) {
             LOG << "Detected sequence type for " << __filename << "/" << sequence_no << ": cc sequence.";
 
-            // if file had no/empty identifier, use default
-            molecule new_molecule(file_id, match_identifier.empty() ? ">lcl|sequence" : match_identifier);
-            new_molecule.set_ps(convert_to_ps(match_sequence));
-            molecules.push_back(new_molecule); // store for now
+            // store for now; if file had no/empty identifier, use default
+            molecules.emplace_back(molecule(file_id, match_identifier.empty() ? ">lcl|sequence" : match_identifier,
+                                            convert_to_ps(match_sequence)));
           } // if
           else { // do not throw exception here, the user of this class has to check how many assemblies were found
             std::stringstream ss(match_identifier);
@@ -84,18 +83,19 @@ namespace biosim {
           } // else
         } // for
 
-        assembly assemblies;
+        assembly new_assembly;
 
         // iterate over sss and molecules to match them based on their length
         DEBUG << "Trying to match " << molecules.size() << " cc sequences with " << sss.size() << " dssp sequences.";
-        for(auto current_molecule : molecules) {
+        for(auto &current_molecule : molecules) {
           // try to find a matching secondary structure sequence
           bool inserted(false);
           for(auto itr(sss.begin()), itr_end(sss.end()); itr != itr_end; ++itr) {
             if(itr->second.get_sequence().size() == current_molecule.get_length()) {
               LOG << "Assuming " << shorten_file_storage(itr->first) << " is the dssp assignment for "
                   << shorten_file_storage(current_molecule.get_storage()) << ".";
-              assemblies.add(current_molecule, itr->second);
+              new_assembly.add(molecule(current_molecule.get_storage(), current_molecule.get_identifier(),
+                                        current_molecule.get_ps(), itr->second));
               inserted = true;
               sss.erase(itr);
               break;
@@ -104,21 +104,19 @@ namespace biosim {
 
           if(!inserted) { // if not found, just insert the cc sequence without secondary structure
             DEBUG << "No matching dssp assignment found for " << current_molecule.get_storage();
-            assemblies.add(current_molecule);
+            new_assembly.add(current_molecule);
           } // if
         } // for
 
         DEBUG << "Inserting " << sss.size() << " unmatched dssp sequences.";
         for(auto p : sss) {
-          molecule new_molecule(p.first, ">lcl|sequence");
           ps new_ps;
           new_ps.resize(p.second.get_sequence().size(),
                         cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
-          new_molecule.set_ps(new_ps);
-          assemblies.add(new_molecule, p.second);
+          new_assembly.add(molecule(p.first, ">lcl|sequence", new_ps, p.second));
         } // for
 
-        return assemblies;
+        return new_assembly;
       } // read()
 
       // (static) convert a string of id_chars to a ps

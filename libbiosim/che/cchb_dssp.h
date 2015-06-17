@@ -18,7 +18,7 @@ namespace biosim {
     class cchb_dssp {
     public:
       // specificity defined as enum for easier comparison; only one specificity allowed, no combinations.
-      enum specificity_type { specificity_defined, specificity_unknown, specificity_gap };
+      enum class specificity_type { defined, profile, unknown, gap };
       using weight_map = std::map<char, double>; // simplify naming
 
       // ctor from id; id is assumed unique; throws if not found
@@ -55,7 +55,7 @@ namespace biosim {
       // contains the cchb_dssp data; type that is enumerated
       struct data {
         // ctor for primary symbol
-        data(char __id, specificity_type __specificity = specificity_defined);
+        data(char __id, specificity_type __specificity = specificity_type::defined);
         // ctor for profile symbol
         data(char __id, weight_map __weights);
 

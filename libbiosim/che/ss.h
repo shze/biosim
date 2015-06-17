@@ -10,14 +10,18 @@ namespace biosim {
     // secondary structure
     class ss {
     public:
+      // ctor from secondary structure sequence of unknown types
+      ss(size_t __sequence_length);
       // ctor from secondary structure sequence
       explicit ss(sequence<cchb_dssp> __sequence);
       // ctor from pool and optional sequence length, default 0
       explicit ss(std::set<cchb_dssp_interval> __pool, size_t __sequence_length = 0);
-      // get secondary structure sequence
-      sequence<cchb_dssp> get_sequence() const;
+      // if the ss is empty, i.e. no sequence and no sses
+      sequence<cchb_dssp> const &get_sequence() const;
       // get secondary structure intervals
       std::set<cchb_dssp_interval> const &get_sses() const;
+      // return the length
+      size_t get_length() const;
 
     private:
       sequence<cchb_dssp> _sequence; // secondary structure sequence

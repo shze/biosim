@@ -45,7 +45,7 @@ namespace biosim {
       static che::sequence<T> to_sequence(std::set<che::sequence_interval<T>> const &__intervals,
                                           size_t const &__length) {
         // find unknown; used to fill ss_symbols
-        T unknown(T::specificity_unknown);
+        T unknown(T::specificity_type::unknown);
 
         che::sequence<T> seq;
         for(auto const &this_interval : __intervals) {
@@ -102,7 +102,7 @@ namespace biosim {
 
         // insert all sequence_intervals except ones with unknown type into sequence_interval_set
         std::set<che::sequence_interval<T>> sequence_interval_set;
-        T unknown(T::specificity_unknown);
+        T unknown(T::specificity_type::unknown);
         for(auto this_sequence_interval : sequence_interval_list) {
           if(this_sequence_interval.get_type().get_identifier() != unknown.get_identifier()) { // do NOT insert unknown
             sequence_interval_set.insert(this_sequence_interval);

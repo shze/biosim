@@ -22,23 +22,18 @@ BOOST_AUTO_TEST_CASE(file_fasta_read) {
   BOOST_CHECK(a.get_chain_id_list().size() == 2);
   BOOST_CHECK(a.has_molecule("A"));
   BOOST_CHECK(a.has_molecule("B"));
-  BOOST_CHECK(a.has_ss("A"));
-  BOOST_CHECK(a.has_ss("B"));
   BOOST_CHECK(a.get_molecule("A").get_ps()[0].get_identifier() == "MET"); // first dssp sequence is matched to cc seq
   BOOST_CHECK(a.get_molecule("B").get_ps()[0].get_identifier() == "UNK"); // second dssp sequence has no match
 
   a = che::io::file_fasta::read("../test/data/1UBI_A_DSSP2.fasta");
   BOOST_CHECK(a.get_chain_id_list().size() == 1);
   BOOST_CHECK(a.has_molecule("A"));
-  BOOST_CHECK(a.has_ss("A"));
   BOOST_CHECK(a.get_molecule("A").get_ps()[0].get_identifier() == "MET");
 
   a = che::io::file_fasta::read("../test/data/1UBI_A_DSSP3.fasta");
   BOOST_CHECK(a.get_chain_id_list().size() == 2);
   BOOST_CHECK(a.has_molecule("A"));
   BOOST_CHECK(a.has_molecule("B"));
-  BOOST_CHECK(a.has_ss("A"));
-  BOOST_CHECK(a.has_ss("B"));
   BOOST_CHECK(a.get_molecule("A").get_ps()[0].get_identifier() == "UNK");
   BOOST_CHECK(a.get_molecule("B").get_ps()[0].get_identifier() == "UNK");
 }

@@ -2,6 +2,7 @@
 #define che_molecule_h
 
 #include "che/sequence.h"
+#include "che/ss.h"
 #include <string>
 #include <algorithm>
 
@@ -14,6 +15,8 @@ namespace biosim {
       explicit molecule(std::string __storage = std::string(), std::string __identifier = std::string());
       // ctor from storage, identifier, and ps
       molecule(std::string __storage, std::string __identifier, ps __ps);
+      // ctor from storage, identifier, ps, and ss
+      molecule(std::string __storage, std::string __identifier, ps __ps, ss __ss);
       // get storage
       std::string const &get_storage() const;
       // get identifier
@@ -22,20 +25,22 @@ namespace biosim {
       size_t get_length() const;
       // get ps
       ps const &get_ps() const;
-      // set ps
-      void set_ps(ps __ps);
+      // get ss
+      ss const &get_ss() const;
 
     private:
       std::string _storage; // persistent storage
       std::string _id; // identifier (eg. fasta identifier)
       ps _ps; // sequence
+      ss _ss; // secondary structure
     }; // class molecule
 
     // output operator for molecule
     inline std::ostream &operator<<(std::ostream &__out, molecule const &__m) {
       std::string id(__m.get_identifier());
       id.erase(std::remove(id.begin(), id.end(), '\n'), id.end());
-      __out << __m.get_storage() << ": " << id << " length=" << __m.get_length() << "\n" << __m.get_ps() << "\n";
+      __out << __m.get_storage() << ": " << id << " length=" << __m.get_length() << "\n" << __m.get_ps() << "\n"
+            << __m.get_ss() << "\n";
       return __out;
     } // operator<<()
   } // namespace che

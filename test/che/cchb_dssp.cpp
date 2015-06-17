@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(cchb_dssp_core_symbol) {
 BOOST_AUTO_TEST_CASE(cchb_dssp_ctor_from_id) {
   che::cchb_dssp hb_symbol('H');
   BOOST_CHECK(hb_symbol.get_identifier() == 'H');
-  BOOST_CHECK(hb_symbol.get_specificity() == che::cchb_dssp::specificity_defined);
+  BOOST_CHECK(hb_symbol.get_specificity() == che::cchb_dssp::specificity_type::defined);
   BOOST_CHECK(hb_symbol.is_gap() == false);
   BOOST_CHECK(hb_symbol.is_unknown() == false);
   che::cchb_dssp::weight_map weights = hb_symbol.get_weights();
@@ -34,9 +34,9 @@ BOOST_AUTO_TEST_CASE(cchb_dssp_ctor_from_id) {
 }
 
 BOOST_AUTO_TEST_CASE(cchb_dssp_ctor_from_specificity) {
-  che::cchb_dssp hb_symbol(che::cchb_dssp::specificity_gap);
+  che::cchb_dssp hb_symbol(che::cchb_dssp::specificity_type::gap);
   BOOST_CHECK(hb_symbol.get_identifier() == '-');
-  BOOST_CHECK(hb_symbol.get_specificity() == che::cchb_dssp::specificity_gap);
+  BOOST_CHECK(hb_symbol.get_specificity() == che::cchb_dssp::specificity_type::gap);
   BOOST_CHECK(hb_symbol.is_gap() == true);
   BOOST_CHECK(hb_symbol.is_unknown() == false);
   che::cchb_dssp::weight_map weights = hb_symbol.get_weights();
@@ -44,9 +44,9 @@ BOOST_AUTO_TEST_CASE(cchb_dssp_ctor_from_specificity) {
   BOOST_CHECK(weights.begin()->first == '-');
   BOOST_CHECK(weights.begin()->second == 1.0);
 
-  hb_symbol = che::cchb_dssp(che::cchb_dssp::specificity_unknown);
+  hb_symbol = che::cchb_dssp(che::cchb_dssp::specificity_type::unknown);
   BOOST_CHECK(hb_symbol.get_identifier() == 'C');
-  BOOST_CHECK(hb_symbol.get_specificity() == che::cchb_dssp::specificity_unknown);
+  BOOST_CHECK(hb_symbol.get_specificity() == che::cchb_dssp::specificity_type::unknown);
   BOOST_CHECK(hb_symbol.is_gap() == false);
   BOOST_CHECK(hb_symbol.is_unknown() == true);
   weights = hb_symbol.get_weights();
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(cchb_dssp_ctor_from_weights) {
   che::cchb_dssp::weight_map multiple_weights = {{'H', 0.3}, {'E', 0.4}, {'C', 0.3}};
   che::cchb_dssp hb_symbol('H', multiple_weights);
   BOOST_CHECK(hb_symbol.get_identifier() == 'H');
-  BOOST_CHECK(hb_symbol.get_specificity() == che::cchb_dssp::specificity_defined);
+  BOOST_CHECK(hb_symbol.get_specificity() == che::cchb_dssp::specificity_type::profile);
   BOOST_CHECK(hb_symbol.is_gap() == false);
   BOOST_CHECK(hb_symbol.is_unknown() == false);
   che::cchb_dssp::weight_map weights = hb_symbol.get_weights();
