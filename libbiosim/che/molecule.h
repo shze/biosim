@@ -39,8 +39,10 @@ namespace biosim {
     inline std::ostream &operator<<(std::ostream &__out, molecule const &__m) {
       std::string id(__m.get_identifier());
       id.erase(std::remove(id.begin(), id.end(), '\n'), id.end());
-      __out << __m.get_storage() << ": " << id << " length=" << __m.get_length() << "\n" << __m.get_ps() << "\n"
-            << __m.get_ss() << "\n";
+      __out << __m.get_storage() << ": " << id << " length=" << __m.get_length() << "\n" << __m.get_ps() << "\n";
+      if(__m.get_ss().defined()) {
+        __out << __m.get_ss() << "\n";
+      } // if
       return __out;
     } // operator<<()
   } // namespace che

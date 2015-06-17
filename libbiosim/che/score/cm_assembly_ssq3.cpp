@@ -17,7 +17,12 @@ namespace biosim {
           if(!__first.has_molecule(chain_id) || !__second.has_molecule(chain_id)) {
             DEBUG << get_identifier() << ": chain id '" << chain_id << "' does not exist in both structures, ignoring.";
             continue;
-          }
+          } // if
+          if(!__first.get_molecule(chain_id).get_ss().defined() ||
+             !__second.get_molecule(chain_id).get_ss().defined()) {
+            DEBUG << get_identifier() << ": no secondary structure data for chain id '" << chain_id << "', ignoring.";
+            continue;
+          } // if
 
           q3_sum += compare(__first.get_molecule(chain_id).get_ss(), __second.get_molecule(chain_id).get_ss());
           ++chain_count;

@@ -13,6 +13,7 @@ set(SOURCES_UNIT_TESTER
   che/io/file_assembly.cpp
   che/io/file_fasta.cpp
   che/io/file_psipredv.cpp
+  che/io/file_pssm.cpp
   che/io/file_sse_pool.cpp
   che/score/cm.cpp
   che/score/cm_cc_blosum.cpp

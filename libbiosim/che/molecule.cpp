@@ -4,10 +4,10 @@ namespace biosim {
   namespace che {
     // ctor from storage and identifier (also default ctor)
     molecule::molecule(std::string __storage, std::string __identifier)
-        : _storage(__storage), _id(__identifier), _ps(), _ss(0) {}
+        : _storage(__storage), _id(__identifier), _ps(), _ss() {}
     // ctor from storage, identifier, and ps
     molecule::molecule(std::string __storage, std::string __identifier, ps __ps)
-        : _storage(__storage), _id(__identifier), _ps(__ps), _ss(__ps.size()) {}
+        : _storage(__storage), _id(__identifier), _ps(__ps), _ss() {}
     // ctor from storage, identifier, ps, and ss
     molecule::molecule(std::string __storage, std::string __identifier, ps __ps, ss __ss)
         : _storage(__storage), _id(__identifier), _ps(__ps), _ss(__ss) {
