@@ -85,7 +85,7 @@ namespace biosim {
         : _id(__id), _id_char(__id_char), _specificity(), _monomer_type(), _weights() {
       std::shared_ptr<data const> base_ptr1(find(__base_id1));
       std::shared_ptr<data const> base_ptr2(find(__base_id2));
-      _specificity = base_ptr1->_specificity;
+      _specificity = specificity_type::profile;
       _monomer_type = base_ptr1->_monomer_type;
       _weights = {{__base_id1, 0.5}, {__base_id2, 0.5}};
     } // data ctor

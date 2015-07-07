@@ -107,8 +107,8 @@ BOOST_AUTO_TEST_CASE(cc_ctor_from_specificity) {
   BOOST_CHECK(weights.begin()->first == "UNK");
   BOOST_CHECK(weights.begin()->second == 1.0);
 
-  BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::profile, che::cc::monomer_type::l_peptide_linking),
-                      che::cc_data_not_found);
+  BOOST_CHECK(che::cc(che::cc::specificity_type::profile, che::cc::monomer_type::l_peptide_linking).get_identifier() ==
+              "ASX");
   BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::profile, che::cc::monomer_type::non_polymer),
                       che::cc_data_not_found);
   BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::unknown, che::cc::monomer_type::non_polymer),

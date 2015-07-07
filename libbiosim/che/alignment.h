@@ -2,7 +2,6 @@
 #define che_alignment_h
 
 #include "che/molecule.h"
-#include <list>
 
 namespace biosim {
   namespace che {
@@ -13,16 +12,18 @@ namespace biosim {
       // ctor from a molecule
       explicit alignment(molecule __molecule);
       // ctor from a list of molecules
-      explicit alignment(std::list<molecule> __molecules);
+      explicit alignment(std::vector<molecule> __molecules);
       // get alignment length
       size_t get_length() const;
       // get alignment depth, i.e. number of molecules
       size_t get_depth() const;
       // get aligned molecules
-      std::list<molecule> const &get_molecules() const;
+      std::vector<molecule> const &get_molecules() const;
+      // get cc at specific position and depth
+      cc const &get_cc(size_t __position, size_t __depth) const;
 
     private:
-      std::list<molecule> _molecules; // list of aligned molecules
+      std::vector<molecule> _molecules; // list of aligned molecules
     }; // class alignment
   } // namespace che
 } // namespace

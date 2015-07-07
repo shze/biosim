@@ -49,16 +49,36 @@ namespace biosim {
         return _int_bitscore_matrix;
       } // get_int_bitscore_matrix()
       // compares the given two instances of cc
-      double cm_cc_blosum::compare(che::cc const &__first, che::cc const &__second) const {
-        size_t const first(get_cc_order().find(__first.get_identifier_char()));
-        size_t const second(get_cc_order().find(__second.get_identifier_char()));
+      double cm_cc_blosum::compare(che::cc const &__cc1, che::cc const &__cc2) const {
+        che::cc::weight_map map1(__cc1.get_weights()), map2(__cc2.get_weights()); // use maps to handle profile cc
+        double total_score(0.0);
+        for(auto p1 : map1) { // iterate through each combination
+          for(auto p2 : map2) {
+            che::cc base_cc1(p1.first), base_cc2(p2.first);
+            size_t const pos1(get_cc_order().find(base_cc1.get_identifier_char()));
+            size_t const pos2(get_cc_order().find(base_cc2.get_identifier_char()));
+            double score(blosum(pos1, pos2) * p1.second * p2.second); // multiply with their weights
+            total_score += score;
+            DEBUG << "Blosum: compare cc1=" << __cc1.get_identifier_char() << " (s=" << (int)__cc1.get_specificity()
+                  << ") to cc2=" << __cc2.get_identifier_char() << " (s=" << (int)__cc2.get_specificity()
+                  << "), map_cc1=" << p1.first << " (" << base_cc1.get_identifier_char() << "; p=" << pos1
+                  << "; w=" << p1.second << ") to map_cc2=" << p2.first << " (" << base_cc2.get_identifier_char()
+                  << "; p=" << pos2 << "; w=" << p2.second << "): score=" << score;
+          } // for
+        } // for
+
+        return total_score;
+      } // compare()
+
+      // returns the blosum value for the given two positions
+      double cm_cc_blosum::blosum(size_t const &__pos1, size_t const &__pos2) const {
         if(_use_dbl_bitscore) {
-          return first >= second ? _dbl_bitscore_matrix(first, second) : _dbl_bitscore_matrix(second, first);
+          return __pos1 >= __pos2 ? _dbl_bitscore_matrix(__pos1, __pos2) : _dbl_bitscore_matrix(__pos2, __pos1);
         } // if
         else {
-          return first >= second ? _int_bitscore_matrix(first, second) : _int_bitscore_matrix(second, first);
+          return __pos1 >= __pos2 ? _int_bitscore_matrix(__pos1, __pos2) : _int_bitscore_matrix(__pos2, __pos1);
         } // else
-      } // compare()
+      } // blosum()
 
       // get the order in which data for cc is stored in the matrices as string of identifier chars
       std::string cm_cc_blosum::get_cc_order() {

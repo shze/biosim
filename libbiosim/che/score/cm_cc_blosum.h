@@ -40,9 +40,12 @@ namespace biosim {
         // returns the int bitscore matrix
         i_triangular_matrix const &get_int_bitscore_matrix() const;
         // compares the given two instances of cc
-        double compare(che::cc const &__first, che::cc const &__second) const;
+        double compare(che::cc const &__cc1, che::cc const &__cc2) const;
 
       private:
+        // returns the blosum value for the given two positions
+        double blosum(size_t const &__pos1, size_t const &__pos2) const;
+
         std::string _identifier; // id
         d_triangular_matrix _frequency_matrix; // frequency matrix
         bool _use_dbl_bitscore; // if double or int bitscores should be used in compare()
