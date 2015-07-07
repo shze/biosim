@@ -14,13 +14,22 @@ namespace biosim {
         } // for
         return fac;
       } // factorial()
-      // calculates the binomial coefficent
-      long double binomial_coefficent(unsigned short __n, unsigned short __k) {
-        if(__n < __k) {
-          throw std::invalid_argument("binomial_coefficent cannot be calculated for n < k");
-        } // if
-        return factorial(__n) / factorial(__k) / factorial(__n - __k);
-      } // binomial_coefficent()
+      // calculates the binomial coefficent; the product algorithm allows complex n (here only double), integer k;
+      // generalization allowing complex k is possible, see https://en.wikipedia.org/wiki/Binomial_coefficient
+      long double binomial_coefficent(double __n, short __k) {
+        if(__k < 0) {
+          return 0;
+        }
+        if(__k == 0) {
+          return 1;
+        }
+        // k > 0
+        long double result(__n - __k + 1); // initialize with value for i = 1 b/c k > 0
+        for(size_t i(2); i <= __k; ++i) {
+          result = result * (__n - __k + i) / i;
+        } // for
+        return result;
+      } // binomial_coefficent
     } // namespace algo
   } // namespace math
 } // namespace biosim

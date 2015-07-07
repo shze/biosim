@@ -8,8 +8,9 @@ namespace biosim {
       // x86_64; higher values can only be calculated using bigger datatypes like BigInt, etc and better algorithms, see
       // http://www.luschny.de/math/factorial/FastFactorialFunctions.htm
       long double factorial(unsigned short __n);
-      // calculates the binomial coefficent
-      long double binomial_coefficent(unsigned short __n, unsigned short __k);
+      // calculates the binomial coefficent; the product algorithm allows complex n (here only double), integer k;
+      // generalization allowing complex k is possible, see https://en.wikipedia.org/wiki/Binomial_coefficient
+      long double binomial_coefficent(double __n, short __k);
     } // namespace algo
   } // namespace math
 } // namespace biosim
