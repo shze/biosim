@@ -1,8 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include "math/algo/factorial.h" // header to test
-#include "tools/log.h"
-#include <iomanip>
 
 using namespace biosim;
 

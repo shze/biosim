@@ -17,6 +17,7 @@ set(SOURCES_UNIT_TESTER
   che/io/file_sse_pool.cpp
   che/score/cm.cpp
   che/score/cm_cc_blosum.cpp
+  che/score/ev_alignment.cpp
   math/interval.cpp
   math/tensor.cpp
   math/algo/dp.cpp
