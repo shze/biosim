@@ -2,7 +2,6 @@
 #include <boost/concept_check.hpp>
 
 #include "che/score/ev_alignment.h" // header to test
-#include "tools/log.h"
 #include "che/io/file_fasta.h"
 
 using namespace biosim;
@@ -41,6 +40,15 @@ BOOST_AUTO_TEST_CASE(ev_alignment_evaluate) {
   sequence_and_profile.emplace_back(non_profile_m);
   a = che::alignment(sequence_and_profile);
   BOOST_CHECK_CLOSE(s.evaluate(a), -2.60469, 1e-3);
+
+  che::ps gap_seq;
+  gap_seq.emplace_back(che::cc(che::cc::specificity_type::gap, che::cc::monomer_type::l_peptide_linking));
+  che::molecule gap_m(m.get_storage(), m.get_identifier(), gap_seq);
+  std::vector<che::molecule> sequence_and_gap;
+  sequence_and_gap.emplace_back(non_profile_m);
+  sequence_and_gap.emplace_back(gap_m);
+  a = che::alignment(sequence_and_gap);
+  BOOST_CHECK_CLOSE(s.evaluate(a), -4.2143, 1e-3);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
