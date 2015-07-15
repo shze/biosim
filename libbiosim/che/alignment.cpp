@@ -24,5 +24,13 @@ namespace biosim {
     cc const &alignment::get_cc(size_t __position, size_t __depth) const {
       return _molecules.at(__depth).get_ps().at(__position);
     } // get_cc()
+
+    // ctor from alignment and score
+    scored_alignment::scored_alignment(alignment __alignment, double __score)
+        : _alignment(__alignment), _score(__score) {}
+    // get the alignment
+    alignment const &scored_alignment::get_alignment() const { return _alignment; }
+    // get the score
+    double scored_alignment::get_score() const { return _score; }
   } // namespace che
 } // namespace biosim

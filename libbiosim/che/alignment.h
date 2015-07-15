@@ -25,6 +25,21 @@ namespace biosim {
     private:
       std::vector<molecule> _molecules; // list of aligned molecules
     }; // class alignment
+
+    // container scoring an alignment together with its score; design: simple container
+    class scored_alignment {
+    public:
+      // ctor from alignment and score
+      scored_alignment(alignment __alignment, double __score);
+      // get the alignment
+      alignment const &get_alignment() const;
+      // get the score
+      double get_score() const;
+
+    private:
+      alignment _alignment; // alignment
+      double _score; // score
+    }; // class scored_alignment
   } // namespace che
 } // namespace
 
