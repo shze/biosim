@@ -26,6 +26,15 @@ namespace biosim {
       std::vector<molecule> _molecules; // list of aligned molecules
     }; // class alignment
 
+    // output operator for alignment
+    inline std::ostream &operator<<(std::ostream &__out, alignment const &__a) {
+      __out << "Alignment (depth=" << __a.get_depth() << ", size=" << __a.get_length() << ")\n";
+      for(auto const &m : __a.get_molecules()) {
+        __out << m;
+      } // for
+      return __out;
+    } // operator<<()
+
     // container scoring an alignment together with its score; design: simple container
     class scored_alignment {
     public:
@@ -40,6 +49,16 @@ namespace biosim {
       alignment _alignment; // alignment
       double _score; // score
     }; // class scored_alignment
+
+    // output operator for scored_alignment
+    inline std::ostream &operator<<(std::ostream &__out, scored_alignment const &__a) {
+      __out << "Alignment (depth=" << __a.get_alignment().get_depth() << ", size=" << __a.get_alignment().get_length()
+            << ", score=" << __a.get_score() << ")\n";
+      for(auto const &m : __a.get_alignment().get_molecules()) {
+        __out << m;
+      } // for
+      return __out;
+    } // operator<<()
   } // namespace che
 } // namespace
 
