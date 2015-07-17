@@ -10,6 +10,7 @@ set(SOURCES_UNIT_TESTER
   che/molecule.cpp
   che/sequence_interval.cpp
   che/ss.cpp
+  che/algo/aligner_dp.cpp
   che/io/file_assembly.cpp
   che/io/file_fasta.cpp
   che/io/file_psipredv.cpp

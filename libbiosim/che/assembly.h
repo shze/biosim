@@ -15,6 +15,8 @@ namespace biosim {
       explicit assembly(molecule __m);
       // get list of all chain_ids
       std::list<std::string> get_chain_id_list() const;
+      // get all molecules
+      std::vector<molecule> get_molecules() const;
       // if the molecule with the given chain_id exists
       bool has_molecule(std::string const &__chain_id) const;
       // get molecule with given chain_id, throws out of range if no ts with this chain_id exists

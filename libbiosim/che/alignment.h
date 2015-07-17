@@ -53,7 +53,8 @@ namespace biosim {
     // output operator for scored_alignment
     inline std::ostream &operator<<(std::ostream &__out, scored_alignment const &__a) {
       __out << "Alignment (depth=" << __a.get_alignment().get_depth() << ", size=" << __a.get_alignment().get_length()
-            << ", score=" << __a.get_score() << ")\n";
+            << ", score=" << __a.get_score()
+            << ", normalized_score=" << (__a.get_score() / __a.get_alignment().get_length()) << ")\n";
       for(auto const &m : __a.get_alignment().get_molecules()) {
         __out << m;
       } // for

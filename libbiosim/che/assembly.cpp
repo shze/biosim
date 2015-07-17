@@ -15,6 +15,15 @@ namespace biosim {
       } // for
       return chain_ids;
     } // get_chain_id_list()
+    // get all molecules
+    std::vector<molecule> assembly::get_molecules() const {
+      std::vector<molecule> molecules;
+      molecules.reserve(_molecules.size());
+      for(auto const &p : _molecules) {
+        molecules.push_back(p.second);
+      } // for
+      return molecules;
+    } // get_molecules()
     // if the molecule with the given chain_id exists
     bool assembly::has_molecule(std::string const &__chain_id) const {
       return _molecules.find(__chain_id) != _molecules.end();
