@@ -23,7 +23,10 @@ namespace biosim {
     class cc {
     public:
       // specificity defined as enum for easier comparison; only one specificity allowed, no combinations.
-      enum class specificity_type { defined, profile, unknown, gap };
+      // primary: all unique-single-letter AA (20 'natural' and 3 ambiguous profile AA);
+      // secondary: all profile-but-not-primary and all derived AA
+      // (profile AA: AA with _weights.size > 1; derived AA: _id != _weights.first._id)
+      enum class specificity_type { primary, secondary, unknown, gap };
       // type of monomer, defined as chemical component type in the CCD; used to differentiate compounds of different
       // subgroups with overlapping identifier chars i.e. one letter codes.
       enum class monomer_type { non_polymer, l_peptide_linking, dna_linking, rna_linking };
@@ -62,14 +65,13 @@ namespace biosim {
       // contains the cc data; type that is enumerated
       struct data {
         // ctor for primary unique-single-letter AA
-        data(std::string __id, char __id_char, specificity_type __specificity = specificity_type::defined,
-             monomer_type __monomer_type = monomer_type::l_peptide_linking);
-        // ctor for profile derived-single-letter AA
-        data(std::string __id, std::string __base_id);
+        data(std::string __id, char __id_char, monomer_type __monomer_type = monomer_type::l_peptide_linking);
         // ctor for profile unique-single-letter AA; ctor does not check if base ids have same specificity and
         // monomer values; it assumes they are consistent and uses the values of the first base id.
         data(std::string __id, char __id_char, std::string __base_id1, std::string __base_id2);
-        // ctor for profile no-single-letter AA
+        // ctor for derived AA
+        data(std::string __id, std::string __base_id);
+        // ctor for profile, unknown, and gap AA
         data(std::string __id, char __id_char, cc::specificity_type __specificity, cc::monomer_type __monomer_type,
              weight_map __weights);
 

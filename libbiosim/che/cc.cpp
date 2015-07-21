@@ -28,8 +28,11 @@ namespace biosim {
         } // if
       } // for
 
-      _impl = std::make_shared<data>(highest_weighted_compound->_id, highest_weighted_compound->_id_char,
-                                     cc::specificity_type::profile, first_compound->_monomer_type, __weights);
+      // if only one cc is in the weight_map, use it and do not construct a profile cc
+      _impl = __weights.size() == 1
+                  ? first_compound
+                  : std::make_shared<data>(highest_weighted_compound->_id, highest_weighted_compound->_id_char,
+                                           cc::specificity_type::secondary, first_compound->_monomer_type, __weights);
     } // ctor
 
     // get identifier
@@ -64,20 +67,14 @@ namespace biosim {
       return id_chars;
     } // get_identifier_char_string
 
-    // ctor for primary unique-single-letter AA; __specificity and __monomer_type have defaults
-    cc::data::data(std::string __id, char __id_char, cc::specificity_type __specificity,
-                   cc::monomer_type __monomer_type)
-        : _id(__id), _id_char(__id_char), _specificity(__specificity), _monomer_type(__monomer_type), _weights() {
+    // ctor for primary unique-single-letter AA; __monomer_type has a default
+    cc::data::data(std::string __id, char __id_char, cc::monomer_type __monomer_type)
+        : _id(__id),
+          _id_char(__id_char),
+          _specificity(specificity_type::primary),
+          _monomer_type(__monomer_type),
+          _weights() {
       _weights = {{_id, 1.0}};
-    } // data ctor
-    // ctor for profile derived-single-letter AA
-    cc::data::data(std::string __id, std::string __base_id)
-        : _id(__id), _id_char(), _specificity(), _monomer_type(), _weights() {
-      std::shared_ptr<data const> base_ptr(find(__base_id)); // find base id, use it to set the following values
-      _id_char = base_ptr->_id_char;
-      _specificity = base_ptr->_specificity;
-      _monomer_type = base_ptr->_monomer_type;
-      _weights = {{__base_id, 1.0}};
     } // data ctor
     // ctor for profile unique-single-letter AA; ctor does not check if base ids have same specificity and
     // monomer values; it assumes they are consistent and uses the values of the first base id.
@@ -85,11 +82,20 @@ namespace biosim {
         : _id(__id), _id_char(__id_char), _specificity(), _monomer_type(), _weights() {
       std::shared_ptr<data const> base_ptr1(find(__base_id1));
       std::shared_ptr<data const> base_ptr2(find(__base_id2));
-      _specificity = specificity_type::profile;
+      _specificity = specificity_type::primary;
       _monomer_type = base_ptr1->_monomer_type;
       _weights = {{__base_id1, 0.5}, {__base_id2, 0.5}};
     } // data ctor
-    // ctor for profile no-single-letter AA
+    // ctor for derived AA
+    cc::data::data(std::string __id, std::string __base_id)
+        : _id(__id), _id_char(), _specificity(), _monomer_type(), _weights() {
+      std::shared_ptr<data const> base_ptr(find(__base_id)); // find base id, use it to set the following values
+      _id_char = base_ptr->_id_char;
+      _specificity = specificity_type::secondary;
+      _monomer_type = base_ptr->_monomer_type;
+      _weights = {{__base_id, 1.0}};
+    } // data ctor
+    // ctor for profile, unknown, and gap AA
     cc::data::data(std::string __id, char __id_char, cc::specificity_type __specificity,
                    cc::monomer_type __monomer_type, weight_map __weights)
         : _id(__id),
@@ -111,12 +117,10 @@ namespace biosim {
       std::shared_ptr<cc::data const> unknown_compound(find(specificity_type::unknown, __monomer_type));
       auto itr = std::find_if(data_enum::get_instances().begin(), data_enum::get_instances().end(),
                               [&](std::pair<std::string, tools::enumerate<std::shared_ptr<data const>>> p) {
-        // first two parts are testing id_char, monomer_type; last two are testing that we only find primary compounds
-        // i.e. not a derived compound, and not a profile compound
+        // include all cc with the correct id_char && include all cc with the correct monomer_type && include all cc
+        // that are not secondary (i.e. that have a unique single letter)
         return p.second.get_object()->_id_char == __id_char && p.second.get_object()->_monomer_type == __monomer_type &&
-               !(p.second.get_object()->_id != p.second.get_object()->_weights.begin()->first &&
-                 p.second.get_object()->_weights.size() == 1) &&
-               !(p.second.get_object()->_id == unknown_compound->_id && p.second.get_object()->_weights.size() > 1);
+               p.second.get_object()->_specificity != specificity_type::secondary;
       });
 
       if(itr == data_enum::get_instances().end()) {
@@ -178,9 +182,30 @@ namespace biosim {
       // PYRROLYSINE single-letter: K or O; three-letter: PYH or PYL;
       // SELENOCYSTEINE single-letter: C or U; three-letter: CSE or SEC;
       // unknown AA (special primary single-letter AA)
-      data_enum::add(std::make_shared<data>("UNK", 'X', specificity_type::unknown)); // l_peptide_linking by default
+      data_enum::add(std::make_shared<data>("UNK", 'X', specificity_type::unknown, monomer_type::l_peptide_linking,
+                                            weight_map({{"ALA", 1.0},
+                                                        {"CYS", 1.0},
+                                                        {"ASP", 1.0},
+                                                        {"GLU", 1.0},
+                                                        {"PHE", 1.0},
+                                                        {"GLY", 1.0},
+                                                        {"HIS", 1.0},
+                                                        {"ILE", 1.0},
+                                                        {"LYS", 1.0},
+                                                        {"LEU", 1.0},
+                                                        {"MET", 1.0},
+                                                        {"ASN", 1.0},
+                                                        {"PRO", 1.0},
+                                                        {"GLN", 1.0},
+                                                        {"ARG", 1.0},
+                                                        {"SER", 1.0},
+                                                        {"THR", 1.0},
+                                                        {"VAL", 1.0},
+                                                        {"TRP", 1.0},
+                                                        {"TYR", 1.0}})));
       // gap (special primary single-letter AA); there seem to be no three letter gap id; used one letter codes: -~.
-      data_enum::add(std::make_shared<data>("---", '-', specificity_type::gap));
+      data_enum::add(std::make_shared<data>("---", '-', specificity_type::gap, monomer_type::l_peptide_linking,
+                                            weight_map({{"---", 1.0}})));
 
       // add some common non-primary AAs
       data_enum::add(std::make_shared<data>("PYH", "LYS")); // PYRROLYSINE
@@ -188,18 +213,18 @@ namespace biosim {
       data_enum::add(std::make_shared<data>("MSE", "MET")); // SELENOMETHIONINE
 
       // add deoxyribonucleotides
-      data_enum::add(std::make_shared<data>("DA", 'A', specificity_type::defined, monomer_type::dna_linking));
-      data_enum::add(std::make_shared<data>("DC", 'C', specificity_type::defined, monomer_type::dna_linking));
-      data_enum::add(std::make_shared<data>("DG", 'G', specificity_type::defined, monomer_type::dna_linking));
-      data_enum::add(std::make_shared<data>("DT", 'T', specificity_type::defined, monomer_type::dna_linking));
-      data_enum::add(std::make_shared<data>("DI", 'I', specificity_type::defined, monomer_type::dna_linking));
+      data_enum::add(std::make_shared<data>("DA", 'A', monomer_type::dna_linking));
+      data_enum::add(std::make_shared<data>("DC", 'C', monomer_type::dna_linking));
+      data_enum::add(std::make_shared<data>("DG", 'G', monomer_type::dna_linking));
+      data_enum::add(std::make_shared<data>("DT", 'T', monomer_type::dna_linking));
+      data_enum::add(std::make_shared<data>("DI", 'I', monomer_type::dna_linking));
 
       // add ribonucleotides
-      data_enum::add(std::make_shared<data>("A", 'A', specificity_type::defined, monomer_type::rna_linking));
-      data_enum::add(std::make_shared<data>("C", 'C', specificity_type::defined, monomer_type::rna_linking));
-      data_enum::add(std::make_shared<data>("G", 'G', specificity_type::defined, monomer_type::rna_linking));
-      data_enum::add(std::make_shared<data>("U", 'U', specificity_type::defined, monomer_type::rna_linking));
-      data_enum::add(std::make_shared<data>("I", 'I', specificity_type::defined, monomer_type::rna_linking));
+      data_enum::add(std::make_shared<data>("A", 'A', monomer_type::rna_linking));
+      data_enum::add(std::make_shared<data>("C", 'C', monomer_type::rna_linking));
+      data_enum::add(std::make_shared<data>("G", 'G', monomer_type::rna_linking));
+      data_enum::add(std::make_shared<data>("U", 'U', monomer_type::rna_linking));
+      data_enum::add(std::make_shared<data>("I", 'I', monomer_type::rna_linking));
 
       return true;
     } // initialize()

@@ -46,13 +46,43 @@ BOOST_AUTO_TEST_CASE(cc_core_compounds) {
   che::cc("G");
   che::cc("U");
   che::cc("I");
+
+  BOOST_CHECK(che::cc('A').get_identifier() == "ALA");
+  BOOST_CHECK(che::cc('C').get_identifier() == "CYS");
+  BOOST_CHECK(che::cc('D').get_identifier() == "ASP");
+  BOOST_CHECK(che::cc('E').get_identifier() == "GLU");
+  BOOST_CHECK(che::cc('F').get_identifier() == "PHE");
+  BOOST_CHECK(che::cc('G').get_identifier() == "GLY");
+  BOOST_CHECK(che::cc('H').get_identifier() == "HIS");
+  BOOST_CHECK(che::cc('I').get_identifier() == "ILE");
+  BOOST_CHECK(che::cc('K').get_identifier() == "LYS");
+  BOOST_CHECK(che::cc('L').get_identifier() == "LEU");
+  BOOST_CHECK(che::cc('M').get_identifier() == "MET");
+  BOOST_CHECK(che::cc('N').get_identifier() == "ASN");
+  BOOST_CHECK(che::cc('P').get_identifier() == "PRO");
+  BOOST_CHECK(che::cc('Q').get_identifier() == "GLN");
+  BOOST_CHECK(che::cc('R').get_identifier() == "ARG");
+  BOOST_CHECK(che::cc('S').get_identifier() == "SER");
+  BOOST_CHECK(che::cc('T').get_identifier() == "THR");
+  BOOST_CHECK(che::cc('V').get_identifier() == "VAL");
+  BOOST_CHECK(che::cc('W').get_identifier() == "TRP");
+  BOOST_CHECK(che::cc('Y').get_identifier() == "TYR");
+
+  BOOST_CHECK(che::cc('B').get_identifier() == "ASX");
+  BOOST_CHECK(che::cc('J').get_identifier() == "XLE");
+  BOOST_CHECK(che::cc('X').get_identifier() == "UNK");
+  BOOST_CHECK(che::cc('Z').get_identifier() == "GLX");
+  BOOST_CHECK(che::cc('-').get_identifier() == "---");
+
+  BOOST_REQUIRE_THROW(che::cc('O'), che::cc_data_not_found);
+  BOOST_REQUIRE_THROW(che::cc('U'), che::cc_data_not_found);
 }
 
 BOOST_AUTO_TEST_CASE(cc_ctor_from_id) {
   che::cc compound("ALA");
   BOOST_CHECK(compound.get_identifier() == "ALA");
   BOOST_CHECK(compound.get_identifier_char() == 'A');
-  BOOST_CHECK(compound.get_specificity() == che::cc::specificity_type::defined);
+  BOOST_CHECK(compound.get_specificity() == che::cc::specificity_type::primary);
   BOOST_CHECK(compound.is_gap() == false);
   BOOST_CHECK(compound.is_unknown() == false);
   BOOST_CHECK(compound.get_monomer_type() == che::cc::monomer_type::l_peptide_linking);
@@ -68,7 +98,7 @@ BOOST_AUTO_TEST_CASE(cc_ctor_from_char) {
   che::cc compound('C', che::cc::monomer_type::l_peptide_linking);
   BOOST_CHECK(compound.get_identifier() == "CYS");
   BOOST_CHECK(compound.get_identifier_char() == 'C');
-  BOOST_CHECK(compound.get_specificity() == che::cc::specificity_type::defined);
+  BOOST_CHECK(compound.get_specificity() == che::cc::specificity_type::primary);
   BOOST_CHECK(compound.is_gap() == false);
   BOOST_CHECK(compound.is_unknown() == false);
   BOOST_CHECK(compound.get_monomer_type() == che::cc::monomer_type::l_peptide_linking);
@@ -103,25 +133,32 @@ BOOST_AUTO_TEST_CASE(cc_ctor_from_specificity) {
   BOOST_CHECK(compound.is_unknown() == true);
   BOOST_CHECK(compound.get_monomer_type() == che::cc::monomer_type::l_peptide_linking);
   weights = compound.get_weights();
-  BOOST_CHECK(weights.size() == 1);
-  BOOST_CHECK(weights.begin()->first == "UNK");
-  BOOST_CHECK(weights.begin()->second == 1.0);
+  BOOST_CHECK(weights.size() == 20);
 
-  BOOST_CHECK(che::cc(che::cc::specificity_type::profile, che::cc::monomer_type::l_peptide_linking).get_identifier() ==
-              "ASX");
-  BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::profile, che::cc::monomer_type::non_polymer),
+  BOOST_CHECK(che::cc(che::cc::specificity_type::primary, che::cc::monomer_type::l_peptide_linking).get_identifier() ==
+              "ALA");
+  BOOST_CHECK(che::cc(che::cc::specificity_type::secondary, che::cc::monomer_type::l_peptide_linking)
+                  .get_identifier() == "CSE");
+
+  BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::primary, che::cc::monomer_type::non_polymer),
+                      che::cc_data_not_found);
+  BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::secondary, che::cc::monomer_type::non_polymer),
                       che::cc_data_not_found);
   BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::unknown, che::cc::monomer_type::non_polymer),
                       che::cc_data_not_found);
   BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::gap, che::cc::monomer_type::non_polymer),
                       che::cc_data_not_found);
-  BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::profile, che::cc::monomer_type::dna_linking),
+
+  BOOST_CHECK(che::cc(che::cc::specificity_type::primary, che::cc::monomer_type::dna_linking).get_identifier() == "DA");
+  BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::secondary, che::cc::monomer_type::dna_linking),
                       che::cc_data_not_found);
   BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::unknown, che::cc::monomer_type::dna_linking),
                       che::cc_data_not_found);
   BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::gap, che::cc::monomer_type::dna_linking),
                       che::cc_data_not_found);
-  BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::profile, che::cc::monomer_type::rna_linking),
+
+  BOOST_CHECK(che::cc(che::cc::specificity_type::primary, che::cc::monomer_type::rna_linking).get_identifier() == "A");
+  BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::secondary, che::cc::monomer_type::rna_linking),
                       che::cc_data_not_found);
   BOOST_REQUIRE_THROW(che::cc compound(che::cc::specificity_type::unknown, che::cc::monomer_type::rna_linking),
                       che::cc_data_not_found);
@@ -137,7 +174,7 @@ BOOST_AUTO_TEST_CASE(cc_ctor_from_weights) {
   che::cc compound(single_weight);
   BOOST_CHECK(compound.get_identifier() == "ASP");
   BOOST_CHECK(compound.get_identifier_char() == 'D');
-  BOOST_CHECK(compound.get_specificity() == che::cc::specificity_type::profile);
+  BOOST_CHECK(compound.get_specificity() == che::cc::specificity_type::primary);
   BOOST_CHECK(compound.is_gap() == false);
   BOOST_CHECK(compound.is_unknown() == false);
   BOOST_CHECK(compound.get_monomer_type() == che::cc::monomer_type::l_peptide_linking);
@@ -150,7 +187,7 @@ BOOST_AUTO_TEST_CASE(cc_ctor_from_weights) {
   compound = che::cc(multiple_weights);
   BOOST_CHECK(compound.get_identifier() == "GLU");
   BOOST_CHECK(compound.get_identifier_char() == 'E');
-  BOOST_CHECK(compound.get_specificity() == che::cc::specificity_type::profile);
+  BOOST_CHECK(compound.get_specificity() == che::cc::specificity_type::secondary);
   BOOST_CHECK(compound.is_gap() == false);
   BOOST_CHECK(compound.is_unknown() == false);
   BOOST_CHECK(compound.get_monomer_type() == che::cc::monomer_type::l_peptide_linking);
