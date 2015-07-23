@@ -56,7 +56,7 @@ namespace biosim {
           direction = inc.next(direction); // do one increment to avoid the all-gap case
 
           bool done(false);
-          double score(-std::numeric_limits<double>::max());
+          double score(0.0);
           while(!done) { // go over all directions
             if(!tensor_pos_underflow(__pos, direction)) { // calculate only if the needed position is within the tensor
               DEBUG << "Calculating tensor for direction=(" << math::tensor<size_t>::to_string(direction) << ")";
@@ -89,7 +89,7 @@ namespace biosim {
             } // catch
           } // while
 
-          return score == -std::numeric_limits<double>::max() ? 0.0 : score;
+          return score;
         } // operator()
 
       private:
@@ -138,19 +138,45 @@ namespace biosim {
         std::list<std::pair<std::vector<size_t>, alignment_data>> work; // list of work items
         std::list<alignment_data> best_alignment_data; // list of completed alignments
 
-        // create first work item
-        std::vector<size_t> last_pos; // fill in last position
+        // create first work item: go through the tensor and find the maximum score to start the backtracking
+        std::vector<size_t> pos(__scores.get_rank(), 0);
+        std::vector<std::vector<size_t>> alphabets;
         for(size_t dim(0); dim < __scores.get_rank(); ++dim) {
-          last_pos.push_back(__scores.get_size(dim) - 1);
+          std::vector<size_t> alphabet(__scores.get_size(dim));
+          size_t element(0);
+          std::generate(alphabet.begin(), alphabet.end(), [&] { return element++; });
+          alphabets.push_back(alphabet);
         } // for
+        tools::incrementor<std::vector<size_t>> inc(alphabets);
+        bool done(false);
+        double max_score(0.0); // get maximal score
+        std::list<std::vector<size_t>> max_pos_list; // positions of maximal score
+        while(!done) {
+          if(__scores(pos) > max_score) { // only if its larger (and not equal), update the score and clear the list
+            max_score = __scores(pos);
+            max_pos_list.clear();
+          } // if
+          if(__scores(pos) >= max_score) { // this includes the case of the previous if
+            max_pos_list.push_back(pos);
+          } // if
+
+          try {
+            pos = inc.next(pos);
+          } catch(std::overflow_error &e) {
+            done = true;
+          } // catch
+        } // while
+
         size_t total_depth(0); // calculate to total depth as sum of the depth of all alignments
         for(alignment const &a : __alignments) {
           total_depth += a.get_depth();
         } // for
-        work.emplace_back(std::make_pair(last_pos, alignment_data(total_depth)));
+        for(auto max_pos : max_pos_list) { // insert all positions of max_score
+          work.emplace_back(std::make_pair(max_pos, alignment_data(total_depth)));
+        } // for
 
         // create incrementor with __pos.size length and digits 0=gap, 1=match, for use in while
-        tools::incrementor<std::vector<size_t>> inc(std::vector<std::vector<size_t>>(__scores.get_rank(), {0, 1}));
+        inc = tools::incrementor<std::vector<size_t>>(std::vector<std::vector<size_t>>(__scores.get_rank(), {0, 1}));
         // backtracking
         while(!work.empty()) {
           std::vector<size_t> current_pos(work.front().first);
@@ -191,7 +217,7 @@ namespace biosim {
                   copy._molecule_data[dim].push_front(molecule_parts[dim].get_ps()[0]); // extend alignment
                 } // for
 
-                if(previous_pos == std::vector<size_t>(__scores.get_rank(), 0)) {
+                if(__scores(previous_pos) == 0.0) {
                   best_alignment_data.push_back(copy);
                 } // if
                 else {
@@ -225,7 +251,7 @@ namespace biosim {
             seq.insert(seq.begin(), a._molecule_data[depth_pos].begin(), a._molecule_data[depth_pos].end());
             molecules.emplace_back(storages[depth_pos], identifiers[depth_pos], seq); // create final molecule
           } // for
-          alignments.emplace_back(alignment(molecules), __scores(last_pos));
+          alignments.emplace_back(alignment(molecules), max_score);
         } // for
 
         return alignments;

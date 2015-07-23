@@ -102,7 +102,19 @@ namespace biosim {
           _id_char(__id_char),
           _specificity(__specificity),
           _monomer_type(__monomer_type),
-          _weights(__weights) {}
+          _weights(normalize_weights(__weights)) {}
+
+    // (static) normalize the given weight map (so that the sum of all weights is 1)
+    cc::weight_map cc::normalize_weights(weight_map __weights) {
+      double sum(0.0);
+      for(auto const &p : __weights) {
+        sum += p.second;
+      } // for
+      for(auto &p : __weights) {
+        p.second /= sum;
+      } // for
+      return __weights;
+    } // normalize_weights()
 
     // (static) find compound with id; id is assumed unique; throws if no object was found
     std::shared_ptr<cc::data const> cc::find(std::string const &__id) {

@@ -34,10 +34,10 @@ BOOST_AUTO_TEST_CASE(aligner_dp_align_pair) {
   profile.insert(profile.end(), 5, che::cc("ASX"));
   che::molecule m2("st", "id", profile);
   alignment_list = aligner.align_pair(che::alignment(m), che::alignment(m2));
-  BOOST_CHECK(alignment_list.size() == 1);
+  BOOST_CHECK(alignment_list.size() == 5);
   BOOST_CHECK(alignment_list.front().get_alignment().get_depth() == 2);
-  BOOST_CHECK(alignment_list.front().get_alignment().get_length() == 5);
-  BOOST_CHECK_CLOSE(alignment_list.front().get_score(), -8.71073, 1e-3);
+  BOOST_CHECK(alignment_list.front().get_alignment().get_length() == 1);
+  BOOST_CHECK_CLOSE(alignment_list.front().get_score(), 0.169935, 1e-3);
 
   alignment_list = aligner.align_pair(che::alignment(m2), che::alignment(m2));
   BOOST_CHECK(alignment_list.size() == 1);
@@ -50,10 +50,10 @@ BOOST_AUTO_TEST_CASE(aligner_dp_align_pair) {
   a = che::assembly(che::io::file_fasta::read("../test/data/P02088-shorter.fasta"));
   m2 = a.get_molecule("A");
   alignment_list = aligner.align_pair(che::alignment(m), che::alignment(m2));
-  BOOST_CHECK(alignment_list.size() == 3);
+  BOOST_CHECK(alignment_list.size() == 1);
   BOOST_CHECK(alignment_list.front().get_alignment().get_depth() == 2);
-  BOOST_CHECK(alignment_list.front().get_alignment().get_length() == 31);
-  BOOST_CHECK_CLOSE(alignment_list.front().get_score(), 31.0524, 1e-3);
+  BOOST_CHECK(alignment_list.front().get_alignment().get_length() == 26);
+  BOOST_CHECK_CLOSE(alignment_list.front().get_score(), 50.0037, 1e-3);
 }
 
 BOOST_AUTO_TEST_CASE(aligner_dp_align_multiple) {

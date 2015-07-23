@@ -82,6 +82,9 @@ namespace biosim {
         weight_map _weights; // weights of this data object based on compounds in the enumerated instance set
       }; // struct data
 
+      // normalize the given weight map (so that the sum of all weights is 1)
+      static weight_map normalize_weights(weight_map __weights);
+
       // define identifier function for use with enumerate; friend and not part of the class
       friend std::string const &identifier(std::shared_ptr<data const> const &__data_ptr) { return __data_ptr->_id; }
 
