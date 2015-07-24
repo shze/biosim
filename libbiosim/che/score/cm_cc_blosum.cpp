@@ -48,6 +48,19 @@ namespace biosim {
       cm_cc_blosum::i_triangular_matrix const &cm_cc_blosum::get_int_bitscore_matrix() const {
         return _int_bitscore_matrix;
       } // get_int_bitscore_matrix()
+      // returns the minimum score within the used matrix
+      double cm_cc_blosum::get_min_score() const {
+        double min_score(std::numeric_limits<double>::max());
+        for(size_t i(0); i < _dbl_bitscore_matrix.size1(); ++i) { // assume both matrices have the same size
+          for(size_t j(0); j <= i; ++j) {
+            min_score =
+                std::min(min_score, _use_dbl_bitscore ? _dbl_bitscore_matrix(i, j) : _int_bitscore_matrix(i, j));
+          } // for
+        } // for
+        return min_score;
+      } // get_min_score()
+      // returns the score of comparing two unknown cc
+      double cm_cc_blosum::get_unknown_score() const { return compare(che::cc('X'), che::cc('X')); }
       // compares the given two instances of cc
       double cm_cc_blosum::compare(che::cc const &__cc1, che::cc const &__cc2) const {
         che::cc::weight_map map1(__cc1.get_weights()), map2(__cc2.get_weights()); // use maps to handle profile cc

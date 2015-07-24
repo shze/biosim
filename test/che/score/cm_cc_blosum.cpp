@@ -121,4 +121,14 @@ BOOST_AUTO_TEST_CASE(blosum_bitscore_ctor) {
   BOOST_CHECK(b62.compare(che::cc('A'), che::cc('R')) == -1);
 }
 
+BOOST_AUTO_TEST_CASE(blosum_min_unknown) {
+  che::score::cm_cc_blosum b62_dbl(true);
+  BOOST_CHECK_CLOSE(b62_dbl.get_min_score(), -4.2143, 1e-3);
+  BOOST_CHECK_CLOSE(b62_dbl.get_unknown_score(), -1.10221, 1e-3);
+
+  che::score::cm_cc_blosum b62_int;
+  BOOST_CHECK_CLOSE(b62_int.get_min_score(), -4, 1e-3);
+  BOOST_CHECK_CLOSE(b62_int.get_unknown_score(), -1.065, 1e-3);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

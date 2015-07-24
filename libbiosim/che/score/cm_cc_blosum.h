@@ -39,6 +39,10 @@ namespace biosim {
         d_triangular_matrix const &get_dbl_bitscore_matrix() const;
         // returns the int bitscore matrix
         i_triangular_matrix const &get_int_bitscore_matrix() const;
+        // returns the minimum score within the used matrix
+        double get_min_score() const;
+        // returns the score of comparing two unknown cc
+        double get_unknown_score() const;
         // compares the given two instances of cc
         double compare(che::cc const &__cc1, che::cc const &__cc2) const;
 
