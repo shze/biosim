@@ -1,5 +1,6 @@
 #include "che/io/file_assembly.h"
 #include "che/io/file_fasta.h"
+#include "che/io/file_pdb.h"
 #include "che/io/file_psipredv.h"
 #include "che/io/file_sse_pool.h"
 #include <boost/filesystem.hpp>
@@ -15,8 +16,7 @@ namespace biosim {
         _readers[".psipred_ss2"] = &file_psipredv::read;
         _readers[".rdbProf"] = &file_psipredv::read;
         _readers[".jufo9d_ss"] = &file_psipredv::read;
-        // add pdb, sequence length defined, no overlapping sse; cast b/c compiler does not know which read() to use
-        _readers[".pdb"] = static_cast<assembly (*)(std::string const &)>(&file_sse_pool::read);
+        _readers[".pdb"] = &file_pdb::read;
         // don't add sse_pool, sequence length is not defined (missing coil intervals), and overlap possible
       } // ctor
 

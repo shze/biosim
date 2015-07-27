@@ -18,13 +18,14 @@ BOOST_AUTO_TEST_CASE(aligner_dp_align_pair) {
   BOOST_CHECK(alignment_list.front().get_alignment().get_length() == 5);
   BOOST_CHECK_CLOSE(alignment_list.front().get_score(), 24.2329, 1e-3);
 
-  alignment_list = aligner.align_pair(che::alignment(m), che::alignment({m, m}));
+  che::alignment two_m({m, m}, {0, 0}, {m.get_length(), m.get_length()});
+  alignment_list = aligner.align_pair(che::alignment(m), two_m);
   BOOST_CHECK(alignment_list.size() == 1);
   BOOST_CHECK(alignment_list.front().get_alignment().get_depth() == 3);
   BOOST_CHECK(alignment_list.front().get_alignment().get_length() == 5);
   BOOST_CHECK_CLOSE(alignment_list.front().get_score(), 24.2329, 1e-3);
 
-  alignment_list = aligner.align_pair(che::alignment({m, m}), che::alignment({m, m}));
+  alignment_list = aligner.align_pair(two_m, two_m);
   BOOST_CHECK(alignment_list.size() == 1);
   BOOST_CHECK(alignment_list.front().get_alignment().get_depth() == 4);
   BOOST_CHECK(alignment_list.front().get_alignment().get_length() == 5);

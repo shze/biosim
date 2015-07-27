@@ -2,10 +2,12 @@
 
 namespace biosim {
   namespace che {
-    // ctor from a molecule
-    alignment::alignment(molecule __molecule) : _molecules(1, __molecule) {}
-    // ctor from a list of molecules
-    alignment::alignment(std::vector<molecule> __molecules) : _molecules(__molecules) {
+    // ctor from a molecule (takes begin and end from given molecule)
+    alignment::alignment(molecule __molecule)
+        : _molecules(1, __molecule), _begins(1, 0), _ends(1, __molecule.get_length()) {}
+    // ctor from a list of molecules, begins, and ends
+    alignment::alignment(std::vector<molecule> __molecules, std::vector<size_t> __begins, std::vector<size_t> __ends)
+        : _molecules(__molecules), _begins(__begins), _ends(__ends) {
       if(!_molecules.empty()) {
         for(auto m : _molecules) {
           if(m.get_length() != _molecules.begin()->get_length()) {
@@ -20,6 +22,10 @@ namespace biosim {
     size_t alignment::get_depth() const { return _molecules.size(); }
     // get aligned molecules
     std::vector<molecule> const &alignment::get_molecules() const { return _molecules; }
+    // get begins (1-based) of the alignment in the complete molecules
+    std::vector<size_t> const &alignment::get_begins() const { return _begins; }
+    // get ends (1-based) of the alignment in the complete molecules
+    std::vector<size_t> const &alignment::get_ends() const { return _ends; }
     // get cc at specific position and depth
     cc const &alignment::get_cc(size_t __position, size_t __depth) const {
       return _molecules.at(__depth).get_ps().at(__position);

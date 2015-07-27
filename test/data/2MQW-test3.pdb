@@ -1,0 +1,49 @@
+HEADER    HYDROLASE                               30-JUN-14   2MQW              
+TITLE     SOLUTION STRUCTURE OF A PROTEASOME RELATED SUBUNIT N TERMINAL DOMAIN  
+COMPND    MOL_ID: 1;                                                            
+COMPND   2 MOLECULE: 26S PROTEASOME REGULATORY SUBUNIT RPN9;                    
+COMPND   3 CHAIN: A;                                                            
+COMPND   4 FRAGMENT: N TERMINAL DOMAIN, UNP RESIDUES 1-160;                     
+COMPND   5 SYNONYM: PROTEASOME NON-ATPASE SUBUNIT 7;                            
+COMPND   6 ENGINEERED: YES                                                      
+SOURCE    MOL_ID: 1;                                                            
+SOURCE   2 ORGANISM_SCIENTIFIC: SACCHAROMYCES CEREVISIAE S288C;                 
+SOURCE   3 ORGANISM_COMMON: BAKER'S YEAST;                                      
+SOURCE   4 ORGANISM_TAXID: 559292;                                              
+SOURCE   5 GENE: D9461.14, NAS7, RPN9, YDR427W;                                 
+SOURCE   6 EXPRESSION_SYSTEM: ESCHERICHIA COLI;                                 
+SOURCE   7 EXPRESSION_SYSTEM_TAXID: 562;                                        
+SOURCE   8 EXPRESSION_SYSTEM_VECTOR_TYPE: VECTOR;                               
+SOURCE   9 EXPRESSION_SYSTEM_VECTOR: PET28A                                     
+KEYWDS    A-HELIX BUNDLE, HYDROLASE                                             
+EXPDTA    SOLUTION NMR                                                          
+NUMMDL    20                                                                    
+AUTHOR    Y.WU,Y.HU,C.JIN                                                       
+REVDAT   1   04-FEB-15 2MQW    0                                                
+DBREF  2MQW A    1   160  UNP    Q04062   RPN9_YEAST       1    160             
+SEQADV 2MQW GLY A   -2  UNP  Q04062              EXPRESSION TAG                 
+SEQADV 2MQW SER A   -1  UNP  Q04062              EXPRESSION TAG                 
+SEQADV 2MQW HIS A    0  UNP  Q04062              EXPRESSION TAG                 
+SEQRES   1 A  151  MET PHE ASN ASN HIS GLU ILE ASP THR ILE                      
+SEQRES   2 A  151  LEU SER THR LEU ARG MET GLU ALA ASP PRO SER LEU HIS          
+SEQRES   3 A  151  PRO LEU PHE GLU GLN PHE GLU LYS PHE TYR GLU GLU LYS          
+SEQRES   4 A  151  LEU TRP PHE GLN LEU SER GLU SER LEU THR LYS PHE PHE          
+SEQRES   5 A  151  ASP ASP ALA LYS SER THR PRO LEU ARG LEU ARG LEU TYR          
+SEQRES   6 A  151  ASP ASN PHE VAL SER LYS PHE TYR ASP LYS ILE ASN GLN          
+SEQRES   7 A  151  LEU SER VAL VAL LYS TYR LEU LEU ALA SER LEU LYS ASP          
+SEQRES   8 A  151  SER LYS ASP PHE ASP GLU SER LEU LYS TYR LEU ASP ASP          
+SEQRES   9 A  151  LEU LYS ALA GLN PHE GLN GLU LEU ASP SER LYS LYS GLN          
+SEQRES  10 A  151  ARG ASN ASN GLY SER LYS ASP HIS GLY ASP GLY ILE LEU          
+SEQRES  11 A  151  LEU ILE ASP SER GLU ILE ALA ARG THR TYR LEU LEU LYS          
+SEQRES  12 A  151  ASN ASP LEU VAL LYS ALA ARG ASP LEU LEU ASP                  
+HELIX    1   1 ASN A    4  ALA A   18  1                                  15    
+HELIX    2   2 ASP A   19  SER A   21  5                                   3    
+HELIX    3   3 LEU A   22  GLU A   35  1                                  14    
+HELIX    4   4 LEU A   37  ASP A   50  1                                  14    
+HELIX    5   5 PRO A   56  PHE A   65  1                                  10    
+HELIX    6   6 VAL A   66  ILE A   73  5                                   8    
+HELIX    7   7 ASN A   74  SER A   89  1                                  16    
+HELIX    8   8 PHE A   92  GLN A  114  1                                  23    
+HELIX    9   9 GLY A  123  LYS A  140  1                                  18    
+HELIX   10  10 ALA A  146  LEU A  153  5                                   8    
+END                                                                             

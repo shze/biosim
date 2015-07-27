@@ -74,12 +74,13 @@ namespace biosim {
                   molecule_parts.emplace_back("", "", seq);
                 } // for
               } // for
-              double step_score(_score_f.evaluate(che::alignment(molecule_parts)));
+              che::alignment step_alignment(molecule_parts, previous_pos, __pos);
+              double step_score(_score_f.evaluate(step_alignment));
 
               score = std::max(score, previous_score + step_score);
 
               DEBUG << "Got previous_score=" << previous_score << ", step_score=" << step_score
-                    << ", max_score=" << score << ", " << to_single_line(che::alignment(molecule_parts));
+                    << ", max_score=" << score << ", " << to_single_line(step_alignment);
             } // if
 
             try {
@@ -99,12 +100,14 @@ namespace biosim {
 
       // internal data structure for building the alignment
       struct alignment_data {
-        // ctor from size
-        explicit alignment_data(size_t __size) : _molecule_data() {
+        // ctor from size and end positions
+        explicit alignment_data(size_t __size, std::vector<size_t> __end) : _molecule_data(), _begin(), _end(__end) {
           _molecule_data.insert(_molecule_data.begin(), __size, std::list<che::cc>());
+          _begin.insert(_begin.begin(), __size, 0);
         } // ctor
 
         std::vector<std::list<che::cc>> _molecule_data; // a list<cc> for each molecule
+        std::vector<size_t> _begin, _end; // begins and ends of the alignment in the original sequences
       }; // struct alignment_data
 
       // ctor from alignment score; also default ctor
@@ -172,7 +175,7 @@ namespace biosim {
           total_depth += a.get_depth();
         } // for
         for(auto max_pos : max_pos_list) { // insert all positions of max_score
-          work.emplace_back(std::make_pair(max_pos, alignment_data(total_depth)));
+          work.emplace_back(std::make_pair(max_pos, alignment_data(total_depth, max_pos)));
         } // for
 
         // create incrementor with __pos.size length and digits 0=gap, 1=match, for use in while
@@ -204,11 +207,11 @@ namespace biosim {
                   molecule_parts.emplace_back("", "", seq);
                 } // for
               } // for
-              double step_score(_score_f.evaluate(che::alignment(molecule_parts)));
+              che::alignment step_alignment(molecule_parts, previous_pos, current_pos);
+              double step_score(_score_f.evaluate(step_alignment));
 
               DEBUG << "Got previous_score=" << previous_score << ", step_score=" << step_score
-                    << ", current_score=" << __scores(current_pos) << ", "
-                    << to_single_line(che::alignment(molecule_parts));
+                    << ", current_score=" << __scores(current_pos) << ", " << to_single_line(step_alignment);
 
               if(previous_score + step_score == __scores(current_pos)) {
                 DEBUG << "Got best path";
@@ -218,6 +221,7 @@ namespace biosim {
                 } // for
 
                 if(__scores(previous_pos) == 0.0) {
+                  copy._begin = previous_pos; // save begin positions
                   best_alignment_data.push_back(copy);
                 } // if
                 else {
@@ -251,7 +255,7 @@ namespace biosim {
             seq.insert(seq.begin(), a._molecule_data[depth_pos].begin(), a._molecule_data[depth_pos].end());
             molecules.emplace_back(storages[depth_pos], identifiers[depth_pos], seq); // create final molecule
           } // for
-          alignments.emplace_back(alignment(molecules), max_score);
+          alignments.emplace_back(alignment(molecules, a._begin, a._end), max_score);
         } // for
 
         return alignments;

@@ -20,16 +20,18 @@ BOOST_AUTO_TEST_CASE(ev_alignment_evaluate) {
   BOOST_CHECK(s.evaluate(che::alignment(shortened_m)) == 0);
 
   std::vector<che::molecule> m_vec2(2, shortened_m);
-  BOOST_CHECK_CLOSE(s.evaluate(che::alignment(m_vec2)), 33.5659, 1e-3);
+  che::alignment a2(m_vec2, {0, 0}, {shortened_m.get_length(), shortened_m.get_length()});
+  BOOST_CHECK_CLOSE(s.evaluate(a2), 33.5659, 1e-3);
 
   std::vector<che::molecule> m_vec3(3, shortened_m);
-  BOOST_CHECK_CLOSE(s.evaluate(che::alignment(m_vec3)), 33.5659, 1e-3);
+  che::alignment a3(m_vec3, {0, 0, 0}, {shortened_m.get_length(), shortened_m.get_length(), shortened_m.get_length()});
+  BOOST_CHECK_CLOSE(s.evaluate(a3), 33.5659, 1e-3);
 
   che::ps profile_seq;
   profile_seq.emplace_back(che::cc("ASX"));
   che::molecule profile_m(m.get_storage(), m.get_identifier(), profile_seq);
   std::vector<che::molecule> profile_vec(2, profile_m);
-  che::alignment a(profile_vec);
+  che::alignment a(profile_vec, {0, 0}, {profile_m.get_length(), profile_m.get_length()});
   BOOST_CHECK_CLOSE(s.evaluate(a), 3.49272, 1e-3);
 
   che::ps non_profile_seq;
@@ -38,7 +40,7 @@ BOOST_AUTO_TEST_CASE(ev_alignment_evaluate) {
   std::vector<che::molecule> sequence_and_profile;
   sequence_and_profile.emplace_back(profile_m);
   sequence_and_profile.emplace_back(non_profile_m);
-  a = che::alignment(sequence_and_profile);
+  a = che::alignment(sequence_and_profile, {0, 0}, {profile_m.get_length(), non_profile_m.get_length()});
   BOOST_CHECK_CLOSE(s.evaluate(a), -2.60469, 1e-3);
 
   che::ps gap_seq;
@@ -47,7 +49,7 @@ BOOST_AUTO_TEST_CASE(ev_alignment_evaluate) {
   std::vector<che::molecule> sequence_and_gap;
   sequence_and_gap.emplace_back(non_profile_m);
   sequence_and_gap.emplace_back(gap_m);
-  a = che::alignment(sequence_and_gap);
+  a = che::alignment(sequence_and_gap, {0, 0}, {non_profile_m.get_length(), gap_m.get_length()});
   BOOST_CHECK_CLOSE(s.evaluate(a), -4.2143, 1e-3);
 
   che::ps seq_n;
@@ -56,11 +58,11 @@ BOOST_AUTO_TEST_CASE(ev_alignment_evaluate) {
   std::vector<che::molecule> mols;
   mols.emplace_back(profile_m);
   mols.emplace_back(mol_n);
-  a = che::alignment(mols);
+  a = che::alignment(mols, {0, 0}, {profile_m.get_length(), mol_n.get_length()});
   BOOST_CHECK_CLOSE(s.evaluate(a), 3.46247, 1e-3);
 
   mols = std::vector<che::molecule>(2, mol_n);
-  a = che::alignment(mols);
+  a = che::alignment(mols, {0, 0}, {mol_n.get_length(), mol_n.get_length()});
   BOOST_CHECK_CLOSE(s.evaluate(a), 5.65324, 1e-3);
 
   che::ps seq_x;
@@ -69,18 +71,18 @@ BOOST_AUTO_TEST_CASE(ev_alignment_evaluate) {
   mols = std::vector<che::molecule>();
   mols.emplace_back(mol_n);
   mols.emplace_back(mol_x);
-  a = che::alignment(mols);
+  a = che::alignment(mols, {0, 0}, {mol_n.get_length(), mol_x.get_length()});
   BOOST_CHECK_CLOSE(s.evaluate(a), -0.991768, 1e-3);
 
   mols = std::vector<che::molecule>(2, mol_x);
-  a = che::alignment(mols);
+  a = che::alignment(mols, {0, 0}, {mol_x.get_length(), mol_x.get_length()});
   BOOST_CHECK_CLOSE(s.evaluate(a), -1.10221, 1e-3);
 
   che::ps seq_i;
   seq_i.emplace_back(che::cc('I'));
   che::molecule mol_i(m.get_storage(), m.get_identifier(), seq_i);
   mols = std::vector<che::molecule>(2, mol_i);
-  a = che::alignment(mols);
+  a = che::alignment(mols, {0, 0}, {mol_i.get_length(), mol_i.get_length()});
   BOOST_CHECK_CLOSE(s.evaluate(a), 3.99851, 1e-3);
 
   che::ps seq_iv;
@@ -89,11 +91,11 @@ BOOST_AUTO_TEST_CASE(ev_alignment_evaluate) {
   mols = std::vector<che::molecule>();
   mols.emplace_back(mol_i);
   mols.emplace_back(mol_iv);
-  a = che::alignment(mols);
+  a = che::alignment(mols, {0, 0}, {mol_i.get_length(), mol_iv.get_length()});
   BOOST_CHECK_CLOSE(s.evaluate(a), 3.27278, 1e-3);
 
   mols = std::vector<che::molecule>(2, mol_iv);
-  a = che::alignment(mols);
+  a = che::alignment(mols, {0, 0}, {mol_iv.get_length(), mol_iv.get_length()});
   BOOST_CHECK_CLOSE(s.evaluate(a), 3.21538, 1e-3);
 }
 

@@ -2,12 +2,13 @@
 
 #include "che/io/file_assembly.h" // header to test
 #include "tools/file.h" // for the exception
+#include "tools/log.h"
 
 using namespace biosim;
 
-BOOST_AUTO_TEST_SUITE(suite_file_qs)
+BOOST_AUTO_TEST_SUITE(suite_file_assembly)
 
-BOOST_AUTO_TEST_CASE(file_qs_read) {
+BOOST_AUTO_TEST_CASE(file_assembly_read) {
   che::io::file_assembly reader;
 
   che::assembly a(reader.read("../test/data/1UBI_A_DSSP.fasta"));
@@ -60,11 +61,11 @@ BOOST_AUTO_TEST_CASE(file_qs_read) {
   BOOST_CHECK(a.get_molecule("A").get_ss().get_sses().size() == 10);
 
   a = reader.read("../test/data/T0666_3UX4A_fixedbcl_dssp.pdb");
-  BOOST_CHECK(a.get_molecule("A").get_length() == 187);
-  BOOST_CHECK(a.get_molecule("A").get_ps().size() == 187);
-  BOOST_CHECK(a.get_molecule("A").get_ps()[0].get_identifier_char() == 'X');
+  BOOST_CHECK(a.get_molecule("A").get_length() == 195);
+  BOOST_CHECK(a.get_molecule("A").get_ps().size() == 195);
+  BOOST_CHECK(a.get_molecule("A").get_ps()[0].get_identifier_char() == 'M');
   BOOST_CHECK(a.get_molecule("A").get_ss().defined());
-  BOOST_CHECK(a.get_molecule("A").get_ss().get_sequence().size() == 187);
+  BOOST_CHECK(a.get_molecule("A").get_ss().get_sequence().size() == 195);
   BOOST_CHECK(a.get_molecule("A").get_ss().get_sequence()[3].get_identifier_char() == 'H');
   BOOST_CHECK(a.get_molecule("A").get_ss().get_sses().size() == 7);
 
@@ -73,11 +74,11 @@ BOOST_AUTO_TEST_CASE(file_qs_read) {
   reader.add_sse_pool_reader(a);
   a = reader.read("../test/data/3IM3-biomolecule-bcl.pool");
   BOOST_CHECK(a.get_chain_id_list().size() == 2);
-  BOOST_CHECK(a.get_molecule("A").get_length() == 187);
-  BOOST_CHECK(a.get_molecule("A").get_ps().size() == 187);
+  BOOST_CHECK(a.get_molecule("A").get_length() == 195);
+  BOOST_CHECK(a.get_molecule("A").get_ps().size() == 195);
   BOOST_CHECK(a.get_molecule("A").get_ps()[3].get_identifier_char() == 'X');
   BOOST_CHECK(a.get_molecule("A").get_ss().defined());
-  BOOST_CHECK(a.get_molecule("A").get_ss().get_sequence().size() == 187);
+  BOOST_CHECK(a.get_molecule("A").get_ss().get_sequence().size() == 195);
   BOOST_CHECK(a.get_molecule("A").get_ss().get_sequence()[3].get_identifier_char() == 'H');
   BOOST_CHECK(a.get_molecule("A").get_ss().get_sses().size() == 3);
   BOOST_CHECK(a.get_molecule("B").get_length() == 49);

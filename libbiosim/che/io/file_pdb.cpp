@@ -3,6 +3,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
+#include "che/algo/aligner_dp.h"
 
 namespace biosim {
   namespace che {
@@ -90,6 +91,18 @@ namespace biosim {
           } // for
         } // process()
 
+        // insert cc [begin..end) at the fron   t of the cc_sequence
+        template <class InputIterator>
+        void insert_front(char const &__chain_id, InputIterator __begin, InputIterator __end) {
+          _chains[__chain_id]._cc_sequence.insert(_chains[__chain_id]._cc_sequence.begin(), __begin, __end);
+        } // insert_front()
+
+        // insert cc [begin..end) at the back of the cc_sequence
+        template <class InputIterator>
+        void insert_back(char const &__chain_id, InputIterator __begin, InputIterator __end) {
+          _chains[__chain_id]._cc_sequence.insert(_chains[__chain_id]._cc_sequence.end(), __begin, __end);
+        } // insert_back()
+
         // get chain ids
         std::list<char> get_chain_ids() {
           std::list<char> chain_ids;
@@ -100,7 +113,7 @@ namespace biosim {
         } // get_chain_ids()
 
         // returns the ps
-        ps get_sequence(char const &__chain_id) { return _chains[__chain_id]._cc_sequence; }
+        ps const &get_sequence(char const &__chain_id) { return _chains[__chain_id]._cc_sequence; }
       }; // class seqres_data
 
       // stores the ss definition data
@@ -325,6 +338,29 @@ namespace biosim {
                                                             terminal_residue_sequence_number - 1, cchb_dssp('E')));
         } // process_strand()
 
+        // shift the given chain by __insert_length
+        void shift(char const &__chain_id, int __insert_length) {
+          // shift sequence
+          if(__insert_length >= 0) { // shift sequence to the right by inserting at the front
+            _chains[__chain_id]._cc_sequence.insert(
+                _chains[__chain_id]._cc_sequence.begin(), __insert_length,
+                cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
+          } // if
+          else { // shift sequence to the left by removing from the front
+            ps new_seq;
+            new_seq.insert(new_seq.end(), _chains[__chain_id]._cc_sequence.begin() + std::abs(__insert_length),
+                           _chains[__chain_id]._cc_sequence.end());
+            _chains[__chain_id]._cc_sequence = new_seq;
+          } // else
+          // shift pool
+          std::set<cchb_dssp_interval> new_pool;
+          for(cchb_dssp_interval const &sse : _chains[__chain_id]._pool) {
+            new_pool.insert(
+                cchb_dssp_interval(sse.get_min() + __insert_length, sse.get_max() + __insert_length, sse.get_type()));
+          } // for
+          _chains[__chain_id]._pool = new_pool;
+        } // shift()
+
         // get chain ids
         std::list<char> get_chain_ids() {
           std::list<char> chain_ids;
@@ -335,9 +371,9 @@ namespace biosim {
         } // get_chain_ids()
 
         // returns the ps
-        ps get_sequence(char const &__chain_id) { return _chains[__chain_id]._cc_sequence; }
+        ps const &get_sequence(char const &__chain_id) { return _chains[__chain_id]._cc_sequence; }
         // return the pool
-        std::set<cchb_dssp_interval> get_pool(char const &__chain_id) { return _chains[__chain_id]._pool; }
+        std::set<cchb_dssp_interval> const &get_pool(char const &__chain_id) { return _chains[__chain_id]._pool; }
       }; // class ssdef_data
 
       // stores the model data
@@ -356,6 +392,55 @@ namespace biosim {
         // processes the input strings
         void process_terminate() {}
       }; // class model_data
+
+      // adjust seqres and ssdef data based on the given alignment
+      void adjust(seqres_data &__seqres, ssdef_data &__ssdef, char const &__chain_id,
+                  che::scored_alignment const &__alignment) {
+        // save original lengths before we change seqres or ssdef
+        size_t original_cc_seq_length(__seqres.get_sequence(__chain_id).size());
+        size_t original_ss_seq_length(__ssdef.get_sequence(__chain_id).size());
+
+        // check unaligned sequences at the front (there should be exactly two molecules in this alignment)
+        size_t cc_unaligned_length_begin(__alignment.get_alignment().get_begins()[0]);
+        size_t ss_unaligned_length_begin(__alignment.get_alignment().get_begins()[1]);
+        int begin_diff(cc_unaligned_length_begin - ss_unaligned_length_begin);
+        // if begin_diff == 0, do nothing
+        if(begin_diff > 0) { // cc_seq has cc that are not in ss_seq
+          LOG << "SEQRES and HELIX/SHEET positions differ; increase HELIX/SHEET positions by " << begin_diff << ".";
+          __ssdef.shift(__chain_id, begin_diff);
+        } // if
+        else if(begin_diff < 0) { // ss_seq has cc that are not in cc_seq
+          size_t first_sse_begin(__ssdef.get_pool(__chain_id).begin()->get_min());
+          // if all 0..abs(begin_diff) cc of ss_seq are unknown (i.e. no sse starts there), remove these cc from ss_seq
+          if(std::abs(begin_diff) <= first_sse_begin) {
+            LOG << "SEQRES and HELIX/SHEET positions differ; decrease HELIX/SHEET positions by " << std::abs(begin_diff)
+                << ".";
+            __ssdef.shift(__chain_id, begin_diff);
+          } // if
+          else { // an sse starts there, copy 0..abs(begin_diff) cc from ss_seq to cc_seq
+            // it would be possible to only copy from first_sse_begin..abs(begin_diff), but then additionally all sse
+            // would have to shift back by begin_diff
+            LOG << "HELIX/SHEET starts before SEQRES; increase SEQRES positions by " << std::abs(begin_diff)
+                << " and insert unknown amino acids at the beginning.";
+            __seqres.insert_front(__chain_id, __ssdef.get_sequence(__chain_id).begin(),
+                                  __ssdef.get_sequence(__chain_id).begin() - begin_diff);
+          } // else
+        } // else if
+
+        // check unaligned sequence in the back
+        size_t cc_unaligned_length_end(original_cc_seq_length - __alignment.get_alignment().get_ends()[0]);
+        size_t ss_unaligned_length_end(original_ss_seq_length - __alignment.get_alignment().get_ends()[1]);
+        int end_diff(cc_unaligned_length_end - ss_unaligned_length_end);
+        // if end_diff == 0, do nothing
+        // if end_diff > 0, cc_seq has cc that are not in ss_seq: add unknown at back of ss_seq by setting total length
+        if(end_diff < 0) { // ss_seq has cc that are not in cc_seq: add unknown at back of cc_seq
+          // no check needed of end of ss_seq is just unknown b/c ss_seq ends with the last sse
+          LOG << "HELIX/SHEET ends after SEQRES; insert " << std::abs(end_diff)
+              << " unknown amino acids at the end of SEQRES.";
+          __seqres.insert_back(__chain_id, __ssdef.get_sequence(__chain_id).end() - std::abs(end_diff),
+                               __ssdef.get_sequence(__chain_id).end());
+        } // if
+      } // adjust()
 
       // read ps and ss from a given file
       assembly file_pdb::read(const std::string &__filename) {
@@ -553,10 +638,19 @@ namespace biosim {
 
         assembly a; // final result
 
+        che::score::cm_cc_blosum b62(true);
+        che::algo::aligner_dp aligner(che::score::ev_alignment(b62, -b62.get_unknown_score(), b62.get_min_score()));
         size_t sequence_no(1); // start with 1
         for(auto c : seqres.get_chain_ids()) {
-          a.set(std::string(c, 1), molecule(__filename + "/" + std::to_string(sequence_no), ">lcl|sequence",
-                                            seqres.get_sequence(c), ss(ssdef.get_pool(c))));
+          molecule cc_seq("", "", seqres.get_sequence(c));
+          molecule ss_seq("", "", ssdef.get_sequence(c), ss(ssdef.get_pool(c)));
+          che::scored_alignment best_alignment(
+              aligner.align_multiple({che::alignment(cc_seq), che::alignment(ss_seq)}).front());
+          adjust(seqres, ssdef, c, best_alignment);
+
+          a.set(std::string(1, c),
+                molecule(__filename + "/" + std::to_string(sequence_no), ">lcl|sequence", seqres.get_sequence(c),
+                         ss(ssdef.get_pool(c), seqres.get_sequence(c).size())));
           ++sequence_no; // increase sequence_no, b/c it's not done in the for loop header
         }
 

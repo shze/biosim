@@ -5,11 +5,12 @@
 namespace biosim {
   namespace che {
     namespace score {
-      // ctor taking a cc score offset; default ctor
-      ev_alignment::ev_alignment(double __cc_score_offset)
-          : _cc_score_f(cm_cc_blosum(true)),
-            _cc_score_offset(__cc_score_offset),
-            _gap_score(_cc_score_f.get_min_score()) {}
+      // default ctor
+      ev_alignment::ev_alignment()
+          : _cc_score_f(cm_cc_blosum(true)), _cc_score_offset(0.0), _gap_score(_cc_score_f.get_min_score()) {}
+      // ctor taking a cc cc score function, cc score offset, and gap score
+      ev_alignment::ev_alignment(cm_cc_blosum __cc_score_f, double __cc_score_offset, double __gap_score)
+          : _cc_score_f(__cc_score_f), _cc_score_offset(__cc_score_offset), _gap_score(__gap_score) {}
       // returns identifier
       std::string ev_alignment::get_identifier() const { return "alignment"; }
       // evaluate the probability of the given alignment

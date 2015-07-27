@@ -41,7 +41,7 @@ namespace biosim {
       id.erase(std::remove(id.begin(), id.end(), '\n'), id.end());
       __out << __m.get_storage() << ": " << id << " length=" << __m.get_length() << "\n" << __m.get_ps() << "\n";
       if(__m.get_ss().defined()) {
-        __out << __m.get_ss() << "\n";
+        __out << __m.get_ss(); // no newline here, b/c ss data consists of lines
       } // if
       return __out;
     } // operator<<()

@@ -11,8 +11,10 @@ namespace biosim {
       // class to evaluate the probability of alignments
       class ev_alignment : public math::ev_function<che::alignment> {
       public:
-        // ctor taking a cc score offset; default ctor
-        explicit ev_alignment(double __cc_score_offset = 0.0);
+        // default ctor
+        ev_alignment();
+        // ctor taking a cc cc score function, cc score offset, and gap score
+        ev_alignment(cm_cc_blosum __cc_score_f, double __cc_score_offset, double __gap_score);
         // returns identifier
         std::string get_identifier() const;
         // evaluate the probability of the given alignment
