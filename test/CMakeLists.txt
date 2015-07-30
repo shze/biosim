@@ -13,11 +13,13 @@ set(SOURCES_UNIT_TESTER
   che/algo/aligner_dp.cpp
   che/io/file_assembly.cpp
   che/io/file_fasta.cpp
+  che/io/file_pdb.cpp
   che/io/file_psipredv.cpp
   che/io/file_pssm.cpp
   che/io/file_sse_pool.cpp
   che/score/cm.cpp
   che/score/cm_cc_blosum.cpp
+  che/score/cm_cc_identity.cpp
   che/score/ev_alignment.cpp
   math/interval.cpp
   math/tensor.cpp

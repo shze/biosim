@@ -221,7 +221,7 @@ namespace biosim {
                 } // for
 
                 if(__scores(previous_pos) == 0.0) {
-                  copy._begin = previous_pos; // save begin positions
+                  copy._begin = current_pos; // save begin positions
                   best_alignment_data.push_back(copy);
                 } // if
                 else {

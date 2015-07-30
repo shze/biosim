@@ -32,7 +32,7 @@ namespace biosim {
       virtual double compare(T const &, T const &) const = 0;
       // compares the given two instances of T
       double operator()(T const &__t1, T const &__t2) const { return compare(__t1, __t2); }
-    }; // cm_function
+    }; // class cm_function
 
     // define identifier function for enumerate as template for all cm_function ptrs
     template <class T>

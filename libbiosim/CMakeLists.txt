@@ -21,6 +21,7 @@ set(LIBBIOSIM_SOURCES
   che/score/cm.cpp
   che/score/cm_assembly_ssq3.cpp
   che/score/cm_cc_blosum.cpp
+  che/score/cm_cc_identity.cpp
   che/score/ev_alignment.cpp
   math/algo/factorial.cpp
   tools/file.cpp

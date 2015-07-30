@@ -1,7 +1,7 @@
 #ifndef che_score_cm_cc_blosum_h
 #define che_score_cm_cc_blosum_h
 
-#include "math/function.h"
+#include "che/score/cm_cc_function.h"
 #include "che/cc.h"
 #include "boost/numeric/ublas/triangular.hpp"
 
@@ -12,7 +12,7 @@ namespace biosim {
       // any other blosum matrix can be constructed either from its frequency or its bitscore matrix; compare uses the
       // bitscore matrix, frequency_compare uses the frequency matrix.
       // note: the frequency matrix is empty if constructed from a bitscore matrix.
-      class cm_cc_blosum : public math::cm_function<che::cc> {
+      class cm_cc_blosum : public cc_cm_function {
       public:
         using lower = boost::numeric::ublas::lower;
         using row_major = boost::numeric::ublas::row_major;
@@ -39,10 +39,8 @@ namespace biosim {
         d_triangular_matrix const &get_dbl_bitscore_matrix() const;
         // returns the int bitscore matrix
         i_triangular_matrix const &get_int_bitscore_matrix() const;
-        // returns the minimum score within the used matrix
+        // returns the minimum score
         double get_min_score() const;
-        // returns the score of comparing two unknown cc
-        double get_unknown_score() const;
         // compares the given two instances of cc
         double compare(che::cc const &__cc1, che::cc const &__cc2) const;
 
