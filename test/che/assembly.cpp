@@ -9,32 +9,32 @@ BOOST_AUTO_TEST_SUITE(suite_assembly)
 BOOST_AUTO_TEST_CASE(assembly_ctor) {
   che::assembly a;
   BOOST_CHECK(a.get_chain_id_list().empty());
-  BOOST_CHECK(a.has_molecule("A") == false);
-  BOOST_REQUIRE_THROW(a.get_molecule("A"), std::out_of_range);
+  BOOST_CHECK(a.has_structure("A") == false);
+  BOOST_REQUIRE_THROW(a.get_structure("A"), std::out_of_range);
 
-  che::molecule m;
-  a = che::assembly(m);
+  che::structure s;
+  a = che::assembly(s);
   BOOST_CHECK(a.get_chain_id_list().size() == 1);
-  BOOST_CHECK(a.has_molecule("A") == true);
-  BOOST_CHECK(a.get_molecule("A").get_ps().empty());
+  BOOST_CHECK(a.has_structure("A") == true);
+  BOOST_CHECK(a.get_structure("A").get_ps().empty());
 }
 
 BOOST_AUTO_TEST_CASE(assembly_add_set) {
-  che::molecule m;
+  che::structure s;
   che::assembly a;
   BOOST_CHECK(a.get_chain_id_list().size() == 0);
-  BOOST_CHECK(a.add(m) == "A"); // check returned chain_id
+  BOOST_CHECK(a.add(s) == "A"); // check returned chain_id
   BOOST_CHECK(a.get_chain_id_list().size() == 1);
 
-  a.set("A", m);
+  a.set("A", s);
   BOOST_CHECK(a.get_chain_id_list().size() == 1);
-  BOOST_CHECK(a.has_molecule("B") == false);
+  BOOST_CHECK(a.has_structure("B") == false);
 
-  a.set("C", m);
+  a.set("C", s);
   BOOST_CHECK(a.get_chain_id_list().size() == 2);
-  BOOST_CHECK(a.has_molecule("B") == false);
-  BOOST_CHECK(a.has_molecule("C") == true);
-  BOOST_CHECK(a.has_molecule("D") == false);
+  BOOST_CHECK(a.has_structure("B") == false);
+  BOOST_CHECK(a.has_structure("C") == true);
+  BOOST_CHECK(a.has_structure("D") == false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

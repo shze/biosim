@@ -24,8 +24,8 @@ namespace biosim {
 
         size_t sequence_no(1);
         // collect all sequences to try to match them after all of them are read
-        std::list<std::pair<std::string, ss>> sss; // pairs of (id, ss); no map, so order is preserved
-        std::list<molecule> molecules; // molecules containing id, ps
+        std::list<std::pair<std::string, ss>> id_ss_pairs; // pairs of (id, ss); no map, so order is preserved
+        std::list<structure> structures; // structures containing id, ps
 
         // loop over all identifier/sequence pairs
         boost::sregex_iterator itr(file_content.begin(), file_content.end(), regex_multifasta), itr_end;
@@ -39,7 +39,7 @@ namespace biosim {
           DEBUG << "Identifier:\n" << match_identifier;
           DEBUG << "Sequence:\n" << match_sequence;
 
-          // try to detect which symbol type this sequence has, and based on that fill the sequence into the molecule
+          // try to detect which symbol type this sequence has, and based on that fill the sequence into the assembly
           tools::char_function char_isspace = (int (*)(int)) & std::isspace;
           std::set<char> charset_cc(tools::get_unique_char_set_ignore(cc::get_identifier_char_string(), char_isspace));
           std::set<char> charset_cchb_dssp(
@@ -66,13 +66,13 @@ namespace biosim {
                   << gap.get_identifier() << "' with '" << unknown.get_identifier() << "'.";
             } // if
 
-            sss.emplace_back(file_id, convert_to_ss(match_sequence)); // store for now
+            id_ss_pairs.emplace_back(file_id, convert_to_ss(match_sequence)); // store for now
           } else if(is_cc_sequence) {
             LOG << "Detected sequence type for " << __filename << "/" << sequence_no << ": cc sequence.";
 
             // store for now; if file had no/empty identifier, use default
-            molecules.emplace_back(molecule(file_id, match_identifier.empty() ? ">lcl|sequence" : match_identifier,
-                                            convert_to_ps(match_sequence)));
+            structures.emplace_back(structure(file_id, match_identifier.empty() ? ">lcl|sequence" : match_identifier,
+                                              convert_to_ps(match_sequence)));
           } // if
           else { // do not throw exception here, the user of this class has to check how many assemblies were found
             std::stringstream ss(match_identifier);
@@ -85,35 +85,35 @@ namespace biosim {
 
         assembly new_assembly;
 
-        // iterate over sss and molecules to match them based on their length
-        DEBUG << "Trying to match " << molecules.size() << " cc sequences with " << sss.size() << " dssp sequences.";
-        for(auto &current_molecule : molecules) {
+        // iterate over ss and structures to match them based on their length
+        DEBUG << "Trying to match " << structures.size() << " cc sequences with " << id_ss_pairs.size()
+              << " dssp sequences.";
+        for(auto &s : structures) {
           // try to find a matching secondary structure sequence
           bool inserted(false);
-          for(auto itr(sss.begin()), itr_end(sss.end()); itr != itr_end; ++itr) {
-            if(itr->second.get_sequence().size() == current_molecule.get_length()) {
+          for(auto itr(id_ss_pairs.begin()), itr_end(id_ss_pairs.end()); itr != itr_end; ++itr) {
+            if(itr->second.get_sequence().size() == s.get_length()) {
               LOG << "Assuming " << shorten_file_storage(itr->first) << " is the dssp assignment for "
-                  << shorten_file_storage(current_molecule.get_storage()) << ".";
-              new_assembly.add(molecule(current_molecule.get_storage(), current_molecule.get_identifier(),
-                                        current_molecule.get_ps(), itr->second));
+                  << shorten_file_storage(s.get_storage()) << ".";
+              new_assembly.add(structure(s.get_storage(), s.get_identifier(), s.get_ps(), itr->second));
               inserted = true;
-              sss.erase(itr);
+              id_ss_pairs.erase(itr);
               break;
             } // if
           } // for
 
           if(!inserted) { // if not found, just insert the cc sequence without secondary structure
-            DEBUG << "No matching dssp assignment found for " << current_molecule.get_storage();
-            new_assembly.add(current_molecule);
+            DEBUG << "No matching dssp assignment found for " << s.get_storage();
+            new_assembly.add(s);
           } // if
         } // for
 
-        DEBUG << "Inserting " << sss.size() << " unmatched dssp sequences.";
-        for(auto p : sss) {
+        DEBUG << "Inserting " << id_ss_pairs.size() << " unmatched dssp sequences.";
+        for(auto id_ss_pair : id_ss_pairs) {
           ps new_ps;
-          new_ps.resize(p.second.get_sequence().size(),
+          new_ps.resize(id_ss_pair.second.get_sequence().size(),
                         cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
-          new_assembly.add(molecule(p.first, ">lcl|sequence", new_ps, p.second));
+          new_assembly.add(structure(id_ss_pair.first, ">lcl|sequence", new_ps, id_ss_pair.second));
         } // for
 
         return new_assembly;

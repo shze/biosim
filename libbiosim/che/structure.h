@@ -1,5 +1,5 @@
-#ifndef che_molecule_h
-#define che_molecule_h
+#ifndef che_structure_h
+#define che_structure_h
 
 #include "che/sequence.h"
 #include "che/ss.h"
@@ -8,15 +8,15 @@
 
 namespace biosim {
   namespace che {
-    // molecule contains the consitution (sequence) and spatial positions
-    class molecule {
+    // structure contains the primary structure (sequence, positions) and the secondary structure
+    class structure {
     public:
       // ctor from storage and identifier (also default ctor)
-      explicit molecule(std::string __storage = std::string(), std::string __identifier = std::string());
+      explicit structure(std::string __storage = std::string(), std::string __identifier = std::string());
       // ctor from storage, identifier, and ps
-      molecule(std::string __storage, std::string __identifier, ps __ps);
+      structure(std::string __storage, std::string __identifier, ps __ps);
       // ctor from storage, identifier, ps, and ss
-      molecule(std::string __storage, std::string __identifier, ps __ps, ss __ss);
+      structure(std::string __storage, std::string __identifier, ps __ps, ss __ss);
       // get storage
       std::string const &get_storage() const;
       // get identifier
@@ -33,10 +33,10 @@ namespace biosim {
       std::string _id; // identifier (eg. fasta identifier)
       ps _ps; // sequence
       ss _ss; // secondary structure
-    }; // class molecule
+    }; // class structure
 
-    // output operator for molecule
-    inline std::ostream &operator<<(std::ostream &__out, molecule const &__m) {
+    // output operator for structure
+    inline std::ostream &operator<<(std::ostream &__out, structure const &__m) {
       std::string id(__m.get_identifier());
       id.erase(std::remove(id.begin(), id.end(), '\n'), id.end());
       __out << __m.get_storage() << ": " << id << " length=" << __m.get_length() << "\n" << __m.get_ps() << "\n";
@@ -48,4 +48,4 @@ namespace biosim {
   } // namespace che
 } // namespace biosim
 
-#endif // che_molecule_h
+#endif // che_structure_h

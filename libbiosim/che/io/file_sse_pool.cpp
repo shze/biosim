@@ -243,17 +243,17 @@ namespace biosim {
         for(auto chain_pair : chains) {
           // extend the sequences to the reference length
           std::string chain_id_string(1, chain_pair.first);
-          if(__reference.has_molecule(chain_id_string)) {
+          if(__reference.has_structure(chain_id_string)) {
             chain_pair.second.cc_sequence.resize(
                 std::max(chain_pair.second.cc_sequence.size(),
-                         __reference.get_molecule(chain_id_string).get_ss().get_sequence().size()),
+                         __reference.get_structure(chain_id_string).get_ss().get_sequence().size()),
                 cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
           } // if
 
           // add to final result
-          a.set(chain_id_string,
-                molecule(__filename + "/" + std::to_string(sequence_no), ">lcl|sequence", chain_pair.second.cc_sequence,
-                         ss(chain_pair.second.pool, chain_pair.second.cc_sequence.size())));
+          a.set(chain_id_string, structure(__filename + "/" + std::to_string(sequence_no), ">lcl|sequence",
+                                           chain_pair.second.cc_sequence,
+                                           ss(chain_pair.second.pool, chain_pair.second.cc_sequence.size())));
 
           ++sequence_no; // increase sequence_no, b/c it's not done in the for loop header
         } // for

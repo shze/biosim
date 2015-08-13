@@ -7,9 +7,9 @@ set(SOURCES_UNIT_TESTER
   che/assembly.cpp
   che/cc.cpp
   che/cchb_dssp.cpp
-  che/molecule.cpp
   che/sequence_interval.cpp
   che/ss.cpp
+  che/structure.cpp
   che/algo/aligner_dp.cpp
   che/io/file_assembly.cpp
   che/io/file_fasta.cpp

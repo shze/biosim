@@ -5,9 +5,9 @@ namespace biosim {
   namespace che {
     namespace score {
       // default ctor
-      cm_cc_identity::cm_cc_identity() : _identifier("identity") {}
+      cm_cc_identity::cm_cc_identity() : _id("identity") {}
       // returns identifier
-      std::string cm_cc_identity::get_identifier() const { return std::string(_identifier); }
+      std::string cm_cc_identity::get_identifier() const { return std::string(_id); }
       // returns the minimum score
       double cm_cc_identity::get_min_score() const { return std::min(get_match_score(), get_mismatch_score()); }
       // compares the given two instances of cc

@@ -51,7 +51,7 @@ namespace biosim {
         } // for
 
         return cc_sequence.empty() ? assembly()
-                                   : assembly(molecule(__filename, ">lcl|sequence", cc_sequence, ss(cchb_sequence)));
+                                   : assembly(structure(__filename, ">lcl|sequence", cc_sequence, ss(cchb_sequence)));
       } // read()
     } // namespace io
   } // namespace che

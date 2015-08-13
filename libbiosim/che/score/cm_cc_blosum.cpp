@@ -6,55 +6,54 @@ namespace biosim {
     namespace score {
       // default ctor, constructs a blosum62 scoring matrix
       cm_cc_blosum::cm_cc_blosum(bool __use_dbl_bitscore)
-          : _identifier("blosum62"),
-            _frequency_matrix(get_frequency_matrix_blosum62()),
+          : _id("blosum62"),
+            _freq_matrix(get_frequency_matrix_blosum62()),
             _use_dbl_bitscore(__use_dbl_bitscore),
-            _bitscore_fraction(get_bitscore_matrix_blosum62().second),
-            _dbl_bitscore_matrix(to_bitscore_matrix(_frequency_matrix) / _bitscore_fraction),
-            _int_bitscore_matrix(get_bitscore_matrix_blosum62().first) {}
+            _bits_fraction(get_bitscore_matrix_blosum62().second),
+            _dbl_bits_matrix(to_bitscore_matrix(_freq_matrix) / _bits_fraction),
+            _int_bits_matrix(get_bitscore_matrix_blosum62().first) {}
       // ctor from frequency matrix
       cm_cc_blosum::cm_cc_blosum(std::string const &__id, d_triangular_matrix const &__frequencies,
                                  bool __use_dbl_bitscore)
-          : _identifier(__id),
-            _frequency_matrix(__frequencies),
+          : _id(__id),
+            _freq_matrix(__frequencies),
             _use_dbl_bitscore(__use_dbl_bitscore),
-            _bitscore_fraction(1.0),
-            _dbl_bitscore_matrix(to_bitscore_matrix(_frequency_matrix)),
-            _int_bitscore_matrix(to_int_bitscore_matrix(_dbl_bitscore_matrix)) {}
+            _bits_fraction(1.0),
+            _dbl_bits_matrix(to_bitscore_matrix(_freq_matrix)),
+            _int_bits_matrix(to_int_bitscore_matrix(_dbl_bits_matrix)) {}
       // ctor from bitscore matrix
       cm_cc_blosum::cm_cc_blosum(std::string const &__id, i_triangular_matrix const &__bitscores,
                                  double __bitscore_fraction)
-          : _identifier(__id),
-            _frequency_matrix(get_cc_order().length(), get_cc_order().length()), // empty, but correct size
+          : _id(__id),
+            _freq_matrix(get_cc_order().length(), get_cc_order().length()), // empty, but correct size
             _use_dbl_bitscore(false),
-            _bitscore_fraction(__bitscore_fraction),
-            _dbl_bitscore_matrix(_frequency_matrix), // set to empty, and _frequency_matrix is empty
-            _int_bitscore_matrix(__bitscores) {}
+            _bits_fraction(__bitscore_fraction),
+            _dbl_bits_matrix(_freq_matrix), // set to empty, and _freq_matrix is empty
+            _int_bits_matrix(__bitscores) {}
       // returns identifier
       std::string cm_cc_blosum::get_identifier() const {
-        return std::string(_identifier).append(_use_dbl_bitscore ? "_dbl" : "");
+        return std::string(_id).append(_use_dbl_bitscore ? "_dbl" : "");
       } // get_identifier()
       // returns the frequency matrix
-      cm_cc_blosum::d_triangular_matrix const &cm_cc_blosum::get_frequency_matrix() const { return _frequency_matrix; }
+      cm_cc_blosum::d_triangular_matrix const &cm_cc_blosum::get_frequency_matrix() const { return _freq_matrix; }
       // returns if double bitscores are used
       bool cm_cc_blosum::get_use_dbl_bitscore() const { return _use_dbl_bitscore; }
       // returns the bitscore fraction
-      double const &cm_cc_blosum::get_bitscore_fraction() const { return _bitscore_fraction; }
+      double const &cm_cc_blosum::get_bitscore_fraction() const { return _bits_fraction; }
       // returns the double bitscore matrix
       cm_cc_blosum::d_triangular_matrix const &cm_cc_blosum::get_dbl_bitscore_matrix() const {
-        return _dbl_bitscore_matrix;
+        return _dbl_bits_matrix;
       } // get_dbl_bitscore_matrix()
       // returns the int bitscore matrix
       cm_cc_blosum::i_triangular_matrix const &cm_cc_blosum::get_int_bitscore_matrix() const {
-        return _int_bitscore_matrix;
+        return _int_bits_matrix;
       } // get_int_bitscore_matrix()
       // returns the minimum score
       double cm_cc_blosum::get_min_score() const {
         double min_score(std::numeric_limits<double>::max());
-        for(size_t i(0); i < _dbl_bitscore_matrix.size1(); ++i) { // assume both matrices have the same size
+        for(size_t i(0); i < _dbl_bits_matrix.size1(); ++i) { // assume both matrices have the same size
           for(size_t j(0); j <= i; ++j) {
-            min_score =
-                std::min(min_score, _use_dbl_bitscore ? _dbl_bitscore_matrix(i, j) : _int_bitscore_matrix(i, j));
+            min_score = std::min(min_score, _use_dbl_bitscore ? _dbl_bits_matrix(i, j) : _int_bits_matrix(i, j));
           } // for
         } // for
         return min_score;
@@ -84,10 +83,10 @@ namespace biosim {
       // returns the blosum value for the given two positions
       double cm_cc_blosum::blosum(size_t const &__pos1, size_t const &__pos2) const {
         if(_use_dbl_bitscore) {
-          return __pos1 >= __pos2 ? _dbl_bitscore_matrix(__pos1, __pos2) : _dbl_bitscore_matrix(__pos2, __pos1);
+          return __pos1 >= __pos2 ? _dbl_bits_matrix(__pos1, __pos2) : _dbl_bits_matrix(__pos2, __pos1);
         } // if
         else {
-          return __pos1 >= __pos2 ? _int_bitscore_matrix(__pos1, __pos2) : _int_bitscore_matrix(__pos2, __pos1);
+          return __pos1 >= __pos2 ? _int_bits_matrix(__pos1, __pos2) : _int_bits_matrix(__pos2, __pos1);
         } // else
       } // blosum()
 

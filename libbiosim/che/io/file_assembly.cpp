@@ -23,7 +23,7 @@ namespace biosim {
       // add reader function to read sse pool files
       void file_assembly::add_sse_pool_reader(assembly const &__reference) {
         _readers[".pool"] = [&](std::string const &__filename) -> assembly {
-          DEBUG << "Extend length of ss sequence to " << __reference.get_molecule("A").get_ss().get_sequence().size()
+          DEBUG << "Extend length of ss sequence to " << __reference.get_structure("A").get_ss().get_sequence().size()
                 << " to match reference";
           return file_sse_pool::read(__filename, __reference);
         }; // lambda

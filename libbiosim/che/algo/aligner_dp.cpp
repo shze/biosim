@@ -64,17 +64,17 @@ namespace biosim {
               std::vector<size_t> previous_pos(tensor_pos_subtract(__pos, direction));
               double previous_score(__input(previous_pos));
 
-              std::vector<che::molecule> molecule_parts; // create a small alignment only with the necessary parts
+              std::vector<che::structure> structure_parts; // create a small alignment only with the necessary parts
               for(size_t dim(0); dim < direction.size(); ++dim) {
                 for(size_t depth_pos(0); depth_pos < _alignments[dim].get_depth(); ++depth_pos) {
                   che::ps seq;
                   seq.push_back(direction[dim] == 1 ? _alignments[dim].get_cc(__pos[dim] - 1, depth_pos)
                                                     : che::cc(che::cc::specificity_type::gap,
                                                               che::cc::monomer_type::l_peptide_linking));
-                  molecule_parts.emplace_back("", "", seq);
+                  structure_parts.emplace_back("", "", seq);
                 } // for
               } // for
-              che::alignment step_alignment(molecule_parts, previous_pos, __pos);
+              che::alignment step_alignment(structure_parts, previous_pos, __pos);
               double step_score(_score_f.evaluate(step_alignment));
 
               score = std::max(score, previous_score + step_score);
@@ -101,12 +101,12 @@ namespace biosim {
       // internal data structure for building the alignment
       struct alignment_data {
         // ctor from size and end positions
-        explicit alignment_data(size_t __size, std::vector<size_t> __end) : _molecule_data(), _begin(), _end(__end) {
-          _molecule_data.insert(_molecule_data.begin(), __size, std::list<che::cc>());
+        explicit alignment_data(size_t __size, std::vector<size_t> __end) : _structure_data(), _begin(), _end(__end) {
+          _structure_data.insert(_structure_data.begin(), __size, std::list<che::cc>());
           _begin.insert(_begin.begin(), __size, 0);
         } // ctor
 
-        std::vector<std::list<che::cc>> _molecule_data; // a list<cc> for each molecule
+        std::vector<std::list<che::cc>> _structure_data; // a list<cc> for each structure
         std::vector<size_t> _begin, _end; // begins and ends of the alignment in the original sequences
       }; // struct alignment_data
 
@@ -197,17 +197,17 @@ namespace biosim {
               std::vector<size_t> previous_pos(tensor_pos_subtract(current_pos, direction));
               double previous_score(__scores(previous_pos));
 
-              std::vector<che::molecule> molecule_parts; // create a small alignment only with the necessary parts
+              std::vector<che::structure> structure_parts; // create a small alignment only with the necessary parts
               for(size_t dim(0); dim < direction.size(); ++dim) {
                 for(size_t depth_pos(0); depth_pos < __alignments[dim].get_depth(); ++depth_pos) {
                   che::ps seq;
                   seq.push_back(direction[dim] == 1 ? __alignments[dim].get_cc(current_pos[dim] - 1, depth_pos)
                                                     : che::cc(che::cc::specificity_type::gap,
                                                               che::cc::monomer_type::l_peptide_linking));
-                  molecule_parts.emplace_back("", "", seq);
+                  structure_parts.emplace_back("", "", seq);
                 } // for
               } // for
-              che::alignment step_alignment(molecule_parts, previous_pos, current_pos);
+              che::alignment step_alignment(structure_parts, previous_pos, current_pos);
               double step_score(_score_f.evaluate(step_alignment));
 
               DEBUG << "Got previous_score=" << previous_score << ", step_score=" << step_score
@@ -216,8 +216,8 @@ namespace biosim {
               if(previous_score + step_score == __scores(current_pos)) {
                 DEBUG << "Got best path";
                 alignment_data copy(current_alignment_data); // make copy to not affect other directions
-                for(size_t dim(0); dim < copy._molecule_data.size(); ++dim) {
-                  copy._molecule_data[dim].push_front(molecule_parts[dim].get_ps()[0]); // extend alignment
+                for(size_t dim(0); dim < copy._structure_data.size(); ++dim) {
+                  copy._structure_data[dim].push_front(structure_parts[dim].get_ps()[0]); // extend alignment
                 } // for
 
                 if(__scores(previous_pos) == 0.0) {
@@ -241,21 +241,21 @@ namespace biosim {
         // collect all storages and identifiers
         std::vector<std::string> storages, identifiers;
         for(auto const &a : __alignments) {
-          for(auto const &m : a.get_molecules()) {
-            storages.push_back(m.get_storage());
-            identifiers.push_back(m.get_identifier());
+          for(auto const &s : a.get_structures()) {
+            storages.push_back(s.get_storage());
+            identifiers.push_back(s.get_identifier());
           } // for
         } // for
         // convert alignment_data into scored_alignment
         std::list<scored_alignment> alignments;
         for(alignment_data a : best_alignment_data) {
-          std::vector<molecule> molecules;
-          for(size_t depth_pos(0); depth_pos < a._molecule_data.size() && depth_pos < storages.size(); ++depth_pos) {
+          std::vector<structure> structures;
+          for(size_t depth_pos(0); depth_pos < a._structure_data.size() && depth_pos < storages.size(); ++depth_pos) {
             ps seq; // create sequence
-            seq.insert(seq.begin(), a._molecule_data[depth_pos].begin(), a._molecule_data[depth_pos].end());
-            molecules.emplace_back(storages[depth_pos], identifiers[depth_pos], seq); // create final molecule
+            seq.insert(seq.begin(), a._structure_data[depth_pos].begin(), a._structure_data[depth_pos].end());
+            structures.emplace_back(storages[depth_pos], identifiers[depth_pos], seq); // create final gapped structure
           } // for
-          alignments.emplace_back(alignment(molecules, a._begin, a._end), max_score);
+          alignments.emplace_back(alignment(structures, a._begin, a._end), max_score);
         } // for
 
         return alignments;

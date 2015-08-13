@@ -402,7 +402,7 @@ namespace biosim {
         size_t original_cc_seq_length(__seqres.get_sequence(__chain_id).size());
         size_t original_ss_seq_length(__ssdef.get_sequence(__chain_id).size());
 
-        // check unaligned sequences at the front (there should be exactly two molecules in this alignment)
+        // check unaligned sequences at the front (there should be exactly two structures in this alignment)
         size_t cc_unaligned_length_begin(__alignment.get_alignment().get_begins()[0]);
         size_t ss_unaligned_length_begin(__alignment.get_alignment().get_begins()[1]);
         int begin_diff(cc_unaligned_length_begin - ss_unaligned_length_begin);
@@ -660,8 +660,8 @@ namespace biosim {
             che::score::ev_alignment(b62_ptr, -b62_ptr->get_unknown_score(), b62_ptr->get_min_score()));
         size_t sequence_no(1); // start with 1
         for(auto c : seqres.get_chain_ids()) {
-          molecule cc_seq("", "", seqres.get_sequence(c));
-          molecule ss_seq("", "", ssdef.get_sequence(c), ss(ssdef.get_pool(c)));
+          structure cc_seq("", "", seqres.get_sequence(c));
+          structure ss_seq("", "", ssdef.get_sequence(c), ss(ssdef.get_pool(c)));
           che::scored_alignment best_alignment(
               aligner.align_multiple({che::alignment(cc_seq), che::alignment(ss_seq)}).front());
           adjust(seqres, ssdef, c, best_alignment);
@@ -669,13 +669,13 @@ namespace biosim {
           std::pair<size_t, size_t> mismatches(count_mismatches(seqres.get_sequence(c), ssdef.get_sequence(c)));
           if(mismatches.first > 0) {
             LOG << "SEQRES and HELIX/SHEET mismatch in " << mismatches.first << "/" << mismatches.second
-                << " known positions, ignoring molecule: " << __filename << "/" << std::to_string(sequence_no);
+                << " known positions, ignoring structure: " << __filename << "/" << std::to_string(sequence_no);
             continue;
           } // if
 
           a.set(std::string(1, c),
-                molecule(__filename + "/" + std::to_string(sequence_no), ">lcl|sequence", seqres.get_sequence(c),
-                         ss(ssdef.get_pool(c), seqres.get_sequence(c).size())));
+                structure(__filename + "/" + std::to_string(sequence_no), ">lcl|sequence", seqres.get_sequence(c),
+                          ss(ssdef.get_pool(c), seqres.get_sequence(c).size())));
           ++sequence_no; // increase sequence_no, b/c it's not done in the for loop header
         }
 

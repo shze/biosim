@@ -1,33 +1,33 @@
 #ifndef che_alignment_h
 #define che_alignment_h
 
-#include "che/molecule.h"
+#include "che/structure.h"
 
 namespace biosim {
   namespace che {
-    // alignment of molecules, consensus/profile;
+    // alignment of structures, consensus/profile;
     // design: unified alignment class for sequence and structure alignment, cleaner than replicating everything.
     class alignment {
     public:
-      // ctor from a molecule (takes begin and end from given molecule)
-      explicit alignment(molecule __molecule);
-      // ctor from a list of molecules, begins, and ends
-      alignment(std::vector<molecule> __molecules, std::vector<size_t> __begins, std::vector<size_t> __ends);
+      // ctor from a structure (takes begin and end from given structure)
+      explicit alignment(structure __s);
+      // ctor from a list of structures, begins, and ends
+      alignment(std::vector<structure> __structures, std::vector<size_t> __begins, std::vector<size_t> __ends);
       // get alignment length
       size_t get_length() const;
-      // get alignment depth, i.e. number of molecules
+      // get alignment depth, i.e. number of structures
       size_t get_depth() const;
-      // get aligned molecules
-      std::vector<molecule> const &get_molecules() const;
-      // get begins (1-based) of the alignment in the complete molecules
+      // get aligned structures
+      std::vector<structure> const &get_structures() const;
+      // get begins (1-based) of the alignment in the complete structures
       std::vector<size_t> const &get_begins() const;
-      // get ends (1-based) of the alignment in the complete molecules
+      // get ends (1-based) of the alignment in the complete structures
       std::vector<size_t> const &get_ends() const;
       // get cc at specific position and depth
       cc const &get_cc(size_t __position, size_t __depth) const;
 
     private:
-      std::vector<molecule> _molecules; // vector of aligned molecules
+      std::vector<structure> _structures; // vector of aligned structures
       std::vector<size_t> _begins; // vector of begins
       std::vector<size_t> _ends; // vector of ends
     }; // class alignment
@@ -35,14 +35,14 @@ namespace biosim {
     // output operator for alignment
     inline std::ostream &operator<<(std::ostream &__out, alignment const &__a) {
       __out << "Alignment (depth=" << __a.get_depth() << ", size=" << __a.get_length() << ")\n";
-      for(size_t pos(0); pos < __a.get_depth(); ++pos) { // use pos to access molecules, begins, and ends
-        che::molecule const &m(__a.get_molecules()[pos]);
-        std::string id(m.get_identifier());
+      for(size_t pos(0); pos < __a.get_depth(); ++pos) { // use pos to access structures, begins, and ends
+        che::structure const &p(__a.get_structures()[pos]);
+        std::string id(p.get_identifier());
         id.erase(std::remove(id.begin(), id.end(), '\n'), id.end());
-        __out << m.get_storage() << ": " << id << " length=" << m.get_length()
-              << " subsequence=" << __a.get_begins()[pos] << ".." << __a.get_ends()[pos] << "\n" << m.get_ps() << "\n";
-        if(m.get_ss().defined()) {
-          __out << m.get_ss();
+        __out << p.get_storage() << ": " << id << " length=" << p.get_length()
+              << " subsequence=" << __a.get_begins()[pos] << ".." << __a.get_ends()[pos] << "\n" << p.get_ps() << "\n";
+        if(p.get_ss().defined()) {
+          __out << p.get_ss();
         } // if
       } // for
       return __out;
@@ -69,14 +69,14 @@ namespace biosim {
             << ", score=" << __a.get_score()
             << ", normalized_score=" << (__a.get_score() / __a.get_alignment().get_length()) << ")\n";
       for(size_t pos(0); pos < __a.get_alignment().get_depth(); ++pos) {
-        che::molecule m(__a.get_alignment().get_molecules()[pos]);
-        std::string id(m.get_identifier());
+        che::structure p(__a.get_alignment().get_structures()[pos]);
+        std::string id(p.get_identifier());
         id.erase(std::remove(id.begin(), id.end(), '\n'), id.end());
-        __out << m.get_storage() << ": " << id << " length=" << m.get_length()
+        __out << p.get_storage() << ": " << id << " length=" << p.get_length()
               << " subsequence=" << __a.get_alignment().get_begins()[pos] << ".." << __a.get_alignment().get_ends()[pos]
-              << "\n" << m.get_ps() << "\n";
-        if(m.get_ss().defined()) {
-          __out << m.get_ss();
+              << "\n" << p.get_ps() << "\n";
+        if(p.get_ss().defined()) {
+          __out << p.get_ss();
         } // if
       } // for
       return __out;

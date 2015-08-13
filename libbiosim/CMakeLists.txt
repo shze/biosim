@@ -9,8 +9,8 @@ set(LIBBIOSIM_SOURCES
   che/assembly.cpp
   che/cc.cpp
   che/cchb_dssp.cpp
-  che/molecule.cpp
   che/ss.cpp
+  che/structure.cpp
   che/algo/aligner_dp.cpp
   che/io/file_assembly.cpp
   che/io/file_fasta.cpp

@@ -2,33 +2,32 @@
 
 namespace biosim {
   namespace che {
-    // ctor from a molecule (takes begin and end from given molecule)
-    alignment::alignment(molecule __molecule)
-        : _molecules(1, __molecule), _begins(1, 0), _ends(1, __molecule.get_length()) {}
-    // ctor from a list of molecules, begins, and ends
-    alignment::alignment(std::vector<molecule> __molecules, std::vector<size_t> __begins, std::vector<size_t> __ends)
-        : _molecules(__molecules), _begins(__begins), _ends(__ends) {
-      if(!_molecules.empty()) {
-        for(auto m : _molecules) {
-          if(m.get_length() != _molecules.begin()->get_length()) {
-            throw std::invalid_argument("not all aligned molecules have the same length");
+    // ctor from a structure (takes begin and end from given structure)
+    alignment::alignment(structure __s) : _structures(1, __s), _begins(1, 0), _ends(1, __s.get_length()) {}
+    // ctor from a list of structures, begins, and ends
+    alignment::alignment(std::vector<structure> __structures, std::vector<size_t> __begins, std::vector<size_t> __ends)
+        : _structures(__structures), _begins(__begins), _ends(__ends) {
+      if(!_structures.empty()) {
+        for(auto s : _structures) {
+          if(s.get_length() != _structures.begin()->get_length()) {
+            throw std::invalid_argument("not all aligned structures have the same length");
           } // if
         } // for
       } // if
     } // ctor
     // get alignment length
-    size_t alignment::get_length() const { return _molecules.empty() ? 0 : _molecules.begin()->get_length(); }
-    // get alignment depth, i.e. number of molecules
-    size_t alignment::get_depth() const { return _molecules.size(); }
-    // get aligned molecules
-    std::vector<molecule> const &alignment::get_molecules() const { return _molecules; }
-    // get begins (1-based) of the alignment in the complete molecules
+    size_t alignment::get_length() const { return _structures.empty() ? 0 : _structures.begin()->get_length(); }
+    // get alignment depth, i.e. number of structures
+    size_t alignment::get_depth() const { return _structures.size(); }
+    // get aligned structures
+    std::vector<structure> const &alignment::get_structures() const { return _structures; }
+    // get begins (1-based) of the alignment in the complete structures
     std::vector<size_t> const &alignment::get_begins() const { return _begins; }
-    // get ends (1-based) of the alignment in the complete molecules
+    // get ends (1-based) of the alignment in the complete structures
     std::vector<size_t> const &alignment::get_ends() const { return _ends; }
     // get cc at specific position and depth
     cc const &alignment::get_cc(size_t __position, size_t __depth) const {
-      return _molecules.at(__depth).get_ps().at(__position);
+      return _structures.at(__depth).get_ps().at(__position);
     } // get_cc()
 
     // ctor from alignment and score

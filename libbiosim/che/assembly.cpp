@@ -4,44 +4,44 @@
 namespace biosim {
   namespace che {
     // default ctor
-    assembly::assembly() : _molecules() {}
-    // ctor from molecule
-    assembly::assembly(molecule __m) : _molecules() { add(__m); }
+    assembly::assembly() : _chains() {}
+    // ctor from structure
+    assembly::assembly(structure __s) : _chains() { add(__s); }
     // get list of all chain_ids
     std::list<std::string> assembly::get_chain_id_list() const {
       std::list<std::string> chain_ids;
-      for(auto m : _molecules) {
-        chain_ids.push_back(m.first);
+      for(auto c : _chains) {
+        chain_ids.push_back(c.first);
       } // for
       return chain_ids;
     } // get_chain_id_list()
-    // get all molecules
-    std::vector<molecule> assembly::get_molecules() const {
-      std::vector<molecule> molecules;
-      molecules.reserve(_molecules.size());
-      for(auto const &p : _molecules) {
-        molecules.push_back(p.second);
+    // get all structures
+    std::vector<structure> assembly::get_structures() const {
+      std::vector<structure> structures;
+      structures.reserve(_chains.size());
+      for(auto const &c : _chains) {
+        structures.push_back(c.second);
       } // for
-      return molecules;
-    } // get_molecules()
-    // if the molecule with the given chain_id exists
-    bool assembly::has_molecule(std::string const &__chain_id) const {
-      return _molecules.find(__chain_id) != _molecules.end();
-    }
-    // get molecule with given chain_id, throws out of range if no ts with this chain_id exists
-    molecule const &assembly::get_molecule(std::string const &__chain_id) const { return _molecules.at(__chain_id); }
-    // add molecule to assembly, assign next available chain_id, and returns the chain_id
-    std::string assembly::add(molecule __m) {
+      return structures;
+    } // get_structures()
+    // if the structure with the given chain_id exists
+    bool assembly::has_structure(std::string const &__chain_id) const {
+      return _chains.find(__chain_id) != _chains.end();
+    } // has_structure()
+    // get structure with given chain_id, throws out of range if no ts with this chain_id exists
+    structure const &assembly::get_structure(std::string const &__chain_id) const { return _chains.at(__chain_id); }
+    // add structure to assembly, assign next available chain_id, and returns the chain_id
+    std::string assembly::add(structure __s) {
       std::string chain_id = "A"; // determine next available chain_id, start from A
       tools::incrementor<std::string> inc;
-      while(_molecules.find(chain_id) != _molecules.end()) {
+      while(has_structure(chain_id)) {
         chain_id = inc.next(chain_id);
       } // while
 
-      set(chain_id, __m);
+      set(chain_id, __s);
       return chain_id;
     } // add()
-    // set a molecule and ss to have a specific chain_id
-    void assembly::set(std::string const &__chain_id, molecule __m) { _molecules[__chain_id] = __m; }
+    // set a structure to have a specific chain_id
+    void assembly::set(std::string const &__chain_id, structure __s) { _chains[__chain_id] = __s; }
   } // namespace che
 } // namespace biosim

@@ -35,24 +35,24 @@ int main(int argc, char *argv[]) { // main must not be in a namespace
                                                                  : tools::log_message::level_type::info);
 
   try {
-    // read all files into molecule
+    // read all files into structures
     che::io::file_assembly reader;
-    std::vector<che::molecule> molecules;
+    std::vector<che::structure> structures;
     for(auto filename : po_var_map["seq"].as<std::vector<std::string>>()) {
       LOG << "Reading sequence from " << filename;
-      std::vector<che::molecule> new_molecules(reader.read(filename).get_molecules());
-      molecules.reserve(molecules.size() + new_molecules.size());
-      molecules.insert(molecules.end(), new_molecules.begin(), new_molecules.end());
-      LOG << "Found " << new_molecules.size() << " molecules";
-      for(auto m : new_molecules) {
-        LOG << m;
+      std::vector<che::structure> new_structures(reader.read(filename).get_structures());
+      structures.reserve(structures.size() + new_structures.size());
+      structures.insert(structures.end(), new_structures.begin(), new_structures.end());
+      LOG << "Found " << new_structures.size() << " structures";
+      for(auto s : new_structures) {
+        LOG << s;
       } // for
     } // for
 
-    // convert molecule into alignment
+    // convert structure into alignment
     std::vector<che::alignment> input_alignments;
-    for(auto m : molecules) {
-      input_alignments.emplace_back(m);
+    for(auto s : structures) {
+      input_alignments.emplace_back(s);
     } // for
 
     che::algo::aligner_dp aligner;

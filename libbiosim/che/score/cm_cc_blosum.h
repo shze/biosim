@@ -48,12 +48,12 @@ namespace biosim {
         // returns the blosum value for the given two positions
         double blosum(size_t const &__pos1, size_t const &__pos2) const;
 
-        std::string _identifier; // id
-        d_triangular_matrix _frequency_matrix; // frequency matrix
+        std::string _id; // identifier
+        d_triangular_matrix _freq_matrix; // frequency matrix
         bool _use_dbl_bitscore; // if double or int bitscores should be used in compare()
-        double _bitscore_fraction; // bitscore fraction
-        d_triangular_matrix _dbl_bitscore_matrix; // floating point bitscore matrix
-        i_triangular_matrix _int_bitscore_matrix; // int bitscore matrix
+        double _bits_fraction; // bitscore fraction
+        d_triangular_matrix _dbl_bits_matrix; // floating point bitscore matrix
+        i_triangular_matrix _int_bits_matrix; // int bitscore matrix
 
         // get the order in which data for cc is stored in the matrices as string of identifier chars
         static std::string get_cc_order();

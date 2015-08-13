@@ -9,17 +9,17 @@ BOOST_AUTO_TEST_SUITE(suite_aligner_dp)
 
 BOOST_AUTO_TEST_CASE(aligner_dp_align_pair) {
   che::assembly a(che::io::file_fasta::read("../test/data/P01236-shorter.fasta"));
-  che::molecule m(a.get_molecule("A"));
+  che::structure s(a.get_structure("A"));
 
   che::algo::aligner_dp aligner;
-  std::list<che::scored_alignment> alignment_list(aligner.align_pair(che::alignment(m), che::alignment(m)));
+  std::list<che::scored_alignment> alignment_list(aligner.align_pair(che::alignment(s), che::alignment(s)));
   BOOST_CHECK(alignment_list.size() == 1);
   BOOST_CHECK(alignment_list.front().get_alignment().get_depth() == 2);
   BOOST_CHECK(alignment_list.front().get_alignment().get_length() == 5);
   BOOST_CHECK_CLOSE(alignment_list.front().get_score(), 24.2329, 1e-3);
 
-  che::alignment two_m({m, m}, {0, 0}, {m.get_length(), m.get_length()});
-  alignment_list = aligner.align_pair(che::alignment(m), two_m);
+  che::alignment two_m({s, s}, {0, 0}, {s.get_length(), s.get_length()});
+  alignment_list = aligner.align_pair(che::alignment(s), two_m);
   BOOST_CHECK(alignment_list.size() == 1);
   BOOST_CHECK(alignment_list.front().get_alignment().get_depth() == 3);
   BOOST_CHECK(alignment_list.front().get_alignment().get_length() == 5);
@@ -33,24 +33,24 @@ BOOST_AUTO_TEST_CASE(aligner_dp_align_pair) {
 
   che::ps profile;
   profile.insert(profile.end(), 5, che::cc("ASX"));
-  che::molecule m2("st", "id", profile);
-  alignment_list = aligner.align_pair(che::alignment(m), che::alignment(m2));
+  che::structure s2("st", "id", profile);
+  alignment_list = aligner.align_pair(che::alignment(s), che::alignment(s2));
   BOOST_CHECK(alignment_list.size() == 5);
   BOOST_CHECK(alignment_list.front().get_alignment().get_depth() == 2);
   BOOST_CHECK(alignment_list.front().get_alignment().get_length() == 1);
   BOOST_CHECK_CLOSE(alignment_list.front().get_score(), 0.169935, 1e-3);
 
-  alignment_list = aligner.align_pair(che::alignment(m2), che::alignment(m2));
+  alignment_list = aligner.align_pair(che::alignment(s2), che::alignment(s2));
   BOOST_CHECK(alignment_list.size() == 1);
   BOOST_CHECK(alignment_list.front().get_alignment().get_depth() == 2);
   BOOST_CHECK(alignment_list.front().get_alignment().get_length() == 5);
   BOOST_CHECK_CLOSE(alignment_list.front().get_score(), 17.4636, 1e-3);
 
   a = che::assembly(che::io::file_fasta::read("../test/data/P01942-shorter.fasta"));
-  m = a.get_molecule("A");
+  s = a.get_structure("A");
   a = che::assembly(che::io::file_fasta::read("../test/data/P02088-shorter.fasta"));
-  m2 = a.get_molecule("A");
-  alignment_list = aligner.align_pair(che::alignment(m), che::alignment(m2));
+  s2 = a.get_structure("A");
+  alignment_list = aligner.align_pair(che::alignment(s), che::alignment(s2));
   BOOST_CHECK(alignment_list.size() == 1);
   BOOST_CHECK(alignment_list.front().get_alignment().get_depth() == 2);
   BOOST_CHECK(alignment_list.front().get_alignment().get_length() == 26);
@@ -59,11 +59,11 @@ BOOST_AUTO_TEST_CASE(aligner_dp_align_pair) {
 
 BOOST_AUTO_TEST_CASE(aligner_dp_align_multiple) {
   che::assembly a(che::io::file_fasta::read("../test/data/P01236-shorter.fasta"));
-  che::molecule m(a.get_molecule("A"));
+  che::structure s(a.get_structure("A"));
 
   che::algo::aligner_dp aligner;
   std::list<che::scored_alignment> alignment_list(
-      aligner.align_multiple({che::alignment(m), che::alignment(m), che::alignment(m)}));
+      aligner.align_multiple({che::alignment(s), che::alignment(s), che::alignment(s)}));
   BOOST_CHECK(alignment_list.size() == 1);
   BOOST_CHECK(alignment_list.front().get_alignment().get_depth() == 3);
   BOOST_CHECK(alignment_list.front().get_alignment().get_length() == 5);

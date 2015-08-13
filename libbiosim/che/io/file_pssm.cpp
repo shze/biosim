@@ -21,7 +21,7 @@ namespace biosim {
           }
           seq.emplace_back(cc(weights));
         }
-        return assembly(molecule(__filename, ">lcl|sequence", seq));
+        return assembly(structure(__filename, ">lcl|sequence", seq));
       } // read()
 
       // (static) reads data from a pssm ascii file into an intermediate data structure

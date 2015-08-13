@@ -20,7 +20,7 @@ namespace biosim {
         double compare(che::cc const &__cc1, che::cc const &__cc2) const;
 
       private:
-        std::string _identifier; // id
+        std::string _id; // identifier
 
         // get score for matching cc
         static double get_match_score();
