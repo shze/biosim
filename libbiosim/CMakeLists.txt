@@ -23,6 +23,7 @@ set(LIBBIOSIM_SOURCES
   che/score/cm_cc_blosum.cpp
   che/score/cm_cc_identity.cpp
   che/score/ev_alignment.cpp
+  math/point.cpp
   math/algo/factorial.cpp
   tools/file.cpp
   tools/log.cpp
