@@ -12,8 +12,8 @@ namespace biosim {
       // coordinate type
       enum class coordinate_type { cartesian, cylindrical };
 
-      // ctor taking array of three values and a coordinate type (defaults to cartesian coordinates)
-      point(std::array<double, 3> __data, coordinate_type __type = coordinate_type::cartesian);
+      // ctor taking array of three values (default zeros) and a coordinate type (default cartesian); default ctor
+      explicit point(std::array<double, 3> __data = {0, 0, 0}, coordinate_type __type = coordinate_type::cartesian);
       // get coordinate type
       coordinate_type get_coordinate_type() const;
       // get first value: cartesian x, cylindrical rho

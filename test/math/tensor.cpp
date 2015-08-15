@@ -1,7 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include "math/tensor.h" // header to test
-#include "tools/log.h"
 #include "tools/incrementor.h"
 
 using namespace biosim;

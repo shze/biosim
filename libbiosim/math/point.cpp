@@ -3,7 +3,7 @@
 
 namespace biosim {
   namespace math {
-    // ctor taking array of three values and a coordinate type (defaults to cartesian coordinates)
+    // ctor taking array of three values (default zeros) and a coordinate type (default cartesian); default ctor
     point::point(std::array<double, 3> __data, coordinate_type __type) : _data(__data), _type(__type) {}
     // get coordinate type
     point::coordinate_type point::get_coordinate_type() const { return _type; }
@@ -24,8 +24,10 @@ namespace biosim {
       switch(_type) { // first, convert all other coordinate types into cartesian coordinates
       case coordinate_type::cartesian:
         cartesian_data = _data;
+        break;
       case coordinate_type::cylindrical:
         cartesian_data = cylindrical_to_cartesian(_data);
+        break;
       } // switch
       switch(__type) { // then convert the cartesian coordinates into the requested coordinate type and return it
       case coordinate_type::cartesian:
@@ -48,7 +50,7 @@ namespace biosim {
     std::array<double, 3> point::cartesian_to_cylindrical(std::array<double, 3> __data) {
       double cartesian_x(__data[0]), cartesian_y(__data[1]), cartesian_z(__data[2]);
       double cylindrical_rho = sqrt(cartesian_x * cartesian_x + cartesian_y * cartesian_y);
-      double cylindrical_phi = atan(cartesian_y / cartesian_x);
+      double cylindrical_phi = atan2(cartesian_y, cartesian_x);
       double cylindrical_z = cartesian_z;
       return {cylindrical_rho, cylindrical_phi, cylindrical_z};
     } // cartesian_to_cylindrical()

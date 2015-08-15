@@ -22,6 +22,7 @@ set(SOURCES_UNIT_TESTER
   che/score/cm_cc_identity.cpp
   che/score/ev_alignment.cpp
   math/interval.cpp
+  math/point.cpp
   math/tensor.cpp
   math/algo/dp.cpp
   math/algo/factorial.cpp

@@ -7,6 +7,8 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 set(LIBBIOSIM_SOURCES
   che/alignment.cpp
   che/assembly.cpp
+  che/atom.cpp
+  che/bond.cpp
   che/cc.cpp
   che/cchb_dssp.cpp
   che/ss.cpp
