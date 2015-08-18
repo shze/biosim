@@ -219,8 +219,7 @@ namespace biosim {
           _chains[chain_id]._last_helix_serial_number = serial_number;
           // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
           _chains[chain_id]._cc_sequence.resize(
-              std::max(_chains[chain_id]._cc_sequence.size(), terminal_residue_sequence_number),
-              cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
+              std::max(_chains[chain_id]._cc_sequence.size(), terminal_residue_sequence_number), cc('X'));
           _chains[chain_id]._cc_sequence[initial_residue_sequence_number - 1] = cc(__initial_residue_name);
           _chains[chain_id]._cc_sequence[terminal_residue_sequence_number - 1] = cc(__terminal_residue_name);
           // create and insert sequence_interval into the pool
@@ -329,8 +328,7 @@ namespace biosim {
           _chains[chain_id]._last_number_strands_in_sheet = number_strands_in_sheet;
           // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
           _chains[chain_id]._cc_sequence.resize(
-              std::max(_chains[chain_id]._cc_sequence.size(), terminal_residue_sequence_number),
-              cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
+              std::max(_chains[chain_id]._cc_sequence.size(), terminal_residue_sequence_number), cc('X'));
           _chains[chain_id]._cc_sequence[initial_residue_sequence_number - 1] = cc(__initial_residue_name);
           _chains[chain_id]._cc_sequence[terminal_residue_sequence_number - 1] = cc(__terminal_residue_name);
           // create and insert sequence_interval into the pool
@@ -342,9 +340,7 @@ namespace biosim {
         void shift(char const &__chain_id, int __insert_length) {
           // shift sequence
           if(__insert_length >= 0) { // shift sequence to the right by inserting at the front
-            _chains[__chain_id]._cc_sequence.insert(
-                _chains[__chain_id]._cc_sequence.begin(), __insert_length,
-                cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
+            _chains[__chain_id]._cc_sequence.insert(_chains[__chain_id]._cc_sequence.begin(), __insert_length, cc('X'));
           } // if
           else { // shift sequence to the left by removing from the front
             ps new_seq;

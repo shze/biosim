@@ -166,7 +166,7 @@ namespace biosim {
             // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
             chains[initial_residue_chain_id].cc_sequence.resize(
                 std::max(chains[initial_residue_chain_id].cc_sequence.size(), terminal_residue_sequence_number),
-                cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
+                cc('X'));
             chains[initial_residue_chain_id].cc_sequence[initial_residue_sequence_number - 1] =
                 cc(initial_residue_name);
             chains[initial_residue_chain_id].cc_sequence[terminal_residue_sequence_number - 1] =
@@ -225,7 +225,7 @@ namespace biosim {
             // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
             chains[initial_residue_chain_id].cc_sequence.resize(
                 std::max(chains[initial_residue_chain_id].cc_sequence.size(), terminal_residue_sequence_number),
-                cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
+                cc('X'));
             chains[initial_residue_chain_id].cc_sequence[initial_residue_sequence_number - 1] =
                 cc(initial_residue_name);
             chains[initial_residue_chain_id].cc_sequence[terminal_residue_sequence_number - 1] =
@@ -247,7 +247,7 @@ namespace biosim {
             chain_pair.second.cc_sequence.resize(
                 std::max(chain_pair.second.cc_sequence.size(),
                          __reference.get_structure(chain_id_string).get_ss().get_sequence().size()),
-                cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
+                cc('X'));
           } // if
 
           // add to final result

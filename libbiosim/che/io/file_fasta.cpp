@@ -111,8 +111,7 @@ namespace biosim {
         DEBUG << "Inserting " << id_ss_pairs.size() << " unmatched dssp sequences.";
         for(auto id_ss_pair : id_ss_pairs) {
           ps new_ps;
-          new_ps.resize(id_ss_pair.second.get_sequence().size(),
-                        cc(cc::specificity_type::unknown, cc::monomer_type::l_peptide_linking));
+          new_ps.resize(id_ss_pair.second.get_sequence().size(), cc('X'));
           new_assembly.add(structure(id_ss_pair.first, ">lcl|sequence", new_ps, id_ss_pair.second));
         } // for
 

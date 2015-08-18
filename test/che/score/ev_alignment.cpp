@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(ev_alignment_evaluate) {
   BOOST_CHECK_CLOSE(score.evaluate(a), -2.60469, 1e-3);
 
   che::ps seq_gap;
-  seq_gap.emplace_back(che::cc(che::cc::specificity_type::gap, che::cc::monomer_type::l_peptide_linking));
+  seq_gap.emplace_back(che::cc('-'));
   che::structure struct_gap(s.get_storage(), s.get_identifier(), seq_gap);
   std::vector<che::structure> sequence_and_gap{struct_non_profile, struct_gap};
   a = che::alignment(sequence_and_gap, {0, 0}, {struct_non_profile.get_length(), struct_gap.get_length()});

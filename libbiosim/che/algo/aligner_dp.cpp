@@ -69,8 +69,7 @@ namespace biosim {
                 for(size_t depth_pos(0); depth_pos < _alignments[dim].get_depth(); ++depth_pos) {
                   che::ps seq;
                   seq.push_back(direction[dim] == 1 ? _alignments[dim].get_cc(__pos[dim] - 1, depth_pos)
-                                                    : che::cc(che::cc::specificity_type::gap,
-                                                              che::cc::monomer_type::l_peptide_linking));
+                                                    : che::cc('-'));
                   structure_parts.emplace_back("", "", seq);
                 } // for
               } // for
@@ -202,8 +201,7 @@ namespace biosim {
                 for(size_t depth_pos(0); depth_pos < __alignments[dim].get_depth(); ++depth_pos) {
                   che::ps seq;
                   seq.push_back(direction[dim] == 1 ? __alignments[dim].get_cc(current_pos[dim] - 1, depth_pos)
-                                                    : che::cc(che::cc::specificity_type::gap,
-                                                              che::cc::monomer_type::l_peptide_linking));
+                                                    : che::cc('-'));
                   structure_parts.emplace_back("", "", seq);
                 } // for
               } // for
