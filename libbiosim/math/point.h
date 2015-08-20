@@ -22,6 +22,8 @@ namespace biosim {
       double second() const;
       // get third value: cartesian z, cylindrical z
       double third() const;
+      // returns true if this point has the same position as the rhs
+      bool operator==(point const &__rhs) const;
 
       // returns a new point converted to given coordinate type
       point to_coordinate_type(coordinate_type __type) const;
@@ -37,6 +39,16 @@ namespace biosim {
       std::array<double, 3> _data; // three data values
       coordinate_type _type; // coordinate type
     }; // class point
+
+    // returns if both points have the same type and position
+    inline bool equal_position_and_type(point const &__p1, point const &__p2) {
+      return __p1.get_coordinate_type() == __p2.get_coordinate_type() && __p1.first() == __p2.first() &&
+             __p1.second() == __p2.second() && __p1.third() == __p2.third();
+    } // equal_position_and_type()
+    // returns if both points have the position independ of their coordinate system type
+    inline bool equal_position(point const &__p1, point const &__p2) {
+      return equal_position_and_type(__p1, __p2.to_coordinate_type(__p1.get_coordinate_type()));
+    } // equal_position()
 
     // output operator for point
     inline std::ostream &operator<<(std::ostream &__out, point const &__p) {

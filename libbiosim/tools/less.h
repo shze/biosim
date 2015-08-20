@@ -14,4 +14,4 @@ namespace biosim {
   } // namespace tools
 } // namespace biosim
 
-#endif // math_less_h
+#endif // tools_less_h

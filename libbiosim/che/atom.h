@@ -14,6 +14,8 @@ namespace biosim {
       explicit atom(std::string __identifier = std::string(), math::point __position = math::point());
       // get identifier
       std::string const &get_identifier() const;
+      // get position
+      boost::optional<math::point> const &get_position() const;
       // returns true if this identifier is less than the rhs identifier
       bool operator<(atom const &__rhs) const;
 

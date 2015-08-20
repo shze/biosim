@@ -13,6 +13,8 @@ namespace biosim {
     double point::second() const { return _data[1]; }
     // get third value: cartesian z, cylindrical z
     double point::third() const { return _data[2]; }
+    // returns true if this point has the same position as the rhs
+    bool point::operator==(point const &__rhs) const { return equal_position(*this, __rhs); }
 
     // returns a new point converted to given coordinate type
     point point::to_coordinate_type(coordinate_type __type) const {
