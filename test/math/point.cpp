@@ -26,6 +26,28 @@ BOOST_AUTO_TEST_CASE(point_ctor) {
   BOOST_CHECK(p.third() == 3.0);
 }
 
+BOOST_AUTO_TEST_CASE(point_cmp_operator) {
+  math::point p_cart({3.0, 4.0, 5.0});
+  math::point p_cart2({3.0, 4.0, 6.0});
+  math::point p_cyl = p_cart.to_coordinate_type(math::point::coordinate_type::cylindrical);
+  math::point p_cyl2 = p_cart2.to_coordinate_type(math::point::coordinate_type::cylindrical);
+
+  BOOST_CHECK(math::equal_position_and_type(p_cart, p_cart) == true);
+  BOOST_CHECK(math::equal_position_and_type(p_cart, p_cart2) == false);
+  BOOST_CHECK(math::equal_position_and_type(p_cart, p_cyl) == false);
+  BOOST_CHECK(math::equal_position_and_type(p_cart, p_cyl2) == false);
+
+  BOOST_CHECK(math::equal_position(p_cart, p_cart) == true);
+  BOOST_CHECK(math::equal_position(p_cart, p_cart2) == false);
+  BOOST_CHECK(math::equal_position(p_cart, p_cyl) == true);
+  BOOST_CHECK(math::equal_position(p_cart, p_cyl2) == false);
+
+  BOOST_CHECK(p_cart == p_cart);
+  BOOST_CHECK(!(p_cart == p_cart2));
+  BOOST_CHECK(p_cart == p_cyl);
+  BOOST_CHECK(!(p_cart == p_cyl2));
+}
+
 BOOST_AUTO_TEST_CASE(point_convert) {
   math::point p_cart({3.0, 4.0, 5.0});
   math::point p_cyl = p_cart.to_coordinate_type(math::point::coordinate_type::cylindrical);

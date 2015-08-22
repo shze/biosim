@@ -22,6 +22,7 @@ set(SOURCES_UNIT_TESTER
   che/score/cm_cc_blosum.cpp
   che/score/cm_cc_identity.cpp
   che/score/ev_alignment.cpp
+  math/floating_point.cpp
   math/interval.cpp
   math/point.cpp
   math/tensor.cpp
