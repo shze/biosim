@@ -44,9 +44,8 @@ namespace biosim {
     // returns if both points have the same type and position
     inline bool equal_position_and_type(point const &__p1, point const &__p2) {
       return __p1.get_coordinate_type() == __p2.get_coordinate_type() &&
-             math::floating_point<double>(__p1.first()).almost_equal(math::floating_point<double>(__p2.first())) &&
-             math::floating_point<double>(__p1.second()).almost_equal(math::floating_point<double>(__p2.second())) &&
-             math::floating_point<double>(__p1.third()).almost_equal(math::floating_point<double>(__p2.third()));
+             math::almost_equal(__p1.first(), __p2.first()) && math::almost_equal(__p1.second(), __p2.second()) &&
+             math::almost_equal(__p1.third(), __p2.third());
     } // equal_position_and_type()
     // returns if both points have the position independ of their coordinate system type
     inline bool equal_position(point const &__p1, point const &__p2) {

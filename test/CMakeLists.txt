@@ -6,6 +6,7 @@ include_directories(../libbiosim/)
 set(SOURCES_UNIT_TESTER
   che/assembly.cpp
   che/atom.cpp
+  che/bond.cpp
   che/cc.cpp
   che/cchb_dssp.cpp
   che/sequence_interval.cpp

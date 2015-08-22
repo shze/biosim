@@ -34,13 +34,6 @@ namespace biosim {
       // ctor from T; default ctor
       explicit floating_point(T __value = 0.0) : value(__value) {}
 
-      // returns true iff both numbers are at most get_max_ulp_tolerance() ULP's away from each other
-      bool almost_equal(floating_point const &__rhs) const {
-        // make sure to return false if either compared value is nan
-        return !std::isnan(value) && !std::isnan(__rhs.value) &&
-               bits_distance(representation, __rhs.representation) <= get_max_ulp_tolerance();
-      } // almost_equal()
-
       // bit fields (inside the struct) cannot be accessed by non-const ref; make members public to allow write access
       union {
         T value; // original floating point data type
@@ -52,19 +45,31 @@ namespace biosim {
         }; // struct
       }; // union
 
-    private:
       // convert the bit representation into an ascending representation
       static bits to_ascending_representation(bits const &__bits) {
         // if branch: __bits represents negative number; else branch: __bits represents positive number
         return get_sign_bit_mask() & __bits ? ~__bits + 1 : (get_sign_bit_mask() | __bits);
       } // to_ascending_representation()
-
       // calculate the difference between two bit representations
       static bits bits_distance(bits const &__bits1, bits const &__bits2) {
         bits const asc1(to_ascending_representation(__bits1)), asc2(to_ascending_representation(__bits2));
         return (asc1 >= asc2) ? (asc1 - asc2) : (asc2 - asc1);
       } // bits_distance()
     }; // class floating_point
+
+    // returns true iff both numbers are at most get_max_ulp_tolerance() ULP's away from each other
+    template <class T>
+    bool almost_equal(floating_point<T> __fp1, floating_point<T> __fp2) {
+      // make sure to return false if either compared value is nan
+      return !std::isnan(__fp1.value) && !std::isnan(__fp2.value) &&
+             floating_point<T>::bits_distance(__fp1.representation, __fp2.representation) <=
+                 floating_point<T>::get_max_ulp_tolerance();
+    } // almost_equal()
+    // returns true iff both numbers are at most get_max_ulp_tolerance() ULP's away from each other
+    template <class T>
+    bool almost_equal(T __t1, T __t2) {
+      return almost_equal(floating_point<T>(__t1), floating_point<T>(__t2));
+    } // almost_equal()
   } // namespace math
 } // namespace biosim
 
