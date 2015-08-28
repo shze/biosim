@@ -52,6 +52,8 @@ namespace biosim {
     molecule const &cc::get_molecule() const { return _impl->_molecule; }
     // get determined atoms
     std::set<atom> const &cc::get_determined_atoms() const { return _atoms; }
+    // add determined atom
+    void cc::add_determined_atom(atom __atom) {}
 
     // (static) get list of all identifiers; static public interface
     std::list<std::string> cc::get_id_list() {
@@ -407,42 +409,6 @@ namespace biosim {
       // gap (special primary single-letter AA); there seem to be no three letter gap id; used one letter codes: -~.
       data_enum::add(std::make_shared<data>("---", '-', specificity_type::gap, monomer_type::l_peptide_linking,
                                             weight_map({{"---", 1.0}})));
-
-      // add some common non-primary AAs
-      // PYRROLYSINE
-      data_enum::add(std::make_shared<data>(
-          "PYL", "LYS",
-          data::to_molecule({"PYL CB2 CG2  SING N N 1", "PYL CB2 HB12 SING N N 2", "PYL CB2 HB22 SING N N 3",
-                             "PYL CB2 HB32 SING N N 4", "PYL CG2 CD2  SING N N 5", "PYL CG2 CA2  SING N N 6",
-                             "PYL CG2 HG22 SING N N 7", "PYL CD2 CE2  SING N N 8", "PYL CD2 HD32 SING N N 9",
-                             "PYL CD2 HD22 SING N N 10", "PYL CE2 N2   DOUB N N 11", "PYL CE2 HE22 SING N N 12",
-                             "PYL N2  CA2  SING N N 13", "PYL CA2 C2   SING N N 14", "PYL CA2 HA2  SING N N 15",
-                             "PYL C2  NZ   SING N N 16", "PYL C2  O2   DOUB N N 17", "PYL NZ  CE   SING N N 18",
-                             "PYL NZ  HZ   SING N N 19", "PYL CE  CD   SING N N 20", "PYL CE  HE3  SING N N 21",
-                             "PYL CE  HE2  SING N N 22", "PYL CD  CG   SING N N 23", "PYL CD  HD3  SING N N 24",
-                             "PYL CD  HD2  SING N N 25", "PYL CG  CB   SING N N 26", "PYL CG  HG3  SING N N 27",
-                             "PYL CG  HG2  SING N N 28", "PYL CB  CA   SING N N 29", "PYL CB  HB3  SING N N 30",
-                             "PYL CB  HB2  SING N N 31", "PYL CA  C    SING N N 32", "PYL CA  HA   SING N N 33",
-                             "PYL CA  N    SING N N 34", "PYL C   OXT  SING N N 35", "PYL C   O    DOUB N N 36",
-                             "PYL OXT HXT  SING N N 37", "PYL N   H    SING N N 38", "PYL N   H2   SING N N 39"})));
-      // SELENOCYSTEINE
-      data_enum::add(std::make_shared<data>(
-          "SEC", "CYS", //
-          data::to_molecule({"SEC N   CA  SING N N 1", "SEC N   H   SING N N 2", "SEC N   H2  SING N N 3",
-                             "SEC CA  CB  SING N N 4", "SEC CA  C   SING N N 5", "SEC CA  HA  SING N N 6",
-                             "SEC CB  SE  SING N N 7", "SEC CB  HB2 SING N N 8", "SEC CB  HB3 SING N N 9",
-                             "SEC SE  HE  SING N N 10", "SEC C   O   DOUB N N 11", "SEC C   OXT SING N N 12",
-                             "SEC OXT HXT SING N N 13"})));
-      // SELENOMETHIONINE
-      data_enum::add(std::make_shared<data>(
-          "MSE", "MET",
-          data::to_molecule({"MSE N   CA  SING N N 1", "MSE N   H   SING N N 2", "MSE N   HN2 SING N N 3",
-                             "MSE CA  C   SING N N 4", "MSE CA  CB  SING N N 5", "MSE CA  HA  SING N N 6",
-                             "MSE C   O   DOUB N N 7", "MSE C   OXT SING N N 8", "MSE OXT HXT SING N N 9",
-                             "MSE CB  CG  SING N N 10", "MSE CB  HB2 SING N N 11", "MSE CB  HB3 SING N N 12",
-                             "MSE CG  SE  SING N N 13", "MSE CG  HG2 SING N N 14", "MSE CG  HG3 SING N N 15",
-                             "MSE SE  CE  SING N N 16", "MSE CE  HE1 SING N N 17", "MSE CE  HE2 SING N N 18",
-                             "MSE CE  HE3 SING N N 19"})));
 
       // add deoxyribonucleotides
       data_enum::add(std::make_shared<data>(

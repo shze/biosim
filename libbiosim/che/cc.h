@@ -59,6 +59,8 @@ namespace biosim {
       molecule const &get_molecule() const;
       // get determined atoms
       std::set<atom> const &get_determined_atoms() const;
+      // add determined atom
+      void add_determined_atom(atom __atom);
 
       // get list of all identifiers; static public interface
       static std::list<std::string> get_id_list();

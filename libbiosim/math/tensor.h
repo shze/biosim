@@ -101,8 +101,8 @@ namespace biosim {
         tools::incrementor<std::vector<size_t>> tensor_inc(t_alphabets), subtensor_inc(subt_alphabets);
         bool done(false);
         while(!done) {
-          DEBUG << "Mapping tensor_position -> subtensor_position: (" << to_string(t_pos) << ") -> ("
-                << to_string(subt_pos) << ")";
+          DEBUG << "Mapping tensor_position->subtensor_position: (" << to_string(t_pos) << ")->(" << to_string(subt_pos)
+                << ")";
           subt(subt_pos) = this->operator()(t_pos);
 
           try {

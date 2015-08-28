@@ -15,6 +15,64 @@ namespace biosim {
         void process_caveat() {}
       }; // class caveat_data
 
+      // stores the modres data
+      class modres_data {
+      public:
+        // use only residue_name as key; chain_id, residue_sequence_number, residue_insertion_code are not always known
+        using modres_map = std::map<std::string, std::string>; // map residue_name -> standard_residue_name
+
+      private:
+        modres_map _map; // residue name mapping
+        mutable std::set<std::string> _used_set; // set of residue names for which the modres mapping was used
+
+      public:
+        // processes the input strings
+        void process(std::vector<std::string> __line_values) {
+          std::string pdb_id(__line_values[0]);
+          std::string residue_name(boost::trim_copy(__line_values[1])), chain_id_string(__line_values[2]);
+          std::string residue_sequence_number_string(__line_values[3]), residue_insertion_code_string(__line_values[4]);
+          std::string standard_residue_name(__line_values[5]);
+          std::string description(__line_values[6]);
+
+          if(_map.find(residue_name) != _map.end() && _map[residue_name] != standard_residue_name) {
+            LOG << "Found two mappings to standard residue names for " << residue_name << "; using " << residue_name
+                << "->" << _map[residue_name] << ", ignoring " << residue_name << "->" << standard_residue_name;
+            return;
+          } // if
+
+          _map[residue_name] = standard_residue_name;
+        } // process()
+
+        // get the map
+        modres_map const &get_map() const { return _map; }
+        // get the used set of mappings
+        std::set<std::string> const &get_used_set() const { return _used_set; }
+        // get the cc for the given id, taking modres mapping into account
+        cc get_cc(std::string const &__id) const {
+          cc this_cc('X'); // default unknown
+          try {
+            this_cc = cc(__id); // try to find the cc with __id
+          } // try
+          catch(cc_data_not_found const &__e) { // if no cc with __id is stored, then try modres mapping
+            try {
+              this_cc = cc(_map.at(__id));
+              _used_set.insert(__id);
+            } // try
+            catch(std::out_of_range const &__e) { // if nothing is found in the map, use the unknown, and tell the user
+              LOG << "Residue " << __id
+                  << " is not known, and no MODRES information is provided by the pdb file; using unknown instead.";
+            } // catch
+            catch(cc_data_not_found const &__e) { // if standard_residue_name is not found
+              LOG << "Residue " << __id << " is not known, and MODRES provided standard residue name " << _map.at(__id)
+                  << " is not known; using unknown instead.";
+            } // catch
+          } // catch
+          return this_cc;
+        } // get_cc()
+        // get the standard_residue_name for the given residue_name __id
+        std::string get_standard_name(std::string const &__id) const { return get_cc(__id).get_identifier(); }
+      }; // class modres_data
+
       // converts string input from pdb files into internal data structures and stores it
       class seqres_data {
       private:
@@ -29,18 +87,18 @@ namespace biosim {
 
       public:
         // processes the input strings
-        void process(std::string const &__serial_number_string, std::string const &__chain_id_string,
-                     std::string const &__residue_count_string, std::vector<std::string> const &__residues) {
+        void process(std::vector<std::string> __line_values, modres_data const &__modres) {
           // trim strings and convert chain id string to char
-          std::string const trimmed_serial_number_string(boost::trim_copy(__serial_number_string));
-          std::string const trimmed_residue_count_string(boost::trim_copy(std::string(__residue_count_string)));
-          char const chain_id(boost::lexical_cast<char>(__chain_id_string));
+          std::string const trimmed_serial_number_string(boost::trim_copy(__line_values[0]));
+          std::string const trimmed_residue_count_string(boost::trim_copy(std::string(__line_values[2])));
+          std::vector<std::string> residues(__line_values.begin() + 3, __line_values.end());
+          char const chain_id(boost::lexical_cast<char>(__line_values[1]));
           auto chain_itr(_chains.find(chain_id)); // if equal to _chains.end(), this chain_id is not in the map
 
           // print the submatches as strings before consistency checks and converting to size_t
           DEBUG << "Submatches: seqres_serial_number='" << trimmed_serial_number_string << "' seqres_chain_id='"
                 << chain_id << "' seqres_residue_count='" << trimmed_residue_count_string << "' residue_names='"
-                << boost::algorithm::join(__residues, "|") << "'";
+                << boost::algorithm::join(residues, "|") << "'";
 
           size_t serial_number;
           try {
@@ -81,13 +139,13 @@ namespace biosim {
           _chains[chain_id]._last_serial_number = serial_number;
           _chains[chain_id]._last_residue_count = residue_count;
           // loop through all 13 residue name groups and check if there's a residue or space, and save the residues
-          for(auto r : __residues) {
+          for(auto r : residues) {
             std::string const residue_name(boost::trim_copy(r));
             if(residue_name.empty()) {
               continue; // ignore empty names, likely at the end of the SEQRES definition
             } // if
 
-            _chains[chain_id]._cc_sequence.emplace_back(cc(residue_name));
+            _chains[chain_id]._cc_sequence.emplace_back(__modres.get_cc(residue_name));
           } // for
         } // process()
 
@@ -133,39 +191,33 @@ namespace biosim {
 
       public:
         // processes the input strings
-        void process_helix(std::string const &__serial_number_string, std::string const &__id,
-                           std::string const &__initial_residue_name, std::string const &__initial_residue_chain_id,
-                           std::string const &__initial_residue_sequence_number,
-                           std::string const &__initial_residue_insertion_code,
-                           std::string const &__terminal_residue_name, std::string const &__terminal_residue_chain_id,
-                           std::string const &__terminal_residue_sequence_number,
-                           std::string const &__terminal_residue_insertion_code, std::string const &__type_string,
-                           std::string const &__comment, std::string const &__length_string) {
+        void process_helix(std::vector<std::string> __line_values, modres_data const &__modres) {
           // check if contents are valid for conversion;
           // exception 1: lexical_cast on char should be fine, as the submatches are only single char strings;
           // exception 2: always try to convert residue sequence numbers, if there's no other way of knowing them
           // (if converting residue sequence numbers does not work, lexical_cast will throw an exception)
-          std::string const serial_number_string(boost::trim_copy(__serial_number_string));
-          std::string const id(boost::trim_copy(__id));
-          char const initial_residue_chain_id(boost::lexical_cast<char>(__initial_residue_chain_id));
-          size_t const initial_residue_sequence_number(
-              boost::lexical_cast<size_t>(boost::trim_copy(__initial_residue_sequence_number)));
-          char const initial_residue_insertion_code(boost::lexical_cast<char>(__initial_residue_insertion_code));
-          char const terminal_residue_chain_id(boost::lexical_cast<char>(__terminal_residue_chain_id));
+          std::string const serial_number_string(boost::trim_copy(__line_values[0]));
+          std::string const id(boost::trim_copy(__line_values[1]));
+          std::string const initial_residue_name(boost::trim_copy(__line_values[2]));
+          char const initial_residue_chain_id(boost::lexical_cast<char>(__line_values[3]));
+          size_t const initial_residue_sequence_number(boost::lexical_cast<size_t>(boost::trim_copy(__line_values[4])));
+          char const initial_residue_insertion_code(boost::lexical_cast<char>(__line_values[5]));
+          std::string const terminal_residue_name(boost::trim_copy(__line_values[6]));
+          char const terminal_residue_chain_id(boost::lexical_cast<char>(__line_values[7]));
           size_t const terminal_residue_sequence_number(
-              boost::lexical_cast<size_t>(boost::trim_copy(__terminal_residue_sequence_number)));
-          char const terminal_residue_insertion_code(boost::lexical_cast<char>(__terminal_residue_insertion_code));
-          std::string const type_string(boost::trim_copy(__type_string));
-          std::string const length_string(boost::trim_copy(__length_string));
+              boost::lexical_cast<size_t>(boost::trim_copy(__line_values[8])));
+          char const terminal_residue_insertion_code(boost::lexical_cast<char>(__line_values[9]));
+          std::string const type_string(boost::trim_copy(__line_values[10]));
+          std::string const comment(__line_values[11]);
+          std::string const length_string(boost::trim_copy(__line_values[12]));
 
           // print the submatches as strings before consistency checks and converting to size_t
           DEBUG << "Submatches: helix_serial_number='" << serial_number_string << "' helix_id='" << id
-                << "' initial_residue='" << __initial_residue_name << "|" << initial_residue_chain_id << "|"
+                << "' initial_residue='" << initial_residue_name << "|" << initial_residue_chain_id << "|"
                 << initial_residue_sequence_number << "|" << initial_residue_insertion_code << "' terminal_residue='"
-                << __terminal_residue_name << "|" << terminal_residue_chain_id << "|"
-                << terminal_residue_sequence_number << "|" << terminal_residue_insertion_code << "' helix_type='"
-                << type_string << "' comment='" << boost::trim_copy(__comment) << "' helix_length='" << length_string
-                << "'";
+                << terminal_residue_name << "|" << terminal_residue_chain_id << "|" << terminal_residue_sequence_number
+                << "|" << terminal_residue_insertion_code << "' helix_type='" << type_string << "' comment='"
+                << boost::trim_copy(comment) << "' helix_length='" << length_string << "'";
 
           // both chain ids should be identical
           if(initial_residue_chain_id != terminal_residue_chain_id) {
@@ -220,44 +272,36 @@ namespace biosim {
           // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
           _chains[chain_id]._cc_sequence.resize(
               std::max(_chains[chain_id]._cc_sequence.size(), terminal_residue_sequence_number), cc('X'));
-          _chains[chain_id]._cc_sequence[initial_residue_sequence_number - 1] = cc(__initial_residue_name);
-          _chains[chain_id]._cc_sequence[terminal_residue_sequence_number - 1] = cc(__terminal_residue_name);
+          _chains[chain_id]._cc_sequence[initial_residue_sequence_number - 1] = __modres.get_cc(initial_residue_name);
+          _chains[chain_id]._cc_sequence[terminal_residue_sequence_number - 1] = __modres.get_cc(terminal_residue_name);
           // create and insert sequence_interval into the pool
           _chains[chain_id]._pool.insert(cchb_dssp_interval(initial_residue_sequence_number - 1,
                                                             terminal_residue_sequence_number - 1, cchb_dssp('H')));
         } // process_helix()
-        // processes the input strings
-        void process_strand(std::string const &__strand_number_in_sheet_string, std::string const &__id,
-                            std::string const &__number_strands_in_sheet_string,
-                            std::string const &__initial_residue_name, std::string const &__initial_residue_chain_id,
-                            std::string const &__initial_residue_sequence_number,
-                            std::string const &__initial_residue_insertion_code,
-                            std::string const &__terminal_residue_name, std::string const &__terminal_residue_chain_id,
-                            std::string const &__terminal_residue_sequence_number,
-                            std::string const &__terminal_residue_insertion_code,
-                            std::string const &__strand_sense_string) {
+        void process_strand(std::vector<std::string> __line_values, modres_data const &__modres) {
           // check if contents are valid for conversion;
           // exception 1: lexical_cast on char should be fine, as the submatches are only single char strings;
           // exception 2: always try to convert residue sequence numbers, if there's no other way of knowing them
           // (if converting residue sequence numbers does not work, lexical_cast will throw an exception)
-          std::string const strand_number_in_sheet_string(boost::trim_copy(__strand_number_in_sheet_string));
-          std::string const id(boost::trim_copy(__id));
-          std::string const number_strands_in_sheet_string(boost::trim_copy(__number_strands_in_sheet_string));
-          char const initial_residue_chain_id(boost::lexical_cast<char>(__initial_residue_chain_id));
-          size_t const initial_residue_sequence_number(
-              boost::lexical_cast<size_t>(boost::trim_copy(__initial_residue_sequence_number)));
-          char const initial_residue_insertion_code(boost::lexical_cast<char>(__initial_residue_insertion_code));
-          char const terminal_residue_chain_id(boost::lexical_cast<char>(__terminal_residue_chain_id));
+          std::string const strand_number_in_sheet_string(boost::trim_copy(__line_values[0]));
+          std::string const id(boost::trim_copy(__line_values[1]));
+          std::string const number_strands_in_sheet_string(boost::trim_copy(__line_values[2]));
+          std::string const initial_residue_name(boost::trim_copy(__line_values[3]));
+          char const initial_residue_chain_id(boost::lexical_cast<char>(__line_values[4]));
+          size_t const initial_residue_sequence_number(boost::lexical_cast<size_t>(boost::trim_copy(__line_values[5])));
+          char const initial_residue_insertion_code(boost::lexical_cast<char>(__line_values[6]));
+          std::string const terminal_residue_name(boost::trim_copy(__line_values[7]));
+          char const terminal_residue_chain_id(boost::lexical_cast<char>(__line_values[8]));
           size_t const terminal_residue_sequence_number(
-              boost::lexical_cast<size_t>(boost::trim_copy(__terminal_residue_sequence_number)));
-          char const terminal_residue_insertion_code(boost::lexical_cast<char>(__terminal_residue_insertion_code));
-          std::string const strand_sense_string(boost::trim_copy(__strand_sense_string));
+              boost::lexical_cast<size_t>(boost::trim_copy(__line_values[9])));
+          char const terminal_residue_insertion_code(boost::lexical_cast<char>(__line_values[10]));
+          std::string const strand_sense_string(boost::trim_copy(__line_values[11]));
 
           // print the submatches as strings before consistency checks and converting to size_t
           DEBUG << "Submatches: strand_number_in_sheet='" << strand_number_in_sheet_string << "' sheet_id='" << id
                 << "' number_strands_in_sheet='" << number_strands_in_sheet_string << "' initial_residue='"
-                << __initial_residue_name << "|" << initial_residue_chain_id << "|" << initial_residue_sequence_number
-                << "|" << initial_residue_insertion_code << "' terminal_residue='" << __terminal_residue_name << "|"
+                << initial_residue_name << "|" << initial_residue_chain_id << "|" << initial_residue_sequence_number
+                << "|" << initial_residue_insertion_code << "' terminal_residue='" << terminal_residue_name << "|"
                 << terminal_residue_chain_id << "|" << terminal_residue_sequence_number << "|"
                 << terminal_residue_insertion_code << "' strand_sense='" << strand_sense_string << "'";
 
@@ -329,8 +373,8 @@ namespace biosim {
           // resize cc_sequence, fill with unknown cc, and set the correct cc for begin and end of the sse
           _chains[chain_id]._cc_sequence.resize(
               std::max(_chains[chain_id]._cc_sequence.size(), terminal_residue_sequence_number), cc('X'));
-          _chains[chain_id]._cc_sequence[initial_residue_sequence_number - 1] = cc(__initial_residue_name);
-          _chains[chain_id]._cc_sequence[terminal_residue_sequence_number - 1] = cc(__terminal_residue_name);
+          _chains[chain_id]._cc_sequence[initial_residue_sequence_number - 1] = __modres.get_cc(initial_residue_name);
+          _chains[chain_id]._cc_sequence[terminal_residue_sequence_number - 1] = __modres.get_cc(terminal_residue_name);
           // create and insert sequence_interval into the pool
           _chains[chain_id]._pool.insert(cchb_dssp_interval(initial_residue_sequence_number - 1,
                                                             terminal_residue_sequence_number - 1, cchb_dssp('E')));
@@ -376,19 +420,247 @@ namespace biosim {
 
       // stores the model data
       class model_data {
+      private:
+        // stores the model data for a single chain
+        struct model_chain_data {
+          // default ctor
+          model_chain_data()
+              : _cc_sequence(), _last_residue_sequence_number(0), _terminated(false), _hetatm_after_ter(0) {}
+
+          ps _cc_sequence; // atom/hetatm converted into a sequence
+          size_t _last_residue_sequence_number; // last see residue sequence number
+          bool _terminated; // if the chain was terminated with a TER line
+          size_t _hetatm_after_ter; // how many atom/hetatm lines were processed after the TER line
+        }; //
+        std::vector<std::map<char, model_chain_data>> _model_ensemble; // ensemble of chains
+        size_t _model_count; // number of models, either default or as specified by NUMMDL
+        size_t _current_model_number; // number of the current model
+        bool _current_model_complete; // if the current model was completed with a ENDMDL line
+        size_t _last_serial_number; // last seen serial number
+
       public:
+        // default ctor
+        model_data()
+            : _model_ensemble(),
+              _model_count(0),
+              _current_model_number(0),
+              _current_model_complete(false),
+              _last_serial_number(0) {}
+
         // processes the input strings
-        void process_number_models() {}
+        void process_number_models(std::vector<std::string> __line_values) {
+          std::string const model_count_string(boost::trim_copy(__line_values[0]));
+          DEBUG << "Submatches: nummdl='" << model_count_string << "'"; // print the submatches
+
+          try {
+            _model_count = boost::lexical_cast<size_t>(model_count_string);
+          } // try
+          catch(boost::bad_lexical_cast const &__e) {
+            _model_count = 1;
+            DEBUG << "Could not convert number_models='" << model_count_string
+                  << "' to number, using default number_models=" << _model_count;
+          } // catch
+        } //
         // processes the input strings
-        void process_model_begin() {}
+        void process_model_begin(std::vector<std::string> __line_values) {
+          std::string const model_number_string(boost::trim_copy(__line_values[0]));
+          DEBUG << "Submatches: model='" << model_number_string << "'"; // print the submatches
+
+          size_t model_number;
+          try {
+            model_number = boost::lexical_cast<size_t>(model_number_string);
+            if(model_number != _current_model_number + 1) {
+              size_t const expected_serial_number(_current_model_number + 1);
+              DEBUG << "Found model_number='" << model_number << "' differing from expected model_number='"
+                    << expected_serial_number << "', using expected model_number.";
+              model_number = expected_serial_number;
+            } // if
+          } // try
+          catch(boost::bad_lexical_cast const &__e) {
+            model_number = _current_model_number + 1;
+            LOG << "Could not convert model_number='" << model_number_string
+                << "' to number, using calculated model_number=" << model_number;
+          } // catch
+
+          _model_ensemble.emplace_back(std::map<char, model_chain_data>()); // add new model, initialize everything else
+          _current_model_number = model_number;
+          _current_model_complete = false;
+          _last_serial_number = 0;
+        } // process_model_begin()
         // processes the input strings
-        void process_model_end() {}
+        void process_model_end() {
+          DEBUG << "Processing ENDMDL.";
+          _current_model_complete = true;
+        } // process_model_end()
         // processes the input strings
-        void process_atom() {}
+        void process_atom(std::vector<std::string> __line_values, modres_data const &__modres) {
+          // check if contents are valid for conversion;
+          // exception 1: lexical_cast on char should be fine, as the submatches are only single char strings;
+          // exception 2: always try to convert residue sequence number, there's no other way of knowing them
+          // (if converting the residue sequence number does not work, lexical_cast will throw an exception)
+          std::string const line_type(__line_values[0]);
+          std::string const serial_number_string(boost::trim_copy(__line_values[1]));
+          std::string const atom_name(boost::trim_copy(__line_values[2]));
+          std::string const alternate_location(boost::trim_copy(__line_values[3]));
+          std::string const residue_name(boost::trim_copy(__line_values[4]));
+          std::string chain_id_string(__line_values[5]);
+          char const chain_id(boost::lexical_cast<char>(chain_id_string));
+          std::string residue_sequence_number_string(__line_values[6]);
+          size_t const residue_sequence_number(
+              boost::lexical_cast<size_t>(boost::trim_copy(residue_sequence_number_string)));
+          std::string residue_insertion_code_string(__line_values[7]);
+          char const residue_insertion_code(boost::lexical_cast<char>(residue_insertion_code_string));
+          std::string const x_string(boost::trim_copy(__line_values[8]));
+          std::string const y_string(boost::trim_copy(__line_values[9]));
+          std::string const z_string(boost::trim_copy(__line_values[10]));
+          std::string const occupancy_string(boost::trim_copy(__line_values[11]));
+          std::string const temperature_factor_string(boost::trim_copy(__line_values[12]));
+          std::string const element(boost::trim_copy(__line_values[13]));
+          std::string const charge_string(boost::trim_copy(__line_values[14]));
+
+          // print the submatches as strings before consistency checks and converting to size_t
+          DEBUG << "Submatches: " << line_type << "='" << serial_number_string << "|" << atom_name << "|"
+                << alternate_location << "' residue='" << residue_name << "|" << chain_id << "|"
+                << residue_sequence_number << "|" << residue_insertion_code << "' pos='" << x_string << "|" << y_string
+                << "|" << z_string << "' occupancy='" << occupancy_string << "' temp_factor='"
+                << temperature_factor_string << "' element='" << element << "' charge='" << charge_string << "'";
+
+          // if this pdb contains a single model, there won't be any MODEL or ENDMDL lines; just create a model
+          if(_model_ensemble.empty()) {
+            _model_ensemble.emplace_back(std::map<char, model_chain_data>());
+            _model_count = 1;
+            _current_model_number = 1;
+          } // if
+
+          if(_current_model_complete) {
+            LOG << "Found " << line_type << " line outside of model, after ENDMDL and before a new MODEL; ignoring.";
+            return;
+          } // if
+
+          // convert strings to size_t and catch exceptions for ones which have a default or way the calculating
+          size_t serial_number;
+          try {
+            serial_number = boost::lexical_cast<size_t>(serial_number_string);
+            // check previously stored value
+            if(serial_number != _last_serial_number + 1) {
+              size_t const expected_serial_number(_last_serial_number + 1);
+              DEBUG << "Found serial_number='" << serial_number << "' differing from expected serial_number='"
+                    << expected_serial_number << "', using expected serial_number.";
+              serial_number = expected_serial_number;
+            } // if
+          } // try
+          catch(boost::bad_lexical_cast const &__e) {
+            serial_number = _model_ensemble.empty() ? 1 : _last_serial_number + 1;
+            DEBUG << "Could not convert serial_number='" << serial_number_string
+                  << "' to number, using calculated serial_number='" << serial_number << "'";
+          } // catch
+
+          if(_model_ensemble.back()[chain_id]._terminated) { // check for HETATM after chain TER, store them separately
+            ++_model_ensemble.back()[chain_id]._hetatm_after_ter; // count how many HETATM were found
+          } else {
+            // add missing residues before the current position
+            if(_model_ensemble.back()[chain_id]._last_residue_sequence_number + 1 < residue_sequence_number) {
+              DEBUG << "Residues with residue_sequence_number="
+                    << (_model_ensemble.back()[chain_id]._last_residue_sequence_number + 1) << ".."
+                    << (residue_sequence_number - 1) << " missing, filling with unknown residues.";
+              _model_ensemble.back()[chain_id]._cc_sequence.resize(residue_sequence_number - 1, cc('X'));
+            } // if
+            // add current residue; no else branch if it already exists, multiple atoms share the same residue
+            if(_model_ensemble.back()[chain_id]._last_residue_sequence_number < residue_sequence_number) {
+              _model_ensemble.back()[chain_id]._cc_sequence.emplace_back(__modres.get_cc(residue_name));
+            } // if
+
+            // convert position and add atom to cc
+            double x, y, z;
+            try {
+              x = boost::lexical_cast<double>(x_string);
+              y = boost::lexical_cast<double>(y_string);
+              z = boost::lexical_cast<double>(z_string);
+              _model_ensemble.back()[chain_id]._cc_sequence.back().add_determined_atom(
+                  atom(atom_name, math::point({x, y, z})));
+            } // try
+            catch(boost::bad_lexical_cast const &__e) {
+              LOG << "Could not convert spatial position '" << x_string << "|" << y_string << "|" << z_string
+                  << "' to numbers, ignoring atom='" << serial_number << "|" << atom_name << "' of residue='"
+                  << residue_name << "|" << chain_id << "|" << residue_sequence_number << "|" << residue_insertion_code
+                  << "'.";
+            } // catch
+          } // else
+
+          // save everything
+          _model_ensemble.back()[chain_id]._last_residue_sequence_number = residue_sequence_number;
+          _last_serial_number = serial_number;
+        } // process_atom()
         // processes the input strings
-        void process_hetatm() {}
-        // processes the input strings
-        void process_terminate() {}
+        void process_terminate(std::vector<std::string> __line_values, modres_data const &__modres) {
+          // check if contents are valid for conversion;
+          // exception 1: lexical_cast on char should be fine, as the submatches are only single char strings;
+          // exception 2: always try to convert residue sequence number, there's no other way of knowing them
+          // (if converting the residue sequence number does not work, lexical_cast will throw an exception)
+          std::string const serial_number_string(boost::trim_copy(__line_values[0]));
+          std::string const residue_name(boost::trim_copy(__line_values[1]));
+          char const chain_id(boost::lexical_cast<char>(__line_values[2]));
+          size_t const residue_sequence_number(boost::lexical_cast<size_t>(boost::trim_copy(__line_values[3])));
+          char const residue_insertion_code(boost::lexical_cast<char>(__line_values[4]));
+
+          // print the submatches as strings before consistency checks and converting to size_t
+          DEBUG << "Submatches: ter='" << serial_number_string << "' residue='" << residue_name << "|" << chain_id
+                << "|" << residue_sequence_number << "|" << residue_insertion_code << "'";
+
+          // convert strings to size_t and catch exceptions for ones which have a default or way the calculating
+          size_t serial_number;
+          try {
+            serial_number = boost::lexical_cast<size_t>(serial_number_string);
+            // check previously stored value
+            if(serial_number != _last_serial_number + 1) {
+              size_t const expected_serial_number(_last_serial_number + 1);
+              DEBUG << "Found serial_number='" << serial_number << "' differing from expected serial_number='"
+                    << expected_serial_number << "', using expected serial_number.";
+              serial_number = expected_serial_number;
+            } // if
+          } // try
+          catch(boost::bad_lexical_cast const &__e) {
+            serial_number = _model_ensemble.empty() ? 1 : _last_serial_number + 1;
+            DEBUG << "Could not convert serial_number='" << serial_number_string
+                  << "' to number, using calculated serial_number='" << serial_number << "'";
+          } // catch
+
+          if(_model_ensemble.empty()) {
+            DEBUG << "Found TER line without model, ignoring.";
+            return;
+          } // if
+
+          // simply naming
+          size_t const last_residue_sequence_number(_model_ensemble.back()[chain_id]._last_residue_sequence_number);
+          std::string const last_residue_name(_model_ensemble.back()[chain_id]._cc_sequence.back().get_identifier());
+          std::string const standard_residue_name(__modres.get_standard_name(residue_name));
+          // verify last cc
+          bool correct_residue_sequence_number(last_residue_sequence_number == residue_sequence_number);
+          bool correct_residue_name(last_residue_name == residue_name);
+          bool correct_standard_residue_name(last_residue_name == standard_residue_name);
+          if(!correct_residue_sequence_number || !(correct_residue_name || correct_standard_residue_name)) {
+            DEBUG << "Residue on TER line differs from last residue: correct_residue_sequence_number="
+                  << correct_residue_sequence_number << " (" << last_residue_sequence_number << " and "
+                  << residue_sequence_number << "), correct_residue_name=" << correct_residue_name << " ("
+                  << last_residue_name << " and " << residue_name
+                  << "), correct_standard_residue_name=" << correct_standard_residue_name << " (" << last_residue_name
+                  << " and " << standard_residue_name << "), ignoring.";
+            return;
+          } // if
+
+          // save everything
+          _model_ensemble.back()[chain_id]._terminated = true;
+          _last_serial_number = serial_number;
+        } // process_terminate()
+        // get model data for given chain id
+        std::list<model_chain_data> get_models(char const &__chain_id) const {
+          std::list<model_chain_data> models;
+          for(auto chain_map : _model_ensemble) {
+            models.push_back(chain_map.at(__chain_id));
+          } // for
+
+          return models;
+        } // get_models()
       }; // class model_data
 
       // adjust seqres and ssdef data based on the given alignment
@@ -404,22 +676,23 @@ namespace biosim {
         int begin_diff(cc_unaligned_length_begin - ss_unaligned_length_begin);
         // if begin_diff == 0, do nothing
         if(begin_diff > 0) { // cc_seq has cc that are not in ss_seq
-          LOG << "SEQRES and HELIX/SHEET positions differ; increase HELIX/SHEET positions by " << begin_diff << ".";
+          LOG << "SEQRES and HELIX/SHEET positions differ for chain " << __chain_id
+              << "; increase HELIX/SHEET positions by " << begin_diff << ".";
           __ssdef.shift(__chain_id, begin_diff);
         } // if
         else if(begin_diff < 0) { // ss_seq has cc that are not in cc_seq
           size_t first_sse_begin(__ssdef.get_pool(__chain_id).begin()->get_min());
           // if all 0..abs(begin_diff) cc of ss_seq are unknown (i.e. no sse starts there), remove these cc from ss_seq
           if(std::abs(begin_diff) <= first_sse_begin) {
-            LOG << "SEQRES and HELIX/SHEET positions differ; decrease HELIX/SHEET positions by " << std::abs(begin_diff)
-                << ".";
+            LOG << "SEQRES and HELIX/SHEET positions differ for chain " << __chain_id
+                << "; decrease HELIX/SHEET positions by " << std::abs(begin_diff) << ".";
             __ssdef.shift(__chain_id, begin_diff);
           } // if
           else { // an sse starts there, copy 0..abs(begin_diff) cc from ss_seq to cc_seq
             // it would be possible to only copy from first_sse_begin..abs(begin_diff), but then additionally all sse
             // would have to shift back by begin_diff
-            LOG << "HELIX/SHEET starts before SEQRES; increase SEQRES positions by " << std::abs(begin_diff)
-                << " and insert unknown amino acids at the beginning.";
+            LOG << "HELIX/SHEET starts before SEQRES for chain " << __chain_id << "; increase SEQRES positions by "
+                << std::abs(begin_diff) << " and insert unknown amino acids at the beginning.";
             __seqres.insert_front(__chain_id, __ssdef.get_sequence(__chain_id).begin(),
                                   __ssdef.get_sequence(__chain_id).begin() - begin_diff);
           } // else
@@ -433,7 +706,7 @@ namespace biosim {
         // if end_diff > 0, cc_seq has cc that are not in ss_seq: add unknown at back of ss_seq by setting total length
         if(end_diff < 0) { // ss_seq has cc that are not in cc_seq: add unknown at back of cc_seq
           // no check needed of end of ss_seq is just unknown b/c ss_seq ends with the last sse
-          LOG << "HELIX/SHEET ends after SEQRES; insert " << std::abs(end_diff)
+          LOG << "HELIX/SHEET ends after SEQRES for chain " << __chain_id << "; insert " << std::abs(end_diff)
               << " unknown amino acids at the end of SEQRES.";
           __seqres.insert_back(__chain_id, __ssdef.get_sequence(__chain_id).end() - std::abs(end_diff),
                                __ssdef.get_sequence(__chain_id).end());
@@ -556,7 +829,7 @@ namespace biosim {
             // 113   114         115   116 117  118 119  120   121                         122
             "(HETATM)([0-9 ]{5}) (....)(.)(...) (.)(....)(.)   ([0-9 -]{3}[0-9][.][0-9]{3})([0-9 -]{3}[0-9][.][0-9]{3})"
             // 123                       124                         125                                   126 127
-            "([0-9 -]{3}[0-9][.][0-9]{3})([0-9 -]{2}[0-9][.][0-9]{2})([0-9 -]{2}[0-9][.][0-9]{2})          (..)(..)..*|"
+            "([0-9 -]{3}[0-9][.][0-9]{3})([0-9 -]{2}[0-9][.][0-9]{2})([0-9 -]{2}[0-9][.][0-9]{2})          (..)(..).*|"
             // 128
             "(ENDMDL).*|"
             // connectivity section
@@ -571,11 +844,11 @@ namespace biosim {
         std::list<std::string> file_lines(tools::file::read_to_string_list(__filename));
         DEBUG << "Read pdb file content:\n" << boost::algorithm::join(file_lines, "\n");
 
-        // to temporarily store data
-        caveat_data caveat;
-        seqres_data seqres;
-        ssdef_data ssdef;
-        model_data model;
+        // to temporarily store parsed data
+        // for serial number independent lines, maps line_keyword -> lines, each line consisting of a vector of values
+        std::map<std::string, std::list<std::vector<std::string>>> non_model_lines;
+        // for serial number dependent lines, vector of values, including the line_keyword
+        std::list<std::vector<std::string>> model_lines;
 
         DEBUG << "Parsing pdb file";
         for(auto &line : file_lines) { // process each line from the file
@@ -597,57 +870,112 @@ namespace biosim {
 
           if(match[5].matched) {
             DEBUG << "Found CAVEAT line: " << match[5];
-            caveat.process_caveat();
+            non_model_lines[match[5]].push_back({match[6], match[7], match[8]});
           } // if
           else if(match[13].matched) {
             DEBUG << "Found NUMMDL line: " << match[13];
-            model.process_number_models();
+            model_lines.push_back({match[13], match[14]});
           } // if
           else if(match[20].matched) {
             DEBUG << "Found REMARK line: " << match[20] << " " << match[21];
           } // else if
           else if(match[25].matched) {
             DEBUG << "Found SEQRES line: " << match[25];
-            std::vector<std::string> residues;
-            for(size_t pos(29); pos <= 41; ++pos) {
-              residues.push_back(std::string(match[pos]));
-            } // for
-            seqres.process(match[26], match[27], match[28], residues);
+            non_model_lines[match[25]].push_back({match[26], match[27], match[28], match[29], match[30], match[31],
+                                                  match[32], match[33], match[34], match[35], match[36], match[37],
+                                                  match[38], match[39], match[40], match[41]});
           } // else if
           else if(match[42].matched) {
             DEBUG << "Found MODRES line: " << match[42];
+            non_model_lines[match[42]].push_back(
+                {match[43], match[44], match[45], match[46], match[47], match[48], match[49]});
           } // else if
           else if(match[54].matched) {
             DEBUG << "Found HELIX line: " << match[54];
-            ssdef.process_helix(match[55], match[56], match[57], match[58], match[59], match[60], match[61], match[62],
-                                match[63], match[64], match[65], match[66], match[67]);
+            non_model_lines[match[54]].push_back({match[55], match[56], match[57], match[58], match[59], match[60],
+                                                  match[61], match[62], match[63], match[64], match[65], match[66],
+                                                  match[67]});
           } // else if
           else if(match[68].matched) {
             DEBUG << "Found SHEET line: " << match[68];
-            ssdef.process_strand(match[69], match[70], match[71], match[72], match[73], match[74], match[75], match[76],
-                                 match[77], match[78], match[79], match[80]);
+            non_model_lines[match[68]].push_back({match[69], match[70], match[71], match[72], match[73], match[74],
+                                                  match[75], match[76], match[77], match[78], match[79], match[80]});
           } // else if
           else if(match[89].matched) {
             DEBUG << "Found MODEL line: " << match[89];
-            model.process_model_begin();
+            model_lines.push_back({match[89], match[90]});
           } // else if
           else if(match[91].matched) {
             DEBUG << "Found ATOM line: " << match[91];
-            model.process_atom();
+            model_lines.push_back({match[91], match[92], match[93], match[94], match[95], match[96], match[97],
+                                   match[98], match[99], match[100], match[101], match[102], match[103], match[104],
+                                   match[105]});
           } // else if
           else if(match[107].matched) {
             DEBUG << "Found TER line: " << match[107];
-            model.process_terminate();
+            model_lines.push_back({match[107], match[108], match[109], match[110], match[111], match[112]});
           } // else if
           else if(match[113].matched) {
             DEBUG << "Found HETATM line: " << match[113];
-            model.process_hetatm();
+            //             model.process_hetatm();
+            model_lines.push_back({match[113], match[114], match[115], match[116], match[117], match[118], match[119],
+                                   match[120], match[121], match[122], match[123], match[124], match[125], match[126],
+                                   match[127]});
           } // else if
           else if(match[128].matched) {
             DEBUG << "Found ENDMDL line: " << match[128];
-            model.process_model_end();
+            model_lines.push_back({match[128]});
           } // else if
         } // for
+        DEBUG << "Parsing found " << non_model_lines["CAVEAT"].size() << " CAVEAT lines, "
+              << non_model_lines["SEQRES"].size() << " SEQRES lines, " << non_model_lines["MODRES"].size()
+              << " MODRES lines, " << non_model_lines["HELIX"].size() << " HELIX lines, "
+              << non_model_lines["SHEET"].size() << " SHEET lines, " << model_lines.size()
+              << " model lines (NUMMDL, MODEL, ATOM, TER, HETATM, ENDMDL)";
+
+        // to temporarily store processed data
+        caveat_data caveat;
+        modres_data modres;
+        seqres_data seqres;
+        ssdef_data ssdef;
+        model_data model;
+
+        DEBUG << "Processing pdb file";
+        // process non-model lines
+        std::for_each(non_model_lines["CAVEAT"].begin(), non_model_lines["CAVEAT"].end(),
+                      [&](std::vector<std::string> const &__line) { caveat.process_caveat(); });
+        // process MODRES first, even though it is sorted after SEQRES; needed to evaluate modified residues names
+        std::for_each(non_model_lines["MODRES"].begin(), non_model_lines["MODRES"].end(),
+                      [&](std::vector<std::string> const &__line) { modres.process(__line); });
+        if(!modres.get_used_set().empty()) { // if any mappings were used, tell the user about it
+          std::stringstream s;
+          for(auto id : modres.get_used_set()) {
+            s << id << "->" << modres.get_map().at(id) << "; ";
+          } // for
+          LOG << "The following " << modres.get_used_set().size()
+              << " residue name to standard residue name mappings were using during processing: " << s.str();
+        } // id
+        std::for_each(non_model_lines["SEQRES"].begin(), non_model_lines["SEQRES"].end(),
+                      [&](std::vector<std::string> const &__line) { seqres.process(__line, modres); });
+        std::for_each(non_model_lines["HELIX"].begin(), non_model_lines["HELIX"].end(),
+                      [&](std::vector<std::string> const &__line) { ssdef.process_helix(__line, modres); });
+        std::for_each(non_model_lines["SHEET"].begin(), non_model_lines["SHEET"].end(),
+                      [&](std::vector<std::string> const &__line) { ssdef.process_strand(__line, modres); });
+        // process model lines
+        std::for_each(model_lines.begin(), model_lines.end(), [&](std::vector<std::string> const &__line) {
+          std::vector<std::string> line_without_keyword(__line.begin() + 1, __line.end());
+          if(__line[0] == "NUMMDL") {
+            model.process_number_models(line_without_keyword);
+          } else if(__line[0] == "MODEL") {
+            model.process_model_begin(line_without_keyword);
+          } else if(__line[0] == "ATOM" || __line[0] == "HETATM") {
+            model.process_atom(__line, modres);
+          } else if(__line[0] == "TER") {
+            model.process_terminate(line_without_keyword, modres);
+          } else if(__line[0] == "ENDMDL") {
+            model.process_model_end();
+          }
+        });
 
         assembly a; // final result
 
@@ -656,22 +984,39 @@ namespace biosim {
             che::score::ev_alignment(b62_ptr, -b62_ptr->get_unknown_score(), b62_ptr->get_min_score()));
         size_t sequence_no(1); // start with 1
         for(auto c : seqres.get_chain_ids()) {
-          structure cc_seq("", "", seqres.get_sequence(c));
-          structure ss_seq("", "", ssdef.get_sequence(c), ss(ssdef.get_pool(c)));
-          che::scored_alignment best_alignment(
-              aligner.align_multiple({che::alignment(cc_seq), che::alignment(ss_seq)}).front());
-          adjust(seqres, ssdef, c, best_alignment);
+          ss this_ss;
 
-          std::pair<size_t, size_t> mismatches(count_mismatches(seqres.get_sequence(c), ssdef.get_sequence(c)));
-          if(mismatches.first > 0) {
-            LOG << "SEQRES and HELIX/SHEET mismatch in " << mismatches.first << "/" << mismatches.second
-                << " known positions, ignoring structure: " << __filename << "/" << std::to_string(sequence_no);
-            continue;
+          bool is_peptide_chain(seqres.get_sequence(c).front().get_monomer_type() ==
+                                cc::monomer_type::l_peptide_linking);
+          if(is_peptide_chain) {
+            this_ss = ss(std::set<cchb_dssp_interval>(), seqres.get_sequence(c).size()); // coil ss with correct length
+
+            std::list<char> ssdef_chain_ids(ssdef.get_chain_ids());
+            bool chain_has_ss(std::find(ssdef_chain_ids.begin(), ssdef_chain_ids.end(), c) != ssdef_chain_ids.end());
+            if(chain_has_ss) {
+              structure cc_seq("", "", seqres.get_sequence(c));
+              // pass the lenth into ss in case the pool has overlapping intervals that cause the last one to be removed
+              structure ss_seq("", "", ssdef.get_sequence(c), ss(ssdef.get_pool(c), ssdef.get_sequence(c).size()));
+              che::scored_alignment best_alignment(
+                  aligner.align_multiple({che::alignment(cc_seq), che::alignment(ss_seq)}).front());
+              adjust(seqres, ssdef, c, best_alignment);
+
+              std::pair<size_t, size_t> mismatches(count_mismatches(seqres.get_sequence(c), ssdef.get_sequence(c)));
+              if(mismatches.first > 0) {
+                LOG << "SEQRES and HELIX/SHEET mismatch in " << mismatches.first << "/" << mismatches.second
+                    << " known positions for chain " << c << ", ignoring structure: " << __filename << "/"
+                    << std::to_string(sequence_no);
+                continue;
+              } // if
+              this_ss = ss(ssdef.get_pool(c), seqres.get_sequence(c).size()); // set ss from pdb file
+            } // if
           } // if
 
-          a.set(std::string(1, c),
-                structure(__filename + "/" + std::to_string(sequence_no), ">lcl|sequence", seqres.get_sequence(c),
-                          ss(ssdef.get_pool(c), seqres.get_sequence(c).size())));
+          std::string storage(__filename + "/" + std::to_string(sequence_no));
+          structure this_structure = is_peptide_chain
+                                         ? structure(storage, ">lcl|sequence", seqres.get_sequence(c), this_ss)
+                                         : structure(storage, ">lcl|sequence", seqres.get_sequence(c));
+          a.set(std::string(1, c), this_structure);
           ++sequence_no; // increase sequence_no, b/c it's not done in the for loop header
         }
 
