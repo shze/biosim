@@ -17,6 +17,7 @@ set(LIBBIOSIM_SOURCES
   che/io/file_assembly.cpp
   che/io/file_fasta.cpp
   che/io/file_pdb.cpp
+  che/io/file_pdb_data.cpp
   che/io/file_psipredv.cpp
   che/io/file_pssm.cpp
   che/io/file_sse_pool.cpp
