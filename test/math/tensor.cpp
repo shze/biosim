@@ -107,17 +107,12 @@ BOOST_AUTO_TEST_CASE(tensor_rank5) {
   tools::incrementor<std::vector<size_t>> inc({{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}});
   std::vector<size_t> pos(5, 0);
   size_t input(10);
-  bool done(false);
-  while(!done) {
+  while(!inc.overflow()) {
     t(pos) = input;
     BOOST_CHECK(t(pos) == input);
 
     ++input;
-    try {
-      pos = inc.next(pos);
-    } catch(std::overflow_error &e) {
-      done = true;
-    } // catch
+    pos = inc.next(pos);
   } // while
 }
 

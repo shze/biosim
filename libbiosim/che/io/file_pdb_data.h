@@ -74,7 +74,7 @@ namespace biosim {
         // shift the given chain by __insert_length
         void shift(char const &__chain_id, int __insert_length);
         // get chain ids
-        std::list<char> get_chain_ids();
+        std::list<char> get_chain_ids() const;
         // returns the ps for the given chain id
         ps const &get_sequence(char const &__chain_id) const;
         // return the pool for the given chain id
@@ -109,6 +109,8 @@ namespace biosim {
         void process_atom(std::array<std::string, 15> __values, pdb_modres_data const &__modres);
         // processes the input strings
         void process_terminate(std::array<std::string, 5> __values, pdb_modres_data const &__modres);
+        // get chain ids
+        std::list<char> get_chain_ids() const;
         // get sequences for given chain id
         std::list<ps> get_sequences(char const &__chain_id) const;
 

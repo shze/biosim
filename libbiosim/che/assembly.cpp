@@ -34,9 +34,13 @@ namespace biosim {
     std::string assembly::add(structure __s) {
       std::string chain_id = "A"; // determine next available chain_id, start from A
       tools::incrementor<std::string> inc;
-      while(has_structure(chain_id)) {
+      while(has_structure(chain_id) && !inc.overflow()) {
         chain_id = inc.next(chain_id);
       } // while
+
+      if(inc.overflow()) {
+        throw std::out_of_range("no letter was available to assign to this structure");
+      } // if
 
       set(chain_id, __s);
       return chain_id;

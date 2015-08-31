@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <iterator>
 #include "tools/incrementor.h"
+#include "tools/log.h"
 
 namespace biosim {
   namespace math {
@@ -99,21 +100,12 @@ namespace biosim {
 
         // iterate/increment and copy
         tools::incrementor<std::vector<size_t>> tensor_inc(t_alphabets), subtensor_inc(subt_alphabets);
-        bool done(false);
-        while(!done) {
+        while(!tensor_inc.overflow() && !subtensor_inc.overflow()) {
           DEBUG << "Mapping tensor_position->subtensor_position: (" << to_string(t_pos) << ")->(" << to_string(subt_pos)
                 << ")";
           subt(subt_pos) = this->operator()(t_pos);
-
-          try {
-            DEBUG << "Incrementing tensor position";
-            t_pos = tensor_inc.next(t_pos);
-            DEBUG << "Incrementing subtensor position";
-            subt_pos = subtensor_inc.next(subt_pos);
-          } // try
-          catch(std::overflow_error &e) {
-            done = true;
-          } // catch
+          t_pos = tensor_inc.next(t_pos);
+          subt_pos = subtensor_inc.next(subt_pos);
         } // while
 
         return subt;
@@ -175,8 +167,7 @@ namespace biosim {
       // iterate over all subtensors with rank 2
       tools::incrementor<std::vector<size_t>> inc(tensor_alphabets);
       std::vector<size_t> subt_pos(tensor_alphabets.size(), 0);
-      bool done(false);
-      while(!done) {
+      while(!inc.overflow()) {
         tensor<T> subt(__tensor.sub(subt_dim, subt_pos));
         if(subt_pos.size() > 0) {
           __out << "subtensor(";
@@ -190,11 +181,7 @@ namespace biosim {
           __out << "\n";
         } // for
 
-        try {
-          subt_pos = inc.next(subt_pos);
-        } catch(std::overflow_error &e) {
-          done = true;
-        } // catch
+        subt_pos = inc.next(subt_pos);
       } // while
 
       return __out;

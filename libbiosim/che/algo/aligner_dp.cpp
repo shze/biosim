@@ -57,7 +57,7 @@ namespace biosim {
 
           bool done(false);
           double score(0.0);
-          while(!done) { // go over all directions
+          while(!inc.overflow()) { // go over all directions
             if(!tensor_pos_underflow(__pos, direction)) { // calculate only if the needed position is within the tensor
               DEBUG << "Calculating tensor for direction=(" << math::tensor<size_t>::to_string(direction) << ")";
 
@@ -82,11 +82,7 @@ namespace biosim {
                     << ", max_score=" << score << ", " << to_single_line(step_alignment);
             } // if
 
-            try {
-              direction = inc.next(direction);
-            } catch(std::overflow_error &e) {
-              done = true;
-            } // catch
+            direction = inc.next(direction);
           } // while
 
           return score;
@@ -150,10 +146,9 @@ namespace biosim {
           alphabets.push_back(alphabet);
         } // for
         tools::incrementor<std::vector<size_t>> inc(alphabets);
-        bool done(false);
         double max_score(0.0); // get maximal score
         std::list<std::vector<size_t>> max_pos_list; // positions of maximal score
-        while(!done) {
+        while(!inc.overflow()) {
           if(__scores(pos) > max_score) { // only if its larger (and not equal), update the score and clear the list
             max_score = __scores(pos);
             max_pos_list.clear();
@@ -162,11 +157,7 @@ namespace biosim {
             max_pos_list.push_back(pos);
           } // if
 
-          try {
-            pos = inc.next(pos);
-          } catch(std::overflow_error &e) {
-            done = true;
-          } // catch
+          pos = inc.next(pos);
         } // while
 
         size_t total_depth(0); // calculate to total depth as sum of the depth of all alignments
@@ -189,8 +180,7 @@ namespace biosim {
           std::vector<size_t> direction(__scores.get_rank(), 0); // create starting position, all zero
           direction = inc.next(direction); // do one increment to avoid the all-gap case
 
-          bool done(false);
-          while(!done) { // go over all directions
+          while(!inc.overflow()) { // go over all directions
             if(!tensor_pos_underflow(current_pos, direction)) { // calculate only if needed position is in tensor
               DEBUG << "Backtracking tensor for direction=(" << math::tensor<size_t>::to_string(direction) << ")";
               std::vector<size_t> previous_pos(tensor_pos_subtract(current_pos, direction));
@@ -228,11 +218,7 @@ namespace biosim {
               } // if
             } // if
 
-            try {
-              direction = inc.next(direction);
-            } catch(std::overflow_error &e) {
-              done = true;
-            } // catch
+            direction = inc.next(direction);
           } // while
         } // while
 

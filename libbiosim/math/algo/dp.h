@@ -24,16 +24,10 @@ namespace biosim {
             alphabets.push_back(alphabet);
           } // for
           tools::incrementor<std::vector<size_t>> inc(alphabets);
-          bool done(false);
-          while(!done) {
+          while(!inc.overflow()) {
             DEBUG << "Calculating score for tensor(" << math::tensor<T>::to_string(pos) << ")";
             __input(pos) = __score(__input, pos);
-
-            try {
-              pos = inc.next(pos);
-            } catch(std::overflow_error &e) {
-              done = true;
-            } // catch
+            pos = inc.next(pos);
           } // while
 
           return __input;

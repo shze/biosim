@@ -4,78 +4,51 @@
 #include <stdexcept>
 #include <vector>
 #include <algorithm>
-#include "tools/log.h"
 
 namespace biosim {
   namespace tools {
-    // increments the elements of a given container based on the alphabet(s) given to ctor
+    // increments the elements of a container based on the alphabets; containers and alphabets always have fixed length
     template <class T>
     class incrementor {
     public:
-      // ctor for flexible length inputs; default ctor
-      explicit incrementor(std::vector<typename T::value_type> const &__alphabet = get_uppercase_alphabet())
-          : _alphabets({__alphabet}), _fixed_length(false) {
-        if(__alphabet.empty()) {
-          throw std::invalid_argument("cannot increment with an empty alphabet");
-        } // if
-      } // ctor
-      // ctor for fixed length inputs, one alphabet for each input position
-      explicit incrementor(std::vector<std::vector<typename T::value_type>> const &__alphabets)
-          : _alphabets(__alphabets), _fixed_length(true) {
-        for(auto alphabet : _alphabets) { // allow construction with no alphabets, but a given alphabet cannot be empty
+      // ctor taking one alphabet for each position; no alphabets are allowed (for subtensor), empty alphabets are not
+      explicit incrementor(std::vector<std::vector<typename T::value_type>> const &__alphabets = {
+                               get_uppercase_alphabet()})
+          : _alphabets(__alphabets), _overflow(false) {
+        for(auto alphabet : _alphabets) {
           if(alphabet.empty()) {
             throw std::invalid_argument("cannot increment with an empty alphabet");
           } // if
         } // for
       } // ctor
 
-      // incrementing function
-      T next(T __container, size_t increment = 1) const {
-        // check _alphabets are not empty (alphabets cannot be empty for flexible length incrementors)
-        if(_alphabets.empty()) {
-          // must be overflow_error, b/c this is the error on which the loop exists incrementing for fixed length inputs
-          throw std::overflow_error("cannot insert new element without alphabet");
-        } // if
-        // an alphabet for each container position is required for fixed length container
-        if(_fixed_length && _alphabets.size() != __container.size()) {
+      // incrementing function; does not check at the beginning if all positions have allowed letters, only step by step
+      T next(T __container, size_t increment = 1) {
+        if(_alphabets.size() != __container.size()) { // an alphabet for each container position is required
           throw std::out_of_range("input length differs from alphabet count for fixed length input");
         } // if
-        // each container position must contain a letter from the corresponding alphabet
-        for(size_t pos(0); pos < __container.size(); ++pos) {
-          std::vector<typename T::value_type> alphabet(_fixed_length ? _alphabets[pos] : _alphabets[0]);
-          if(std::find(alphabet.begin(), alphabet.end(), __container[pos]) == alphabet.end()) {
+        int pos(__container.size() - 1); // start with last element; use int because we're decreasing, and it can go < 0
+        _overflow = (increment && pos < 0); // reset overflow, it could have been set before calling next()
+
+        while(increment && !_overflow) { // as long as we still need to increment and we don't have an overflow
+          std::vector<typename T::value_type> const &a(_alphabets[pos]); // get the alphabet
+          typename std::vector<typename T::value_type>::const_iterator current_letter_itr(
+              std::find(a.begin(), a.end(), __container[pos]));
+          if(current_letter_itr == a.end()) { // check if current position has an allowed letter
             throw std::out_of_range("input contains letter not in alphabet");
           } // if
-        } // for
-        int pos(__container.size() - 1); // start at last element; use int because we're decreasing, and it can go < 0
-
-        while(increment) {
-          std::vector<typename T::value_type> alphabet(_fixed_length ? _alphabets[pos] : _alphabets[0]);
-          size_t current_letter_pos(std::find(alphabet.begin(), alphabet.end(), __container[pos]) - alphabet.begin());
-          if(current_letter_pos + increment >= alphabet.size()) { // if we have carryover
-            DEBUG << "Increasing element at position " << pos << ", keeping carryover for next element";
-            __container[pos] = alphabet[(current_letter_pos + increment) % alphabet.size()];
-            increment = (current_letter_pos + increment) / alphabet.size();
-          } else { // no carryover
-            DEBUG << "Increasing element at position " << pos << ", done incrementing";
-            __container[pos] = alphabet[current_letter_pos + increment];
-            increment = 0;
-          } // else
-          pos--;
-          if(increment && pos < 0) {
-            if(_fixed_length) {
-              throw std::overflow_error("adding increment causes overflow for fixed length input");
-            } // if
-            DEBUG << "Inserting new element at the front of the container";
-            bool first_char_is_neutral(alphabet.size() > 0 && (alphabet[0] == '0' || alphabet[0] == 0));
-            __container.insert(__container.begin(), first_char_is_neutral ? alphabet[1] : alphabet[0]);
-            pos++;
-            increment--; // decrease by 1, b/c we inserted the first element (b/c sometimes we have no neutral element)
-          } // if
+          size_t current_letter_pos(current_letter_itr - a.begin());
+          __container[pos] = a[(current_letter_pos + increment) % a.size()]; // update current letter
+          increment = (current_letter_pos + increment) / a.size(); // update increment
+          --pos;
+          _overflow = (increment && pos < 0);
         } // while
 
         return __container;
       } // next()
+
+      // return if an overflow occured on the last call to next()
+      bool overflow() const { return _overflow; }
 
       // get uppercase alphabet
       static std::vector<char> get_uppercase_alphabet() {
@@ -85,7 +58,7 @@ namespace biosim {
 
     private:
       std::vector<std::vector<typename T::value_type>> _alphabets; // the ordered alphabet for incrementing
-      bool _fixed_length; // if the increment function does not extend the length of a given argument
+      bool _overflow; // overflow state
     }; // class incrementor
   } // namespace tools
 } // namespace biosim

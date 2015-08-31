@@ -337,7 +337,7 @@ namespace biosim {
         _chains[__chain_id]._pool = new_pool;
       } // shift()
       // get chain ids
-      std::list<char> pdb_ssdef_data::get_chain_ids() {
+      std::list<char> pdb_ssdef_data::get_chain_ids() const {
         std::list<char> chain_ids;
         for(auto p : _chains) {
           chain_ids.emplace_back(p.first);
@@ -568,6 +568,16 @@ namespace biosim {
         _model_ensemble.back()[chain_id]._terminated = true;
         _last_serial_number = serial_number;
       } // process_terminate()
+      // get chain ids
+      std::list<char> pdb_model_data::get_chain_ids() const {
+        std::list<char> chain_ids;
+        for(auto m : _model_ensemble) {
+          for(auto p : m) {
+            chain_ids.emplace_back(p.first);
+          } // for
+        } // for
+        return chain_ids;
+      } // get_chain_ids()
       // get sequences for given chain id
       std::list<ps> pdb_model_data::get_sequences(char const &__chain_id) const {
         std::list<ps> sequences;
