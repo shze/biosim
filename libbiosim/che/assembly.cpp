@@ -1,5 +1,5 @@
 #include "che/assembly.h"
-#include "tools/incrementor.h"
+#include "tools/mapper.h"
 
 namespace biosim {
   namespace che {
@@ -32,13 +32,13 @@ namespace biosim {
     structure const &assembly::get_structure(std::string const &__chain_id) const { return _chains.at(__chain_id); }
     // add structure to assembly, assign next available chain_id, and returns the chain_id
     std::string assembly::add(structure __s) {
-      std::string chain_id = "A"; // determine next available chain_id, start from A
-      tools::incrementor<std::string> inc;
-      while(has_structure(chain_id) && !inc.overflow()) {
-        chain_id = inc.next(chain_id);
-      } // while
-
-      if(inc.overflow()) {
+      std::string chain_id_letters("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+      std::vector<char> chain_id_alphabet(chain_id_letters.begin(), chain_id_letters.end());
+      tools::mapper<std::string> m(std::vector<std::vector<char>>{chain_id_alphabet});
+      std::string chain_id;
+      for(size_t i(m.get_min()); has_structure(chain_id = m.encode(i)) && i <= m.get_max(); ++i) {
+      } // for
+      if(has_structure(chain_id)) {
         throw std::out_of_range("no letter was available to assign to this structure");
       } // if
 

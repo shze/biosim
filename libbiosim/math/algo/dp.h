@@ -15,19 +15,12 @@ namespace biosim {
 
         // calculates the scores for all positions of the tensor __input using the scoring function and returns it
         math::tensor<T> calculate(math::tensor<T> __input, score_function const &__score) {
-          std::vector<size_t> pos(__input.get_rank(), 0);
-          std::vector<std::vector<size_t>> alphabets;
-          for(size_t dim(0); dim < __input.get_rank(); ++dim) {
-            std::vector<size_t> alphabet(__input.get_size(dim));
-            size_t element(0);
-            std::generate(alphabet.begin(), alphabet.end(), [&] { return element++; });
-            alphabets.push_back(alphabet);
-          } // for
-          tools::incrementor<std::vector<size_t>> inc(alphabets);
-          while(!inc.overflow()) {
-            DEBUG << "Calculating score for tensor(" << math::tensor<T>::to_string(pos) << ")";
+          tools::mapper<std::vector<size_t>> m(__input.get_mapper_alphabets());
+          std::vector<size_t> pos;
+          for(size_t i(m.get_min()); i <= m.get_max(); ++i) {
+            pos = m.encode(i);
+            DEBUG << "Calculating score for tensor(" << tools::to_string(pos) << ")";
             __input(pos) = __score(__input, pos);
-            pos = inc.next(pos);
           } // while
 
           return __input;

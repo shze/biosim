@@ -40,7 +40,7 @@ namespace biosim {
     inline std::ostream &operator<<(std::ostream &__out, enumerate<T> const &__rhs) {
       __out << __rhs.get_object();
       return __out;
-    } // operator<<
+    } // operator<<()
   } // namespace tools
 } // namespace biosim
 

@@ -1,5 +1,6 @@
 #include "che/algo/aligner_dp.h"
 #include "math/algo/dp.h"
+#include "tools/format.h"
 
 namespace biosim {
   namespace che {
@@ -44,46 +45,40 @@ namespace biosim {
             : _alignments(__alignments), _score_f(__score_f) {}
         // operator called by the dp algorithm to calculate the score for the given position in the given tensor
         double operator()(math::tensor<double> const &__input, std::vector<size_t> const &__pos) {
-          DEBUG << "Calculating tensor at pos=(" << math::tensor<size_t>::to_string(__pos) << ")";
+          DEBUG << "Calculating tensor at pos=(" << tools::to_string(__pos) << ")";
 
           if(_alignments.size() != __pos.size()) {
             throw std::invalid_argument("need to have as many input alignments as dimensions in tensor position");
           } // if
 
-          // create incrementor with __pos.size length and digits 0=gap, 1=match
-          tools::incrementor<std::vector<size_t>> inc(std::vector<std::vector<size_t>>(__pos.size(), {0, 1}));
-          std::vector<size_t> direction(__pos.size(), 0); // create starting position, all zero
-          direction = inc.next(direction); // do one increment to avoid the all-gap case
-
-          bool done(false);
+          // create mapper with __pos.size length and digits 0=gap, 1=match
+          tools::mapper<std::vector<size_t>> m(std::vector<std::vector<size_t>>(__pos.size(), {0, 1}));
           double score(0.0);
-          while(!inc.overflow()) { // go over all directions
-            if(!tensor_pos_underflow(__pos, direction)) { // calculate only if the needed position is within the tensor
-              DEBUG << "Calculating tensor for direction=(" << math::tensor<size_t>::to_string(direction) << ")";
-
-              std::vector<size_t> previous_pos(tensor_pos_subtract(__pos, direction));
-              double previous_score(__input(previous_pos));
-
-              std::vector<che::structure> structure_parts; // create a small alignment only with the necessary parts
-              for(size_t dim(0); dim < direction.size(); ++dim) {
-                for(size_t depth_pos(0); depth_pos < _alignments[dim].get_depth(); ++depth_pos) {
-                  che::ps seq;
-                  seq.push_back(direction[dim] == 1 ? _alignments[dim].get_cc(__pos[dim] - 1, depth_pos)
-                                                    : che::cc('-'));
-                  structure_parts.emplace_back("", "", seq);
-                } // for
-              } // for
-              che::alignment step_alignment(structure_parts, previous_pos, __pos);
-              double step_score(_score_f.evaluate(step_alignment));
-
-              score = std::max(score, previous_score + step_score);
-
-              DEBUG << "Got previous_score=" << previous_score << ", step_score=" << step_score
-                    << ", max_score=" << score << ", " << to_single_line(step_alignment);
+          for(size_t i(m.get_min()); i <= m.get_max(); ++i) { // go over all directions
+            std::vector<size_t> direction(m.encode(i));
+            if(tensor_pos_underflow(__pos, direction)) { // do not calculate if needed position is not in the tensor
+              continue;
             } // if
 
-            direction = inc.next(direction);
-          } // while
+            DEBUG << "Calculating tensor for direction=(" << tools::to_string(direction) << ")";
+            std::vector<size_t> previous_pos(tensor_pos_subtract(__pos, direction));
+            double previous_score(__input(previous_pos));
+
+            std::vector<che::structure> structure_parts; // create a small alignment only with the necessary parts
+            for(size_t dim(0); dim < direction.size(); ++dim) {
+              for(size_t depth_pos(0); depth_pos < _alignments[dim].get_depth(); ++depth_pos) {
+                che::ps seq;
+                seq.push_back(direction[dim] == 1 ? _alignments[dim].get_cc(__pos[dim] - 1, depth_pos) : che::cc('-'));
+                structure_parts.emplace_back("", "", seq);
+              } // for
+            } // for
+            che::alignment step_alignment(structure_parts, previous_pos, __pos);
+            double step_score(_score_f.evaluate(step_alignment));
+            score = std::max(score, previous_score + step_score);
+
+            DEBUG << "Got previous_score=" << previous_score << ", step_score=" << step_score << ", max_score=" << score
+                  << ", " << to_single_line(step_alignment);
+          } // for
 
           return score;
         } // operator()
@@ -137,18 +132,11 @@ namespace biosim {
         std::list<alignment_data> best_alignment_data; // list of completed alignments
 
         // create first work item: go through the tensor and find the maximum score to start the backtracking
-        std::vector<size_t> pos(__scores.get_rank(), 0);
-        std::vector<std::vector<size_t>> alphabets;
-        for(size_t dim(0); dim < __scores.get_rank(); ++dim) {
-          std::vector<size_t> alphabet(__scores.get_size(dim));
-          size_t element(0);
-          std::generate(alphabet.begin(), alphabet.end(), [&] { return element++; });
-          alphabets.push_back(alphabet);
-        } // for
-        tools::incrementor<std::vector<size_t>> inc(alphabets);
+        tools::mapper<std::vector<size_t>> m(__scores.get_mapper_alphabets());
         double max_score(0.0); // get maximal score
         std::list<std::vector<size_t>> max_pos_list; // positions of maximal score
-        while(!inc.overflow()) {
+        for(size_t i(m.get_min()), i_max(m.get_max()); i <= i_max; ++i) {
+          std::vector<size_t> pos(m.encode(i));
           if(__scores(pos) > max_score) { // only if its larger (and not equal), update the score and clear the list
             max_score = __scores(pos);
             max_pos_list.clear();
@@ -156,9 +144,7 @@ namespace biosim {
           if(__scores(pos) >= max_score) { // this includes the case of the previous if
             max_pos_list.push_back(pos);
           } // if
-
-          pos = inc.next(pos);
-        } // while
+        } // for
 
         size_t total_depth(0); // calculate to total depth as sum of the depth of all alignments
         for(alignment const &a : __alignments) {
@@ -168,58 +154,56 @@ namespace biosim {
           work.emplace_back(std::make_pair(max_pos, alignment_data(total_depth, max_pos)));
         } // for
 
-        // create incrementor with __pos.size length and digits 0=gap, 1=match, for use in while
-        inc = tools::incrementor<std::vector<size_t>>(std::vector<std::vector<size_t>>(__scores.get_rank(), {0, 1}));
+        // create mapper with __scores.get_rank() length and digits 0=gap, 1=match, for use in while
+        m = tools::mapper<std::vector<size_t>>(std::vector<std::vector<size_t>>(__scores.get_rank(), {0, 1}));
         // backtracking
         while(!work.empty()) {
           std::vector<size_t> current_pos(work.front().first);
           alignment_data current_alignment_data(work.front().second);
           work.pop_front();
-          DEBUG << "Backtracking tensor at pos=(" << math::tensor<size_t>::to_string(current_pos) << ")";
+          DEBUG << "Backtracking tensor at pos=(" << tools::to_string(current_pos) << ")";
 
-          std::vector<size_t> direction(__scores.get_rank(), 0); // create starting position, all zero
-          direction = inc.next(direction); // do one increment to avoid the all-gap case
+          for(size_t i(m.get_min()); i <= m.get_max(); ++i) { // go over all directions
+            std::vector<size_t> direction(m.encode(i));
+            if(tensor_pos_underflow(current_pos, direction)) { // do not calculate if needed position is not in tensor
+              continue;
+            }
 
-          while(!inc.overflow()) { // go over all directions
-            if(!tensor_pos_underflow(current_pos, direction)) { // calculate only if needed position is in tensor
-              DEBUG << "Backtracking tensor for direction=(" << math::tensor<size_t>::to_string(direction) << ")";
-              std::vector<size_t> previous_pos(tensor_pos_subtract(current_pos, direction));
-              double previous_score(__scores(previous_pos));
+            DEBUG << "Backtracking tensor for direction=(" << tools::to_string(direction) << ")";
+            std::vector<size_t> previous_pos(tensor_pos_subtract(current_pos, direction));
+            double previous_score(__scores(previous_pos));
 
-              std::vector<che::structure> structure_parts; // create a small alignment only with the necessary parts
-              for(size_t dim(0); dim < direction.size(); ++dim) {
-                for(size_t depth_pos(0); depth_pos < __alignments[dim].get_depth(); ++depth_pos) {
-                  che::ps seq;
-                  seq.push_back(direction[dim] == 1 ? __alignments[dim].get_cc(current_pos[dim] - 1, depth_pos)
-                                                    : che::cc('-'));
-                  structure_parts.emplace_back("", "", seq);
-                } // for
+            std::vector<che::structure> structure_parts; // create a small alignment only with the necessary parts
+            for(size_t dim(0); dim < direction.size(); ++dim) {
+              for(size_t depth_pos(0); depth_pos < __alignments[dim].get_depth(); ++depth_pos) {
+                che::ps seq;
+                seq.push_back(direction[dim] == 1 ? __alignments[dim].get_cc(current_pos[dim] - 1, depth_pos)
+                                                  : che::cc('-'));
+                structure_parts.emplace_back("", "", seq);
               } // for
-              che::alignment step_alignment(structure_parts, previous_pos, current_pos);
-              double step_score(_score_f.evaluate(step_alignment));
+            } // for
+            che::alignment step_alignment(structure_parts, previous_pos, current_pos);
+            double step_score(_score_f.evaluate(step_alignment));
 
-              DEBUG << "Got previous_score=" << previous_score << ", step_score=" << step_score
-                    << ", current_score=" << __scores(current_pos) << ", " << to_single_line(step_alignment);
+            DEBUG << "Got previous_score=" << previous_score << ", step_score=" << step_score
+                  << ", current_score=" << __scores(current_pos) << ", " << to_single_line(step_alignment);
 
-              if(previous_score + step_score == __scores(current_pos)) {
-                DEBUG << "Got best path";
-                alignment_data copy(current_alignment_data); // make copy to not affect other directions
-                for(size_t dim(0); dim < copy._structure_data.size(); ++dim) {
-                  copy._structure_data[dim].push_front(structure_parts[dim].get_ps()[0]); // extend alignment
-                } // for
+            if(previous_score + step_score == __scores(current_pos)) {
+              DEBUG << "Got best path";
+              alignment_data copy(current_alignment_data); // make copy to not affect other directions
+              for(size_t dim(0); dim < copy._structure_data.size(); ++dim) {
+                copy._structure_data[dim].push_front(structure_parts[dim].get_ps()[0]); // extend alignment
+              } // for
 
-                if(__scores(previous_pos) == 0.0) {
-                  copy._begin = current_pos; // save begin positions
-                  best_alignment_data.push_back(copy);
-                } // if
-                else {
-                  work.push_back(std::make_pair(previous_pos, copy));
-                } // else
+              if(__scores(previous_pos) == 0.0) {
+                copy._begin = current_pos; // save begin positions
+                best_alignment_data.push_back(copy);
               } // if
+              else {
+                work.push_back(std::make_pair(previous_pos, copy));
+              } // else
             } // if
-
-            direction = inc.next(direction);
-          } // while
+          } // for
         } // while
 
         // collect all storages and identifiers

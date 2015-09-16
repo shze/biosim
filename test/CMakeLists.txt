@@ -32,7 +32,7 @@ set(SOURCES_UNIT_TESTER
   math/algo/interval_scheduler_maximize.cpp
   tools/enumerate.cpp
   tools/file.cpp
-  tools/incrementor.cpp
+  tools/mapper.cpp
   tools/string.cpp
   unit_tester.cpp
 )
