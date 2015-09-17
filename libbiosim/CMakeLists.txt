@@ -4,6 +4,9 @@ project(libbiosim)
 # include current dir to avoid CMakeLists.txt in every subdir and a add_subdirectory(...) command for every subdir
 include_directories(${CMAKE_CURRENT_LIST_DIR}) 
 
+find_package(Boost 1.55 REQUIRED COMPONENTS regex system filesystem)  # 1.41 is too old
+include_directories(${Boost_INCLUDE_DIRS}) 
+
 set(LIBBIOSIM_SOURCES
   che/alignment.cpp
   che/assembly.cpp
@@ -34,6 +37,4 @@ set(LIBBIOSIM_SOURCES
 )
 
 add_library(biosim STATIC ${LIBBIOSIM_SOURCES})
-
-find_package(Boost REQUIRED COMPONENTS regex system filesystem)
 target_link_libraries(biosim ${Boost_LIBRARIES})

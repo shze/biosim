@@ -1,5 +1,11 @@
 #Biosim
 
+#Compile
+
+* Using CMake and make, create a build directory, and from the build directory call `cmake <project_dir>` and `make`.
+* Specific compilers or boost library versions can be used by setting environment variables for the cmake call, e.g.
+  `BOOST_ROOT=/path/to/boost_1_58_0/ CXX=/path/to/c++ cmake ../` for bash.
+
 #Contributing code
 
 ##Formatting
