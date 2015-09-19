@@ -69,7 +69,7 @@ namespace biosim {
               for(size_t depth_pos(0); depth_pos < _alignments[dim].get_depth(); ++depth_pos) {
                 che::ps seq;
                 seq.push_back(direction[dim] == 1 ? _alignments[dim].get_cc(__pos[dim] - 1, depth_pos) : che::cc('-'));
-                structure_parts.emplace_back("", "", seq);
+                structure_parts.emplace_back(seq);
               } // for
             } // for
             che::alignment step_alignment(structure_parts, previous_pos, __pos);
@@ -179,7 +179,7 @@ namespace biosim {
                 che::ps seq;
                 seq.push_back(direction[dim] == 1 ? __alignments[dim].get_cc(current_pos[dim] - 1, depth_pos)
                                                   : che::cc('-'));
-                structure_parts.emplace_back("", "", seq);
+                structure_parts.emplace_back(seq);
               } // for
             } // for
             che::alignment step_alignment(structure_parts, previous_pos, current_pos);

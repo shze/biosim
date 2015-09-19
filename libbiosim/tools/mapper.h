@@ -76,7 +76,7 @@ namespace biosim {
       } // calculate_digit_factor()
       // calculate maximum representable number; needs _alphabets and _digit_factor (through decode) to be set
       size_t calculate_max_container() const {
-        for(auto alphabet : _alphabets) {
+        for(auto const &alphabet : _alphabets) {
           if(alphabet.empty()) { // make sure a given alphabet is not empty (otherwise mapping will be tricky)
             throw std::invalid_argument("cannot map to an empty alphabet");
           } // if

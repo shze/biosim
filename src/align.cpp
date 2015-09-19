@@ -38,20 +38,20 @@ int main(int argc, char *argv[]) { // main must not be in a namespace
     // read all files into structures
     che::io::file_assembly reader;
     std::vector<che::structure> structures;
-    for(auto filename : po_var_map["seq"].as<std::vector<std::string>>()) {
+    for(auto const &filename : po_var_map["seq"].as<std::vector<std::string>>()) {
       LOG << "Reading sequence from " << filename;
-      std::vector<che::structure> new_structures(reader.read(filename).get_structures());
+      std::vector<che::structure> const &new_structures(reader.read(filename).get_structures());
       structures.reserve(structures.size() + new_structures.size());
       structures.insert(structures.end(), new_structures.begin(), new_structures.end());
       LOG << "Found " << new_structures.size() << " structures";
-      for(auto s : new_structures) {
+      for(auto const &s : new_structures) {
         LOG << s;
       } // for
     } // for
 
     // convert structure into alignment
     std::vector<che::alignment> input_alignments;
-    for(auto s : structures) {
+    for(auto const &s : structures) {
       input_alignments.emplace_back(s);
     } // for
 

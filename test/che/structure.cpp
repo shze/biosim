@@ -14,14 +14,22 @@ BOOST_AUTO_TEST_CASE(structure_ctor) {
   BOOST_CHECK(s.get_ps().size() == s.get_length());
   BOOST_CHECK(s.get_ss().defined() == false);
 
+  che::ps p;
+  p.emplace_back('A');
+  s = che::structure(p);
+  BOOST_CHECK(s.get_storage().empty());
+  BOOST_CHECK(s.get_identifier().empty());
+  BOOST_CHECK(s.get_ps().size() == 1);
+  BOOST_CHECK(s.get_ps().size() == s.get_length());
+  BOOST_CHECK(s.get_ps().front().get_identifier_char() == 'A');
+  BOOST_CHECK(s.get_ss().defined() == false);
+
   s = che::structure("storage", "id");
   BOOST_CHECK(s.get_storage() == "storage");
   BOOST_CHECK(s.get_identifier() == "id");
   BOOST_CHECK(s.get_length() == 0);
   BOOST_CHECK(s.get_ss().defined() == false);
 
-  che::ps p;
-  p.emplace_back('A');
   s = che::structure("storage", "id", p);
   BOOST_CHECK(s.get_storage() == "storage");
   BOOST_CHECK(s.get_identifier() == "id");

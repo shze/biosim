@@ -22,7 +22,7 @@ namespace biosim {
         } // if
 
         // avoid cerr, dtor may get called during exit code, and cerr may be partially or fully destroyed by then
-        fwrite(_string_stream.str().c_str(), _string_stream.str().size(), 1, stderr);
+        std::fwrite(_string_stream.str().c_str(), _string_stream.str().size(), 1, stderr);
       } // if
     } // dtor
     // returns the stream to which the message is written

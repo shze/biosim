@@ -10,7 +10,7 @@ namespace biosim {
     // get list of all chain_ids
     std::list<std::string> assembly::get_chain_id_list() const {
       std::list<std::string> chain_ids;
-      for(auto c : _chains) {
+      for(auto const &c : _chains) {
         chain_ids.push_back(c.first);
       } // for
       return chain_ids;
@@ -46,6 +46,6 @@ namespace biosim {
       return chain_id;
     } // add()
     // set a structure to have a specific chain_id
-    void assembly::set(std::string const &__chain_id, structure __s) { _chains[__chain_id] = __s; }
+    void assembly::set(std::string __chain_id, structure __s) { _chains.emplace(__chain_id, __s); }
   } // namespace che
 } // namespace biosim

@@ -46,14 +46,14 @@ int main(int argc, char *argv[]) { // main must not be in a namespace
     reader.add_sse_pool_reader(ref); // add reader for .pool files with reference
     // read other ss definitions
     std::vector<che::assembly> ss;
-    for(auto filename : po_var_map["ss"].as<std::vector<std::string>>()) {
+    for(auto const &filename : po_var_map["ss"].as<std::vector<std::string>>()) {
       LOG << "Reading ss from " << filename;
       ss.emplace_back(reader.read(filename));
       DEBUG << ss.back();
     } // for
 
-    for(auto a : ss) {
-      for(auto p : che::score::assembly_compares::get_instances()) {
+    for(auto const &a : ss) {
+      for(auto const &p : che::score::assembly_compares::get_instances()) {
         LOG << p.first << "=" << p.second.get_object()->compare(ref, a);
       } // for
     } // for

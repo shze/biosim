@@ -24,7 +24,7 @@ namespace biosim {
       // add structure to assembly, assign next available chain_id, and returns the chain_id
       std::string add(structure __s);
       // set a structure to have a specific chain_id
-      void set(std::string const &__chain_id, structure __s);
+      void set(std::string __chain_id, structure __s);
 
     private:
       std::map<std::string, structure> _chains; // maps chain_id -> structure

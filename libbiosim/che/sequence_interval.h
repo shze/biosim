@@ -20,7 +20,7 @@ namespace biosim {
 
       // test if this interval and interval2 overlap, depending on type; overwrites interval::overlaps()
       bool overlaps(sequence_interval<T> const &__interval2, bool __all_types_overlap = true) const {
-        return __interval2.interval::overlaps(*this) && (__all_types_overlap || get_type() == __interval2.get_type());
+        return (__all_types_overlap || get_type() == __interval2.get_type()) && __interval2.interval::overlaps(*this);
       } // overlaps()
       // return the intervals from the iterator interval begin to end that overlap with the given interval; considers
       // all intervals as overlapping if __all_types_overlap=true, otherwise only intervals of same type.
@@ -103,7 +103,7 @@ namespace biosim {
         // insert all sequence_intervals except ones with unknown type into sequence_interval_set
         std::set<che::sequence_interval<T>> sequence_interval_set;
         T unknown(T::specificity_type::unknown);
-        for(auto this_sequence_interval : sequence_interval_list) {
+        for(auto const &this_sequence_interval : sequence_interval_list) {
           if(this_sequence_interval.get_type().get_identifier() != unknown.get_identifier()) { // do NOT insert unknown
             sequence_interval_set.insert(this_sequence_interval);
           } // if

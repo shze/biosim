@@ -88,7 +88,7 @@ namespace biosim {
         // iterate over ss and structures to match them based on their length
         DEBUG << "Trying to match " << structures.size() << " cc sequences with " << id_ss_pairs.size()
               << " dssp sequences.";
-        for(auto &s : structures) {
+        for(auto const &s : structures) {
           // try to find a matching secondary structure sequence
           bool inserted(false);
           for(auto itr(id_ss_pairs.begin()), itr_end(id_ss_pairs.end()); itr != itr_end; ++itr) {
@@ -109,7 +109,7 @@ namespace biosim {
         } // for
 
         DEBUG << "Inserting " << id_ss_pairs.size() << " unmatched dssp sequences.";
-        for(auto id_ss_pair : id_ss_pairs) {
+        for(auto const &id_ss_pair : id_ss_pairs) {
           ps new_ps;
           new_ps.resize(id_ss_pair.second.get_sequence().size(), cc('X'));
           new_assembly.add(structure(id_ss_pair.first, ">lcl|sequence", new_ps, id_ss_pair.second));

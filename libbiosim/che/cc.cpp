@@ -58,7 +58,7 @@ namespace biosim {
     // (static) get list of all identifiers; static public interface
     std::list<std::string> cc::get_id_list() {
       std::list<std::string> ids;
-      for(auto p : data_enum::get_instances()) {
+      for(auto const &p : data_enum::get_instances()) {
         ids.push_back(p.first);
       } // for
       return ids;
@@ -66,7 +66,7 @@ namespace biosim {
     // (static) create a string of identifier chars; static public interface
     std::string cc::get_identifier_char_string() {
       std::string id_chars;
-      for(auto p : data_enum::get_instances()) {
+      for(auto const &p : data_enum::get_instances()) {
         id_chars.push_back(p.second.get_object()->_id_char);
       } // for
       return id_chars;
@@ -118,7 +118,7 @@ namespace biosim {
       std::map<std::string, che::molecule::vertex_descriptor> molecule_map; // map atom to vertex, clean duplicate atoms
       std::set<std::pair<std::string, std::string>> bond_set; // to remove duplicate bonds
       che::molecule m; // final molecule
-      for(auto bond_string : __atom_bond_definition) {
+      for(auto const &bond_string : __atom_bond_definition) {
         std::vector<std::string> bond_string_parts;
         boost::algorithm::split(bond_string_parts, bond_string, boost::is_any_of(" \t"), boost::token_compress_on);
         std::string first_atom(bond_string_parts[1]);

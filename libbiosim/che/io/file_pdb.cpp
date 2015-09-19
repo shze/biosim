@@ -327,7 +327,7 @@ namespace biosim {
         che::algo::aligner_dp aligner(
             che::score::ev_alignment(b62_ptr, -b62_ptr->get_unknown_score(), b62_ptr->get_min_score()));
         size_t sequence_no(1); // start with 1
-        for(auto c : seqres.get_chain_ids()) {
+        for(auto const &c : seqres.get_chain_ids()) {
           ss this_ss;
 
           bool is_peptide_chain(seqres.get_sequence(c).front().get_monomer_type() ==

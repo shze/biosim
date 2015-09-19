@@ -45,7 +45,7 @@ namespace biosim {
       // converts dimension sizes into alphabets that can be used to iterate using mapper
       tools::mapper<std::vector<size_t>>::alphabet_container get_mapper_alphabets() const {
         tools::mapper<std::vector<size_t>>::alphabet_container alphabets;
-        for(auto b : _sizes) {
+        for(auto const &b : _sizes) {
           std::vector<size_t> alphabet(b);
           size_t element(0);
           std::generate(alphabet.begin(), alphabet.end(), [&] { return element++; });

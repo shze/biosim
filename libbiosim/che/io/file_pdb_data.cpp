@@ -106,7 +106,7 @@ namespace biosim {
         _chains[chain_id]._last_serial_number = serial_number;
         _chains[chain_id]._last_residue_count = residue_count;
         // loop through all 13 residue name groups and check if there's a residue or space, and save the residues
-        for(auto r : residues) {
+        for(auto const &r : residues) {
           std::string const residue_name(boost::trim_copy(r));
           if(residue_name.empty()) {
             continue; // ignore empty names, likely at the end of the SEQRES definition
@@ -118,7 +118,7 @@ namespace biosim {
       // get chain ids
       std::list<char> pdb_seqres_data::get_chain_ids() const {
         std::list<char> chain_ids;
-        for(auto p : _chains) {
+        for(auto const &p : _chains) {
           chain_ids.emplace_back(p.first);
         } // for
         return chain_ids;
@@ -339,7 +339,7 @@ namespace biosim {
       // get chain ids
       std::list<char> pdb_ssdef_data::get_chain_ids() const {
         std::list<char> chain_ids;
-        for(auto p : _chains) {
+        for(auto const &p : _chains) {
           chain_ids.emplace_back(p.first);
         } // for
         return chain_ids;
@@ -571,8 +571,8 @@ namespace biosim {
       // get chain ids
       std::list<char> pdb_model_data::get_chain_ids() const {
         std::list<char> chain_ids;
-        for(auto m : _model_ensemble) {
-          for(auto p : m) {
+        for(auto const &m : _model_ensemble) {
+          for(auto const &p : m) {
             chain_ids.emplace_back(p.first);
           } // for
         } // for
@@ -581,7 +581,7 @@ namespace biosim {
       // get sequences for given chain id
       std::list<ps> pdb_model_data::get_sequences(char const &__chain_id) const {
         std::list<ps> sequences;
-        for(auto chain_map : _model_ensemble) {
+        for(auto const &chain_map : _model_ensemble) {
           sequences.push_back(chain_map.at(__chain_id)._cc_sequence);
         } // for
 

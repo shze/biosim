@@ -8,7 +8,7 @@ namespace biosim {
     alignment::alignment(std::vector<structure> __structures, std::vector<size_t> __begins, std::vector<size_t> __ends)
         : _structures(__structures), _begins(__begins), _ends(__ends) {
       if(!_structures.empty()) {
-        for(auto s : _structures) {
+        for(auto const &s : _structures) {
           if(s.get_length() != _structures.begin()->get_length()) {
             throw std::invalid_argument("not all aligned structures have the same length");
           } // if

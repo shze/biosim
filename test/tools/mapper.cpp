@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE(mapper_ctor) {
   BOOST_CHECK(m.encode(0) == std::string());
   BOOST_CHECK(m.encode(1) == std::string());
 
-  BOOST_REQUIRE_THROW(tools::mapper<std::string>({{}}), std::invalid_argument);
+  BOOST_REQUIRE_THROW(tools::mapper<std::string>(std::vector<std::vector<char>>{{}}), std::invalid_argument);
 
   m = tools::mapper<std::string>({{'0', '1'}});
   BOOST_CHECK(m.get_min() == 0);

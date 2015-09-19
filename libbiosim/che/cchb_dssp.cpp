@@ -46,7 +46,7 @@ namespace biosim {
     // (static) get list of all identifiers; static public interface
     std::list<char> cchb_dssp::get_id_list() {
       std::list<char> ids;
-      for(auto p : data_enum::get_instances()) {
+      for(auto const &p : data_enum::get_instances()) {
         ids.push_back(p.first[0]); // since we only allow chars we can safely use the first char
       } // for
       return ids;

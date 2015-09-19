@@ -69,7 +69,7 @@ namespace biosim {
             << ", score=" << __a.get_score()
             << ", normalized_score=" << (__a.get_score() / __a.get_alignment().get_length()) << ")\n";
       for(size_t pos(0); pos < __a.get_alignment().get_depth(); ++pos) {
-        che::structure p(__a.get_alignment().get_structures()[pos]);
+        che::structure const &p(__a.get_alignment().get_structures()[pos]);
         std::string id(p.get_identifier());
         id.erase(std::remove(id.begin(), id.end(), '\n'), id.end());
         __out << p.get_storage() << ": " << id << " length=" << p.get_length()

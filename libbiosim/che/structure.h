@@ -11,8 +11,10 @@ namespace biosim {
     // structure contains the primary structure (sequence, positions) and the secondary structure
     class structure {
     public:
-      // ctor from storage and identifier (also default ctor)
-      explicit structure(std::string __storage = std::string(), std::string __identifier = std::string());
+      // ctor from ps (also default ctor)
+      explicit structure(ps __ps = ps());
+      // ctor from storage and identifier
+      structure(std::string __storage, std::string __identifier);
       // ctor from storage, identifier, and ps
       structure(std::string __storage, std::string __identifier, ps __ps);
       // ctor from storage, identifier, ps, and ss
@@ -29,10 +31,10 @@ namespace biosim {
       ss const &get_ss() const;
 
     private:
-      std::string _storage; // persistent storage
-      std::string _id; // identifier (eg. fasta identifier)
       ps _ps; // sequence
-      ss _ss; // secondary structure
+      boost::optional<std::string> _storage; // optional persistent storage
+      boost::optional<std::string> _id; // optional identifier (eg. fasta identifier)
+      boost::optional<ss> _ss; // optional secondary structure
     }; // class structure
 
     // output operator for structure
