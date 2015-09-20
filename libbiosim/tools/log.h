@@ -4,9 +4,13 @@
 #include <sstream>
 
 // LOG macros: used like std::cout/cerr with the insert operator (<<)
-#define LOG biosim::tools::log_message(__FILE__, __LINE__).get_stream()
 #define ERROR biosim::tools::log_message(__FILE__, __LINE__, biosim::tools::log_message::level_type::error).get_stream()
-#define DEBUG biosim::tools::log_message(__FILE__, __LINE__, biosim::tools::log_message::level_type::debug).get_stream()
+#define LOG                                                                                                            \
+  if(biosim::tools::log_message::level_type::info <= biosim::tools::log_message::get_output_level())                   \
+  biosim::tools::log_message(__FILE__, __LINE__, biosim::tools::log_message::level_type::info).get_stream()
+#define DEBUG                                                                                                          \
+  if(biosim::tools::log_message::level_type::debug <= biosim::tools::log_message::get_output_level())                  \
+  biosim::tools::log_message(__FILE__, __LINE__, biosim::tools::log_message::level_type::debug).get_stream()
 
 namespace biosim {
   namespace tools {

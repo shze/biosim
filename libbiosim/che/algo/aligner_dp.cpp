@@ -54,7 +54,7 @@ namespace biosim {
           // create mapper with __pos.size length and digits 0=gap, 1=match
           tools::mapper<std::vector<size_t>> m(std::vector<std::vector<size_t>>(__pos.size(), {0, 1}));
           double score(0.0);
-          for(size_t i(m.get_min()); i <= m.get_max(); ++i) { // go over all directions
+          for(size_t i(m.get_min() + 1); i <= m.get_max(); ++i) { // go over all directions, but skip 0 by min + 1
             std::vector<size_t> direction(m.encode(i));
             if(tensor_pos_underflow(__pos, direction)) { // do not calculate if needed position is not in the tensor
               continue;
@@ -163,7 +163,7 @@ namespace biosim {
           work.pop_front();
           DEBUG << "Backtracking tensor at pos=(" << tools::to_string(current_pos) << ")";
 
-          for(size_t i(m.get_min()); i <= m.get_max(); ++i) { // go over all directions
+          for(size_t i(m.get_min() + 1); i <= m.get_max(); ++i) { // go over all directions, but skip 0 by min + 1
             std::vector<size_t> direction(m.encode(i));
             if(tensor_pos_underflow(current_pos, direction)) { // do not calculate if needed position is not in tensor
               continue;
