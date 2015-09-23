@@ -27,6 +27,7 @@ set(SOURCES_UNIT_TESTER
   math/interval.cpp
   math/point.cpp
   math/tensor.cpp
+  math/algo/average.cpp
   math/algo/dp.cpp
   math/algo/factorial.cpp
   math/algo/interval_scheduler_maximize.cpp
