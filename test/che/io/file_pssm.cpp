@@ -9,19 +9,19 @@ BOOST_AUTO_TEST_SUITE(suite_file_pssm)
 BOOST_AUTO_TEST_CASE(file_pssm_read) {
   che::assembly a(che::io::file_pssm::read("../test/data/P01236-short.pssm_ascii"));
   BOOST_CHECK(a.get_chain_id_list().size() == 1);
-  BOOST_CHECK(a.get_structure("A").get_length() == 47);
-  BOOST_CHECK(a.get_structure("A").get_ps().size() == 47);
-  BOOST_CHECK(a.get_structure("A").get_ps()[0].get_identifier_char() == 'L');
-  BOOST_CHECK(a.get_structure("A").get_ps()[0].get_specificity() == che::cc::specificity_type::secondary);
-  BOOST_CHECK(a.get_structure("A").get_ss().defined() == false);
+  BOOST_CHECK(a.get_first_structure("A").get_length() == 47);
+  BOOST_CHECK(a.get_first_structure("A").get_ps().size() == 47);
+  BOOST_CHECK(a.get_first_structure("A").get_ps()[0].get_identifier_char() == 'L');
+  BOOST_CHECK(a.get_first_structure("A").get_ps()[0].get_specificity() == che::cc::specificity_type::secondary);
+  BOOST_CHECK(a.get_first_structure("A").get_ss().defined() == false);
 
   a = che::io::file_pssm::read("../test/data/P01236-short-old-blast.pssm_ascii");
   BOOST_CHECK(a.get_chain_id_list().size() == 1);
-  BOOST_CHECK(a.get_structure("A").get_length() == 47);
-  BOOST_CHECK(a.get_structure("A").get_ps().size() == 47);
-  BOOST_CHECK(a.get_structure("A").get_ps()[0].get_identifier_char() == 'L');
-  BOOST_CHECK(a.get_structure("A").get_ps()[0].get_specificity() == che::cc::specificity_type::secondary);
-  BOOST_CHECK(a.get_structure("A").get_ss().defined() == false);
+  BOOST_CHECK(a.get_first_structure("A").get_length() == 47);
+  BOOST_CHECK(a.get_first_structure("A").get_ps().size() == 47);
+  BOOST_CHECK(a.get_first_structure("A").get_ps()[0].get_identifier_char() == 'L');
+  BOOST_CHECK(a.get_first_structure("A").get_ps()[0].get_specificity() == che::cc::specificity_type::secondary);
+  BOOST_CHECK(a.get_first_structure("A").get_ss().defined() == false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

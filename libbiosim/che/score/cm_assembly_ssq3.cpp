@@ -13,18 +13,18 @@ namespace biosim {
 
         size_t chain_count(0);
         double q3_sum(0.0);
-        for(auto chain_id : unique_chain_ids) {
-          if(!__first.has_structure(chain_id) || !__second.has_structure(chain_id)) {
-            DEBUG << get_identifier() << ": chain id '" << chain_id << "' does not exist in both structures, ignoring.";
+        for(auto c : unique_chain_ids) {
+          if(!__first.has_ensemble(c) || !__second.has_ensemble(c)) {
+            DEBUG << get_identifier() << ": chain id '" << c << "' does not exist in both structures, ignoring.";
             continue;
           } // if
-          if(!__first.get_structure(chain_id).get_ss().defined() ||
-             !__second.get_structure(chain_id).get_ss().defined()) {
-            DEBUG << get_identifier() << ": no secondary structure data for chain id '" << chain_id << "', ignoring.";
+          if(!__first.get_first_structure(c).get_ss().defined() ||
+             !__second.get_first_structure(c).get_ss().defined()) {
+            DEBUG << get_identifier() << ": no secondary structure data for chain id '" << c << "', ignoring.";
             continue;
           } // if
 
-          q3_sum += compare(__first.get_structure(chain_id).get_ss(), __second.get_structure(chain_id).get_ss());
+          q3_sum += compare(__first.get_first_structure(c).get_ss(), __second.get_first_structure(c).get_ss());
           ++chain_count;
         }
 

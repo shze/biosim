@@ -12,6 +12,7 @@ set(SOURCES_UNIT_TESTER
   che/sequence_interval.cpp
   che/ss.cpp
   che/structure.cpp
+  che/structure_ensemble.cpp
   che/algo/aligner_dp.cpp
   che/io/file_assembly.cpp
   che/io/file_fasta.cpp
@@ -27,7 +28,6 @@ set(SOURCES_UNIT_TESTER
   math/interval.cpp
   math/point.cpp
   math/tensor.cpp
-  math/algo/average.cpp
   math/algo/dp.cpp
   math/algo/factorial.cpp
   math/algo/interval_scheduler_maximize.cpp

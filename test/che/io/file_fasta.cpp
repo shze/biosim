@@ -20,39 +20,39 @@ BOOST_AUTO_TEST_CASE(file_fasta_read) {
 
   che::assembly a(che::io::file_fasta::read("../test/data/P01236-short.fasta"));
   BOOST_CHECK(a.get_chain_id_list().size() == 1);
-  BOOST_CHECK(a.has_structure("A"));
-  BOOST_CHECK(a.get_structure("A").get_length() == 47);
-  BOOST_CHECK(a.get_structure("A").get_ps().size() == a.get_structure("A").get_length());
-  BOOST_CHECK(a.get_structure("A").get_ss().defined() == false);
+  BOOST_CHECK(a.has_ensemble("A"));
+  BOOST_CHECK(a.get_first_structure("A").get_length() == 47);
+  BOOST_CHECK(a.get_first_structure("A").get_ps().size() == a.get_first_structure("A").get_length());
+  BOOST_CHECK(a.get_first_structure("A").get_ss().defined() == false);
 
   a = che::io::file_fasta::read("../test/data/1UBI_A_DSSP.fasta");
   BOOST_CHECK(a.get_chain_id_list().size() == 2);
-  BOOST_CHECK(a.has_structure("A"));
-  BOOST_CHECK(a.get_structure("A").get_ps()[0].get_identifier_char() == 'M'); // first dssp seq is matched to cc seq
-  BOOST_CHECK(a.get_structure("A").get_ss().defined());
-  BOOST_CHECK(a.get_structure("A").get_ss().get_sequence()[7].get_identifier_char() == 'T');
-  BOOST_CHECK(a.has_structure("B"));
-  BOOST_CHECK(a.get_structure("B").get_ps()[0].get_identifier_char() == 'X'); // second dssp sequence has no match
-  BOOST_CHECK(a.get_structure("B").get_ss().defined());
-  BOOST_CHECK(a.get_structure("B").get_ss().get_sequence()[7].get_identifier_char() == 'C');
+  BOOST_CHECK(a.has_ensemble("A"));
+  BOOST_CHECK(a.get_first_structure("A").get_ps()[0].get_identifier_char() == 'M'); // first dssp seq matched to cc seq
+  BOOST_CHECK(a.get_first_structure("A").get_ss().defined());
+  BOOST_CHECK(a.get_first_structure("A").get_ss().get_sequence()[7].get_identifier_char() == 'T');
+  BOOST_CHECK(a.has_ensemble("B"));
+  BOOST_CHECK(a.get_first_structure("B").get_ps()[0].get_identifier_char() == 'X'); // second dssp sequence has no match
+  BOOST_CHECK(a.get_first_structure("B").get_ss().defined());
+  BOOST_CHECK(a.get_first_structure("B").get_ss().get_sequence()[7].get_identifier_char() == 'C');
 
   a = che::io::file_fasta::read("../test/data/1UBI_A_DSSP2.fasta");
   BOOST_CHECK(a.get_chain_id_list().size() == 1);
-  BOOST_CHECK(a.has_structure("A"));
-  BOOST_CHECK(a.get_structure("A").get_ps()[0].get_identifier_char() == 'M');
-  BOOST_CHECK(a.get_structure("A").get_ss().defined());
-  BOOST_CHECK(a.get_structure("A").get_ss().get_sequence()[7].get_identifier_char() == 'C');
+  BOOST_CHECK(a.has_ensemble("A"));
+  BOOST_CHECK(a.get_first_structure("A").get_ps()[0].get_identifier_char() == 'M');
+  BOOST_CHECK(a.get_first_structure("A").get_ss().defined());
+  BOOST_CHECK(a.get_first_structure("A").get_ss().get_sequence()[7].get_identifier_char() == 'C');
 
   a = che::io::file_fasta::read("../test/data/1UBI_A_DSSP3.fasta");
   BOOST_CHECK(a.get_chain_id_list().size() == 2);
-  BOOST_CHECK(a.has_structure("A"));
-  BOOST_CHECK(a.get_structure("A").get_ps()[0].get_identifier_char() == 'X');
-  BOOST_CHECK(a.get_structure("A").get_ss().defined());
-  BOOST_CHECK(a.get_structure("A").get_ss().get_sequence()[7].get_identifier_char() == 'T');
-  BOOST_CHECK(a.has_structure("B"));
-  BOOST_CHECK(a.get_structure("B").get_ps()[0].get_identifier_char() == 'X');
-  BOOST_CHECK(a.get_structure("B").get_ss().defined());
-  BOOST_CHECK(a.get_structure("B").get_ss().get_sequence()[7].get_identifier_char() == 'C');
+  BOOST_CHECK(a.has_ensemble("A"));
+  BOOST_CHECK(a.get_first_structure("A").get_ps()[0].get_identifier_char() == 'X');
+  BOOST_CHECK(a.get_first_structure("A").get_ss().defined());
+  BOOST_CHECK(a.get_first_structure("A").get_ss().get_sequence()[7].get_identifier_char() == 'T');
+  BOOST_CHECK(a.has_ensemble("B"));
+  BOOST_CHECK(a.get_first_structure("B").get_ps()[0].get_identifier_char() == 'X');
+  BOOST_CHECK(a.get_first_structure("B").get_ss().defined());
+  BOOST_CHECK(a.get_first_structure("B").get_ss().get_sequence()[7].get_identifier_char() == 'C');
 }
 
 BOOST_AUTO_TEST_SUITE_END()

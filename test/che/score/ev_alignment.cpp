@@ -12,7 +12,7 @@ BOOST_AUTO_TEST_CASE(ev_alignment_evaluate) {
   che::score::ev_alignment score;
   BOOST_CHECK(score.evaluate(che::alignment(che::structure())) == 0);
 
-  che::structure s(che::io::file_fasta::read("../test/data/1a00_a.fasta").get_structure("A"));
+  che::structure s(che::io::file_fasta::read("../test/data/1a00_a.fasta").get_first_structure("A"));
   che::ps seq(s.get_ps());
   che::ps seq_shortened;
   seq_shortened.insert(seq_shortened.end(), seq.begin(), seq.begin() + 6);

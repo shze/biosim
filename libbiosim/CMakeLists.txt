@@ -16,6 +16,7 @@ set(LIBBIOSIM_SOURCES
   che/cchb_dssp.cpp
   che/ss.cpp
   che/structure.cpp
+  che/structure_ensemble.cpp
   che/algo/aligner_dp.cpp
   che/io/file_assembly.cpp
   che/io/file_fasta.cpp
@@ -30,7 +31,6 @@ set(LIBBIOSIM_SOURCES
   che/score/cm_cc_identity.cpp
   che/score/ev_alignment.cpp
   math/point.cpp
-  math/algo/average.cpp
   math/algo/factorial.cpp
   tools/file.cpp
   tools/log.cpp

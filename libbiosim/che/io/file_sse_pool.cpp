@@ -243,10 +243,10 @@ namespace biosim {
         for(auto chain_pair : chains) {
           // extend the sequences to the reference length
           std::string chain_id_string(1, chain_pair.first);
-          if(__reference.has_structure(chain_id_string)) {
+          if(__reference.has_ensemble(chain_id_string)) {
             chain_pair.second.cc_sequence.resize(
                 std::max(chain_pair.second.cc_sequence.size(),
-                         __reference.get_structure(chain_id_string).get_ss().get_sequence().size()),
+                         __reference.get_first_structure(chain_id_string).get_ss().get_sequence().size()),
                 cc('X'));
           } // if
 
