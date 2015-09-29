@@ -50,7 +50,7 @@ namespace biosim {
         if(!e.get_samples().empty()) {
           std::for_each(e.get_samples().begin(), --e.get_samples().end(),
                         [&](structure_sample const &__s) { occupancy_stream << __s.occupancy << ", "; });
-          occupancy_stream << e.get_samples().rbegin()->sample;
+          occupancy_stream << e.get_samples().rbegin()->occupancy;
         } // if
         // output
         __out << "Chain " << chain_id << ": samples=" << e.get_samples().size() << ", occupancies={"
