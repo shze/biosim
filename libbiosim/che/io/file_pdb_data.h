@@ -38,16 +38,6 @@ namespace biosim {
       public:
         // processes the input strings
         void process(std::array<std::string, 16> __values, pdb_modres_data const &__modres);
-        // insert cc [begin..end) at the front of the cc_sequence with the given chain id
-        template <class InputIterator>
-        void insert_front(char const &__chain_id, InputIterator __begin, InputIterator __end) {
-          _chains[__chain_id]._cc_sequence.insert(_chains[__chain_id]._cc_sequence.begin(), __begin, __end);
-        } // insert_front()
-        // insert cc [begin..end) at the back of the cc_sequence with the given chain id
-        template <class InputIterator>
-        void insert_back(char const &__chain_id, InputIterator __begin, InputIterator __end) {
-          _chains[__chain_id]._cc_sequence.insert(_chains[__chain_id]._cc_sequence.end(), __begin, __end);
-        } // insert_back()
         // get chain ids
         std::list<char> get_chain_ids() const;
         // get the ps for the given chain id
@@ -71,8 +61,6 @@ namespace biosim {
         void process_helix(std::array<std::string, 13> __values, pdb_modres_data const &__modres);
         // processes the input strings
         void process_strand(std::array<std::string, 12> __values, pdb_modres_data const &__modres);
-        // shift the given chain by __insert_length
-        void shift(char const &__chain_id, int __insert_length);
         // get chain ids
         std::list<char> get_chain_ids() const;
         // returns the ps for the given chain id

@@ -2,6 +2,7 @@
 #define che_structure_ensemble_h
 
 #include "che/structure.h"
+#include <iterator>
 
 namespace biosim {
   namespace che {
@@ -22,6 +23,10 @@ namespace biosim {
       // ctor from begin and end iterators of container<structure>
       template <class I>
       structure_ensemble(I __begin, I __end) {
+        if(std::distance(__begin, __end) == 0) {
+          throw std::invalid_argument("cannot create an empty structure_ensemble");
+        } // if
+
         std::for_each(__begin, __end, [&](che::structure __sample) { _samples.emplace_back(__sample, 1.0); });
         _samples = normalize_occupancies(_samples);
       } // ctor

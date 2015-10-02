@@ -8,62 +8,131 @@
 namespace biosim {
   namespace che {
     namespace io {
-      // adjust seqres and ssdef data based on the given alignment
-      void adjust(pdb_seqres_data &__seqres, pdb_ssdef_data &__ssdef, char const &__chain_id,
-                  che::scored_alignment const &__alignment) {
-        // save original lengths before we change seqres or ssdef
-        size_t original_cc_seq_length(__seqres.get_sequence(__chain_id).size());
-        size_t original_ss_seq_length(__ssdef.get_sequence(__chain_id).size());
+      // class to adjust positions of two structures based on an alignment created with the passed aligner
+      class adjuster {
+      public:
+        // update structures to match positions using an alignment created with the aligner; labels are used for output
+        static void update(che::structure &__structure1, std::string const &__label1, che::structure &__structure2,
+                           std::string const &__label2, che::algo::aligner_dp const &__aligner) {
+          // create intro output string
+          std::string const intro(__label1 + " and " + __label2 + " differ; ");
+          // save original lengths before we change them
+          size_t original_length1(__structure1.get_length()), original_length2(__structure2.get_length());
 
-        // check unaligned sequences at the front (there should be exactly two structures in this alignment)
-        size_t cc_unaligned_length_begin(__alignment.get_alignment().get_begins()[0]);
-        size_t ss_unaligned_length_begin(__alignment.get_alignment().get_begins()[1]);
-        int begin_diff(cc_unaligned_length_begin - ss_unaligned_length_begin);
-        // if begin_diff == 0, do nothing
-        if(begin_diff > 0) { // cc_seq has cc that are not in ss_seq
-          LOG << "SEQRES and HELIX/SHEET positions differ for chain " << __chain_id
-              << "; increase HELIX/SHEET positions by " << begin_diff << ".";
-          __ssdef.shift(__chain_id, begin_diff);
-        } // if
-        else if(begin_diff < 0) { // ss_seq has cc that are not in cc_seq
-          size_t first_sse_begin(__ssdef.get_pool(__chain_id).begin()->get_min());
-          // if all 0..abs(begin_diff) cc of ss_seq are unknown (i.e. no sse starts there), remove these cc from ss_seq
-          if(std::abs(begin_diff) <= first_sse_begin) {
-            LOG << "SEQRES and HELIX/SHEET positions differ for chain " << __chain_id
-                << "; decrease HELIX/SHEET positions by " << std::abs(begin_diff) << ".";
-            __ssdef.shift(__chain_id, begin_diff);
+          // create alignment
+          che::scored_alignment alignment(
+              __aligner.align_multiple({che::alignment(__structure1), che::alignment(__structure2)}).front());
+
+          // begin cases
+          size_t const &unaligned_length_begin1(alignment.get_alignment().get_begins()[0]);
+          size_t const &unaligned_length_begin2(alignment.get_alignment().get_begins()[1]);
+          int begin_diff(unaligned_length_begin1 - unaligned_length_begin2);
+          if(begin_diff > 0) { // structure1 starts before structure2
+            if(is_undetermined(__structure1, 0, begin_diff)) { // if structure1 begin contains undetermined ps/ss
+              LOG << intro << "remove 0.." << (begin_diff - 1) << " from " << __label1;
+              remove(__structure1, 0, begin_diff);
+            } // if
+            else { // if structure1 begin contains at least some determined ps/ss
+              LOG << intro << "insert 0.." << (begin_diff - 1) << " from " << __label1 << " at begin of " << __label2;
+              insert(__structure2, 0, __structure1, 0, begin_diff);
+            } // else
           } // if
-          else { // an sse starts there, copy 0..abs(begin_diff) cc from ss_seq to cc_seq
-            // it would be possible to only copy from first_sse_begin..abs(begin_diff), but then additionally all sse
-            // would have to shift back by begin_diff
-            LOG << "HELIX/SHEET starts before SEQRES for chain " << __chain_id << "; increase SEQRES positions by "
-                << std::abs(begin_diff) << " and insert unknown amino acids at the beginning.";
-            __seqres.insert_front(__chain_id, __ssdef.get_sequence(__chain_id).begin(),
-                                  __ssdef.get_sequence(__chain_id).begin() - begin_diff);
-          } // else
-        } // else if
+          else if(begin_diff < 0) { // structure2 starts before structure1
+            if(is_undetermined(__structure2, 0, -begin_diff)) { // if structure2 begin contains undetermined ps/ss
+              LOG << intro << "remove 0.." << (-begin_diff - 1) << " from " << __label2;
+              remove(__structure2, 0, -begin_diff);
+            } // if
+            else { // if structure2 begin contains at least some determined ps/ss
+              LOG << intro << "insert 0.." << (-begin_diff - 1) << " from " << __label2 << " at begin of " << __label1;
+              insert(__structure1, 0, __structure2, 0, -begin_diff);
+            } // else
+          } // else if
 
-        // check unaligned sequence in the back
-        size_t cc_unaligned_length_end(original_cc_seq_length - __alignment.get_alignment().get_ends()[0]);
-        size_t ss_unaligned_length_end(original_ss_seq_length - __alignment.get_alignment().get_ends()[1]);
-        int end_diff(cc_unaligned_length_end - ss_unaligned_length_end);
-        // if end_diff == 0, do nothing
-        // if end_diff > 0, cc_seq has cc that are not in ss_seq: add unknown at back of ss_seq by setting total length
-        if(end_diff < 0) { // ss_seq has cc that are not in cc_seq: add unknown at back of cc_seq
-          // no check needed of end of ss_seq is just unknown b/c ss_seq ends with the last sse
-          LOG << "HELIX/SHEET ends after SEQRES for chain " << __chain_id << "; insert " << std::abs(end_diff)
-              << " unknown amino acids at the end of SEQRES.";
-          __seqres.insert_back(__chain_id, __ssdef.get_sequence(__chain_id).end() - std::abs(end_diff),
-                               __ssdef.get_sequence(__chain_id).end());
-        } // if
-      } // adjust()
+          // end cases
+          size_t unaligned_length_end1(original_length1 - alignment.get_alignment().get_ends()[0]);
+          size_t unaligned_length_end2(original_length2 - alignment.get_alignment().get_ends()[1]);
+          int end_diff(unaligned_length_end1 - unaligned_length_end2);
+          if(end_diff > 0) { // structure1 ends after structure2
+            size_t begin(__structure1.get_length() - end_diff), end(__structure1.get_length());
+            if(is_undetermined(__structure1, begin, end)) { // if structure1 end contains undetermined ps/ss
+              LOG << intro << "remove " << begin << ".." << (end - 1) << " from " << __label1;
+              remove(__structure1, begin, end);
+            } // if
+            else { // if structure1 end contains at least some determined ps/ss
+              LOG << intro << "insert " << begin << ".." << (end - 1) << " from " << __label1 << " at end of "
+                  << __label2;
+              insert(__structure2, __structure2.get_length(), __structure1, begin, end);
+            } // else
+          } // if
+          else if(end_diff < 0) { // structure2 ends after structure1
+            size_t begin(__structure2.get_length() + end_diff), end(__structure2.get_length());
+            if(is_undetermined(__structure2, begin, end)) { // if structure2 end contains undetermined ps/ss
+              LOG << intro << "remove " << begin << ".." << (end - 1) << " from " << __label2;
+              remove(__structure2, begin, end);
+            } // if
+            else { // if structure2 end contains determined ps/ss
+              LOG << intro << "insert " << begin << ".." << (end - 1) << " from " << __label2 << " at end of "
+                  << __label1;
+              insert(__structure1, __structure1.get_length(), __structure2, begin, end);
+            } // else
+          } // else if
+        } // update()
+        // return if positions __begin..__end are undetermined in __s
+        static bool is_undetermined(che::structure &__s, size_t __begin, size_t __end) {
+          bool undetermined(true);
+          for(; __begin < __end; ++__begin) {
+            if(!__s.get_ps().at(__begin).is_unknown() ||
+               (__s.get_ss().defined() && !__s.get_ss().get_sequence().at(__begin).is_unknown())) {
+              undetermined = false;
+              break;
+            } // if
+          } // for
+          return undetermined;
+        } // is_undetermined()
+        // remove the positions __begin..__end - 1 from __s
+        static void remove(che::structure &__s, size_t __begin, size_t __end) {
+          // sequence
+          ps new_ps;
+          new_ps.insert(new_ps.end(), __s.get_ps().begin(), __s.get_ps().begin() + __begin);
+          new_ps.insert(new_ps.end(), __s.get_ps().begin() + __end, __s.get_ps().end());
+          // pool
+          std::set<cchb_dssp_interval> new_sses;
+          for(cchb_dssp_interval const &sse : __s.get_ss().get_sses()) {
+            size_t new_min(sse.get_min() >= __end ? sse.get_min() - __end + __begin : sse.get_min());
+            size_t new_max(sse.get_max() >= __end ? sse.get_max() - __end + __begin : sse.get_max());
+            new_sses.emplace(new_min, new_max, sse.get_type());
+          } // for
+          // save
+          ss new_ss(new_sses, new_ps.size());
+          __s = __s.get_ss().defined() ? che::structure("", "", new_ps, new_ss) : che::structure(new_ps);
+        } // remove
+        // insert the positions __from_begin..__from_end - 1 at __to_pos
+        static void insert(che::structure &__to, size_t __to_pos, che::structure &__from, size_t __from_begin,
+                           size_t __from_end) {
+          // sequence
+          ps new_ps;
+          new_ps.insert(new_ps.end(), __to.get_ps().begin(), __to.get_ps().begin() + __to_pos);
+          new_ps.insert(new_ps.end(), __from.get_ps().begin() + __from_begin, __from.get_ps().begin() + __from_end);
+          new_ps.insert(new_ps.end(), __to.get_ps().begin() + __to_pos, __to.get_ps().end());
+          // pool
+          std::set<cchb_dssp_interval> new_sses;
+          for(cchb_dssp_interval const &sse : __to.get_ss().get_sses()) {
+            size_t new_min(sse.get_min() >= __to_pos ? sse.get_min() + __from_end - __from_begin : sse.get_min());
+            size_t new_max(sse.get_max() >= __to_pos ? sse.get_max() + __from_end - __from_begin : sse.get_max());
+            new_sses.emplace(new_min, new_max, sse.get_type());
+          } // for
+          // save
+          ss new_ss(new_sses, new_ps.size());
+          __to = __to.get_ss().defined() ? che::structure("", "", new_ps, new_ss) : che::structure(new_ps);
+        } // insert()
+      }; // class adjuster
 
       // count mismatching known cc and total known cc
       std::pair<size_t, size_t> count_mismatches(ps const &__cc_seq, ps const &__ss_seq) {
         size_t min_length(std::min(__cc_seq.size(), __ss_seq.size()));
         size_t known_cc(0), mismatched_known_cc(0);
         for(size_t pos(0); pos < min_length; ++pos) {
-          if(!__ss_seq[pos].is_unknown()) {
+          if(!__cc_seq[pos].is_unknown() && !__ss_seq[pos].is_unknown()) {
             ++known_cc;
             if(__cc_seq[pos].get_identifier_char() != __ss_seq[pos].get_identifier_char()) {
               ++mismatched_known_cc;
@@ -323,46 +392,129 @@ namespace biosim {
 
         assembly a; // final result
 
+        // collect all chain ids
+        std::list<char> seqres_chain_ids(seqres.get_chain_ids());
+        std::list<char> model_chain_ids(model.get_chain_ids());
+        std::list<char> ssdef_chain_ids(ssdef.get_chain_ids());
+        // combine all chain ids into all_chain_ids; every chain id in this set has at least one kind of data
+        std::set<char> all_chain_ids(seqres_chain_ids.begin(), seqres_chain_ids.end());
+        all_chain_ids.insert(model_chain_ids.begin(), model_chain_ids.end());
+        all_chain_ids.insert(ssdef_chain_ids.begin(), ssdef_chain_ids.end());
+
+        // create before the for loop
         che::score::ev_alignment::cc_cm_function_ptr b62_ptr(new che::score::cm_cc_blosum(true));
         che::algo::aligner_dp aligner(
             che::score::ev_alignment(b62_ptr, -b62_ptr->get_unknown_score(), b62_ptr->get_min_score()));
-        size_t sequence_no(1); // start with 1
-        for(auto const &c : seqres.get_chain_ids()) {
-          ss this_ss;
 
-          bool is_peptide_chain(seqres.get_sequence(c).front().get_monomer_type() ==
-                                cc::monomer_type::l_peptide_linking);
-          if(is_peptide_chain) {
-            this_ss = ss(std::set<cchb_dssp_interval>(), seqres.get_sequence(c).size()); // coil ss with correct length
+        size_t sequence_no(0); // start with 0, increase at the beginning of each loop
+        for(auto const &c : all_chain_ids) {
+          ++sequence_no; // increase sequence_no, b/c it's not done in the for loop header
 
-            std::list<char> ssdef_chain_ids(ssdef.get_chain_ids());
-            bool chain_has_ss(std::find(ssdef_chain_ids.begin(), ssdef_chain_ids.end(), c) != ssdef_chain_ids.end());
-            if(chain_has_ss) {
-              structure cc_seq("", "", seqres.get_sequence(c));
-              // pass the lenth into ss in case the pool has overlapping intervals that cause the last one to be removed
-              structure ss_seq("", "", ssdef.get_sequence(c), ss(ssdef.get_pool(c), ssdef.get_sequence(c).size()));
-              che::scored_alignment best_alignment(
-                  aligner.align_multiple({che::alignment(cc_seq), che::alignment(ss_seq)}).front());
-              adjust(seqres, ssdef, c, best_alignment);
+          // prepare shared data
+          std::string storage(__filename + "/" + std::to_string(sequence_no));
+          std::string id(">lcl|sequence");
+          std::string chain_id(1, c);
 
-              std::pair<size_t, size_t> mismatches(count_mismatches(seqres.get_sequence(c), ssdef.get_sequence(c)));
-              if(mismatches.first > 0) {
-                LOG << "SEQRES and HELIX/SHEET mismatch in " << mismatches.first << "/" << mismatches.second
-                    << " known positions for chain " << c << ", ignoring structure: " << __filename << "/"
-                    << std::to_string(sequence_no);
-                continue;
-              } // if
-              this_ss = ss(ssdef.get_pool(c), seqres.get_sequence(c).size()); // set ss from pdb file
+          // check which data exist for this chain
+          bool has_seqres(std::find(seqres_chain_ids.begin(), seqres_chain_ids.end(), c) != seqres_chain_ids.end());
+          bool has_model(std::find(model_chain_ids.begin(), model_chain_ids.end(), c) != model_chain_ids.end());
+          bool has_ssdef(std::find(ssdef_chain_ids.begin(), ssdef_chain_ids.end(), c) != ssdef_chain_ids.end());
+          LOG << "Processing chain " << c << " (" << (has_seqres ? "" : "no ") << "seqres data, "
+              << (has_model ? "" : "no ") << "model data, " << (has_ssdef ? "" : "no ") << "ss data)";
+
+          if(has_seqres + has_model + has_ssdef == 1) { // if only one kind of data exists, save and done
+            std::list<che::structure> this_chain_ensemble;
+            if(has_seqres) {
+              this_chain_ensemble.emplace_back(storage, id, seqres.get_sequence(c));
             } // if
+            else if(has_model) {
+              for(auto &this_ps : model.get_sequences(c)) {
+                this_chain_ensemble.emplace_back(che::structure(storage, id, this_ps));
+              } // for
+            } // else if
+            else /*if(has_ssdef)*/ {
+              this_chain_ensemble.emplace_back(storage, id, ssdef.get_sequence(c),
+                                               ss(ssdef.get_pool(c), ssdef.get_sequence(c).size()));
+            } // else
+            a.set(chain_id, che::structure_ensemble(this_chain_ensemble.begin(), this_chain_ensemble.end()));
+            continue;
           } // if
 
-          std::string storage(__filename + "/" + std::to_string(sequence_no));
-          structure this_structure = is_peptide_chain
-                                         ? structure(storage, ">lcl|sequence", seqres.get_sequence(c), this_ss)
-                                         : structure(storage, ">lcl|sequence", seqres.get_sequence(c));
-          a.set(std::string(1, c), this_structure);
-          ++sequence_no; // increase sequence_no, b/c it's not done in the for loop header
-        }
+          // at this point, at least 2 kinds of data exist; combine all three while checking for missing data
+          // combine seqres and ssdef first, b/c each model needs to be aligned b/c it could have different atom data
+          // check if the current chain is a peptide chain, b/c ss can only handle peptide secondary structure
+          bool is_peptide(seqres.get_sequence(c).front().get_monomer_type() == cc::monomer_type::l_peptide_linking);
+          structure seqres_ssdef_structure;
+          if(has_seqres && has_ssdef && is_peptide) {
+            structure seqres_structure(seqres.get_sequence(c));
+            // pass the lenth into ss in case the pool has overlapping intervals that cause the last one to be removed
+            structure ssdef_structure("", "", ssdef.get_sequence(c),
+                                      ss(ssdef.get_pool(c), ssdef.get_sequence(c).size()));
+
+            // align and adjust structures
+            adjuster::update(seqres_structure, "SEQRES", ssdef_structure, "HELIX/SHEET", aligner);
+            // check mismatches
+            std::pair<size_t, size_t> mismatches(count_mismatches(seqres_structure.get_ps(), ssdef_structure.get_ps()));
+            if(mismatches.first > 0) {
+              LOG << "SEQRES and HELIX/SHEET mismatch in " << mismatches.first << "/" << mismatches.second
+                  << " known positions for chain " << c << ", ignoring structure: " << __filename << "/"
+                  << std::to_string(sequence_no);
+              continue;
+            } // if
+
+            ss this_ss(ssdef_structure.get_ss().get_sses(), seqres_structure.get_length());
+            seqres_ssdef_structure = structure(storage, id, seqres_structure.get_ps(), this_ss);
+          } // if
+          else if(!has_seqres && has_ssdef) {
+            seqres_ssdef_structure = structure(storage, id, ssdef.get_sequence(c), che::ss(ssdef.get_pool(c)));
+          } // else if
+          else {
+            seqres_ssdef_structure = structure(storage, id, seqres.get_sequence(c));
+          } // else
+
+          // combine model sequence and seqres/ssdef sequence for each model
+          if(model.get_sequences(c).empty()) {
+            a.set(chain_id, che::structure_ensemble(seqres_ssdef_structure));
+            continue;
+          } // if
+          std::list<che::structure> this_chain_ensemble;
+          for(auto const &this_ps : model.get_sequences(c)) {
+            structure model_structure(this_ps);
+
+            // align and adjust structures
+            adjuster::update(model_structure, "ATOM", seqres_ssdef_structure, "SEQRES/HELIX/SHEET", aligner);
+            // check mismatches
+            std::pair<size_t, size_t> mismatches(
+                count_mismatches(model_structure.get_ps(), seqres_ssdef_structure.get_ps()));
+            if(mismatches.first > 0) {
+              LOG << "ATOM and SEQRES/HELIX/SHEET mismatch in " << mismatches.first << "/" << mismatches.second
+                  << " known positions for chain " << c << ", ignoring structure: " << __filename << "/"
+                  << std::to_string(sequence_no);
+              continue;
+            } // if
+
+            // copy missing cc datan from seqres_ssdef_structure into model_structure (atoms that were not determined)
+            ps model_ps(model_structure.get_ps());
+            ps seqres_ssdef_ps(seqres_ssdef_structure.get_ps());
+            for(size_t pos(0); pos < model_ps.size() && pos < seqres_ssdef_ps.size(); ++pos) {
+              if(model_ps[pos].is_unknown()) {
+                model_ps[pos] = seqres_ssdef_ps[pos];
+              } // if
+            } // for
+
+            // save structure in ensemble, either with or without ss
+            if(has_ssdef) {
+              this_chain_ensemble.emplace_back(storage, id, model_ps, seqres_ssdef_structure.get_ss());
+            } // if
+            else {
+              this_chain_ensemble.emplace_back(storage, id, model_ps);
+            } // else
+          } // for
+
+          if(!this_chain_ensemble.empty()) { // if ensemble is not empty, save ensemble in assembly
+            a.set(chain_id, che::structure_ensemble(this_chain_ensemble.begin(), this_chain_ensemble.end()));
+          } // if
+        } // for
 
         return a;
       } // read()

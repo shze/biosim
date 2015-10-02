@@ -4,7 +4,7 @@ namespace biosim {
   namespace che {
     // ctor from ps (also default ctor)
     structure::structure(ps __ps) : _ps(__ps), _storage(), _id(), _ss() {}
-    // ctor from storage and identifier 
+    // ctor from storage and identifier
     structure::structure(std::string __storage, std::string __identifier)
         : _ps(), _storage(__storage), _id(__identifier), _ss() {}
     // ctor from storage, identifier, and ps
@@ -14,7 +14,8 @@ namespace biosim {
     structure::structure(std::string __storage, std::string __identifier, ps __ps, ss __ss)
         : _ps(__ps), _storage(__storage), _id(__identifier), _ss(__ss) {
       if(__ps.size() != __ss.get_length()) {
-        throw std::invalid_argument("length of primary and secondary structure differs");
+        throw std::invalid_argument("length of primary and secondary structure differs: " +
+                                    std::to_string(__ps.size()) + " and " + std::to_string(__ss.get_length()));
       } // if
     } // ctor
     // get ps
@@ -27,7 +28,7 @@ namespace biosim {
       return _storage ? *_storage : storage_default;
     } // get_storage()
     // get identifier
-    std::string const &structure::get_identifier() const { 
+    std::string const &structure::get_identifier() const {
       static std::string id_default;
       return _id ? *_id : id_default;
     } // get_identifier()

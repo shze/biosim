@@ -316,26 +316,6 @@ namespace biosim {
         _chains[chain_id]._pool.insert(cchb_dssp_interval(initial_residue_sequence_number - 1,
                                                           terminal_residue_sequence_number - 1, cchb_dssp('E')));
       } // process_strand()
-      // shift the given chain by __insert_length
-      void pdb_ssdef_data::shift(char const &__chain_id, int __insert_length) {
-        // shift sequence
-        if(__insert_length >= 0) { // shift sequence to the right by inserting at the front
-          _chains[__chain_id]._cc_sequence.insert(_chains[__chain_id]._cc_sequence.begin(), __insert_length, cc('X'));
-        } // if
-        else { // shift sequence to the left by removing from the front
-          ps new_seq;
-          new_seq.insert(new_seq.end(), _chains[__chain_id]._cc_sequence.begin() + std::abs(__insert_length),
-                         _chains[__chain_id]._cc_sequence.end());
-          _chains[__chain_id]._cc_sequence = new_seq;
-        } // else
-        // shift pool
-        std::set<cchb_dssp_interval> new_pool;
-        for(cchb_dssp_interval const &sse : _chains[__chain_id]._pool) {
-          new_pool.insert(
-              cchb_dssp_interval(sse.get_min() + __insert_length, sse.get_max() + __insert_length, sse.get_type()));
-        } // for
-        _chains[__chain_id]._pool = new_pool;
-      } // shift()
       // get chain ids
       std::list<char> pdb_ssdef_data::get_chain_ids() const {
         std::list<char> chain_ids;
