@@ -27,6 +27,7 @@ set(SOURCES_UNIT_TESTER
   math/floating_point.cpp
   math/interval.cpp
   math/point.cpp
+  math/point_typed.cpp
   math/tensor.cpp
   math/algo/dp.cpp
   math/algo/factorial.cpp

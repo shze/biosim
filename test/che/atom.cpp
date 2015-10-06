@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE(atom_ctor) {
   BOOST_CHECK(a.get_identifier() == atom_id);
   BOOST_CHECK(a.get_position() == math::point());
 
-  math::point p({1, 2, 3}, math::point::coordinate_type::cylindrical);
+  math::point p({1, 2, 3});
   a = che::atom(atom_id, p);
   BOOST_CHECK(a.get_identifier() == atom_id);
   BOOST_CHECK(a.get_position() == p);
