@@ -32,6 +32,7 @@ set(SOURCES_UNIT_TESTER
   math/algo/dp.cpp
   math/algo/factorial.cpp
   math/algo/interval_scheduler_maximize.cpp
+  math/algo/point_distance.cpp
   tools/enumerate.cpp
   tools/file.cpp
   tools/mapper.cpp
