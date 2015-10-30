@@ -53,7 +53,22 @@ namespace biosim {
     // get determined atoms
     std::set<atom> const &cc::get_determined_atoms() const { return _atoms; }
     // add determined atom
-    void cc::add_determined_atom(atom __atom) {}
+    void cc::add_determined_atom(atom __atom) {
+      // simplify naming
+      using vertex_iterator = boost::undirected_graph<che::atom, che::bond>::vertex_iterator;
+      using vertex_iterator_pair = std::pair<vertex_iterator, vertex_iterator>;
+      using vertex_descriptor = boost::undirected_graph<che::atom, che::bond>::vertex_descriptor;
+      // iterate over all vertices (=atoms) in _impl->_molecule
+      for(vertex_iterator_pair vp(boost::vertices(_impl->_molecule)); vp.first != vp.second; ++vp.first) {
+        vertex_descriptor const &vd(*vp.first);
+        if(_impl->_molecule[vd].get_identifier() == __atom.get_identifier()) { // if this cc has an atom with this id
+          _atoms.insert(__atom); // save atom
+          return;
+        } // if
+      } // for
+
+      DEBUG << "cc '" << get_identifier() << "' does not have an atom '" << __atom.get_identifier() << "', ignoring.";
+    } // add_determined_atom()
 
     // (static) get list of all identifiers; static public interface
     std::list<std::string> cc::get_id_list() {
