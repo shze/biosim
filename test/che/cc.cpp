@@ -264,4 +264,16 @@ BOOST_AUTO_TEST_CASE(cc_ctor_from_weights) {
   BOOST_CHECK(weights.size() == 2);
 }
 
+BOOST_AUTO_TEST_CASE(cc_determined_atoms) {
+  che::cc ala("ALA");
+  BOOST_CHECK(ala.get_determined_atoms().size() == 0);
+
+  che::atom ala_atom("CB");
+  che::atom not_ala_atom("DG");
+  ala.add_determined_atom(ala_atom);
+  BOOST_CHECK(ala.get_determined_atoms().size() == 1);
+  ala.add_determined_atom(not_ala_atom);
+  BOOST_CHECK(ala.get_determined_atoms().size() == 1);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
