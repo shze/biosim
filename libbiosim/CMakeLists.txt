@@ -13,6 +13,7 @@ set(LIBBIOSIM_SOURCES
   che/atom.cpp
   che/bond.cpp
   che/cc.cpp
+  che/cc_labeled.cpp
   che/cchb_dssp.cpp
   che/ss.cpp
   che/structure.cpp
