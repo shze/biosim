@@ -10,10 +10,11 @@ include_directories(${Boost_INCLUDE_DIRS})
 set(LIBBIOSIM_SOURCES
   che/alignment.cpp
   che/assembly.cpp
+  che/assembly_atom.cpp
+  che/assembly_cc.cpp
   che/atom.cpp
   che/bond.cpp
   che/cc.cpp
-  che/cc_labeled.cpp
   che/cchb_dssp.cpp
   che/ss.cpp
   che/structure.cpp
