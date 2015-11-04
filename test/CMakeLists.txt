@@ -5,6 +5,8 @@ include_directories(../libbiosim/)
 
 set(SOURCES_UNIT_TESTER
   che/assembly.cpp
+  che/assembly_atom.cpp
+  che/assembly_cc.cpp
   che/atom.cpp
   che/bond.cpp
   che/cc.cpp
