@@ -12,20 +12,19 @@ namespace biosim {
       class adjuster {
       public:
         // update structures to match positions using an alignment created with the aligner; labels are used for output
-        static void update(che::structure &__structure1, std::string const &__label1, che::structure &__structure2,
-                           std::string const &__label2, che::algo::aligner_dp const &__aligner) {
+        static void update(structure &__structure1, std::string const &__label1, structure &__structure2,
+                           std::string const &__label2, algo::aligner_dp const &__aligner) {
           // create intro output string
           std::string const intro(__label1 + " and " + __label2 + " differ; ");
           // save original lengths before we change them
           size_t original_length1(__structure1.get_length()), original_length2(__structure2.get_length());
 
           // create alignment
-          che::scored_alignment alignment(
-              __aligner.align_multiple({che::alignment(__structure1), che::alignment(__structure2)}).front());
+          scored_alignment scored(__aligner.align_multiple({alignment(__structure1), alignment(__structure2)}).front());
 
           // begin cases
-          size_t const &unaligned_length_begin1(alignment.get_alignment().get_begins()[0]);
-          size_t const &unaligned_length_begin2(alignment.get_alignment().get_begins()[1]);
+          size_t const &unaligned_length_begin1(scored.get_alignment().get_begins()[0]);
+          size_t const &unaligned_length_begin2(scored.get_alignment().get_begins()[1]);
           int begin_diff(unaligned_length_begin1 - unaligned_length_begin2);
           if(begin_diff > 0) { // structure1 starts before structure2
             if(is_undetermined(__structure1, 0, begin_diff)) { // if structure1 begin contains undetermined ps/ss
@@ -49,8 +48,8 @@ namespace biosim {
           } // else if
 
           // end cases
-          size_t unaligned_length_end1(original_length1 - alignment.get_alignment().get_ends()[0]);
-          size_t unaligned_length_end2(original_length2 - alignment.get_alignment().get_ends()[1]);
+          size_t unaligned_length_end1(original_length1 - scored.get_alignment().get_ends()[0]);
+          size_t unaligned_length_end2(original_length2 - scored.get_alignment().get_ends()[1]);
           int end_diff(unaligned_length_end1 - unaligned_length_end2);
           if(end_diff > 0) { // structure1 ends after structure2
             size_t begin(__structure1.get_length() - end_diff), end(__structure1.get_length());
@@ -78,7 +77,7 @@ namespace biosim {
           } // else if
         } // update()
         // return if positions __begin..__end are undetermined in __s
-        static bool is_undetermined(che::structure &__s, size_t __begin, size_t __end) {
+        static bool is_undetermined(structure &__s, size_t __begin, size_t __end) {
           bool undetermined(true);
           for(; __begin < __end; ++__begin) {
             if(!__s.get_ps().at(__begin).is_unknown() ||
@@ -90,7 +89,7 @@ namespace biosim {
           return undetermined;
         } // is_undetermined()
         // remove the positions __begin..__end - 1 from __s
-        static void remove(che::structure &__s, size_t __begin, size_t __end) {
+        static void remove(structure &__s, size_t __begin, size_t __end) {
           // sequence
           ps new_ps;
           new_ps.insert(new_ps.end(), __s.get_ps().begin(), __s.get_ps().begin() + __begin);
@@ -104,10 +103,10 @@ namespace biosim {
           } // for
           // save
           ss new_ss(new_sses, new_ps.size());
-          __s = __s.get_ss().defined() ? che::structure("", "", new_ps, new_ss) : che::structure(new_ps);
+          __s = __s.get_ss().defined() ? structure("", "", new_ps, new_ss) : structure(new_ps);
         } // remove
         // insert the positions __from_begin..__from_end - 1 at __to_pos
-        static void insert(che::structure &__to, size_t __to_pos, che::structure &__from, size_t __from_begin,
+        static void insert(structure &__to, size_t __to_pos, structure &__from, size_t __from_begin,
                            size_t __from_end) {
           // sequence
           ps new_ps;
@@ -123,7 +122,7 @@ namespace biosim {
           } // for
           // save
           ss new_ss(new_sses, new_ps.size());
-          __to = __to.get_ss().defined() ? che::structure("", "", new_ps, new_ss) : che::structure(new_ps);
+          __to = __to.get_ss().defined() ? structure("", "", new_ps, new_ss) : structure(new_ps);
         } // insert()
       }; // class adjuster
 
@@ -402,9 +401,8 @@ namespace biosim {
         all_chain_ids.insert(ssdef_chain_ids.begin(), ssdef_chain_ids.end());
 
         // create before the for loop
-        che::score::ev_alignment::cc_cm_function_ptr b62_ptr(new che::score::cm_cc_blosum(true));
-        che::algo::aligner_dp aligner(
-            che::score::ev_alignment(b62_ptr, -b62_ptr->get_unknown_score(), b62_ptr->get_min_score()));
+        score::ev_alignment::cc_cm_function_ptr b62_ptr(new score::cm_cc_blosum(true));
+        algo::aligner_dp aligner(score::ev_alignment(b62_ptr, -b62_ptr->get_unknown_score(), b62_ptr->get_min_score()));
 
         size_t sequence_no(0); // start with 0, increase at the beginning of each loop
         for(auto const &c : all_chain_ids) {
@@ -423,20 +421,20 @@ namespace biosim {
               << (has_model ? "" : "no ") << "model data, " << (has_ssdef ? "" : "no ") << "ss data)";
 
           if(has_seqres + has_model + has_ssdef == 1) { // if only one kind of data exists, save and done
-            std::list<che::structure> this_chain_ensemble;
+            std::list<structure> this_chain_ensemble;
             if(has_seqres) {
               this_chain_ensemble.emplace_back(storage, id, seqres.get_sequence(c));
             } // if
             else if(has_model) {
               for(auto &this_ps : model.get_sequences(c)) {
-                this_chain_ensemble.emplace_back(che::structure(storage, id, this_ps));
+                this_chain_ensemble.emplace_back(structure(storage, id, this_ps));
               } // for
             } // else if
             else /*if(has_ssdef)*/ {
               this_chain_ensemble.emplace_back(storage, id, ssdef.get_sequence(c),
                                                ss(ssdef.get_pool(c), ssdef.get_sequence(c).size()));
             } // else
-            a.set(chain_id, che::structure_ensemble(this_chain_ensemble.begin(), this_chain_ensemble.end()));
+            a.set(chain_id, structure_ensemble(this_chain_ensemble.begin(), this_chain_ensemble.end()));
             continue;
           } // if
 
@@ -474,10 +472,10 @@ namespace biosim {
 
           // combine model sequence and seqres/ssdef sequence for each model
           if(model.get_sequences(c).empty()) {
-            a.set(chain_id, che::structure_ensemble(seqres_ssdef_structure));
+            a.set(chain_id, structure_ensemble(seqres_ssdef_structure));
             continue;
           } // if
-          std::list<che::structure> this_chain_ensemble;
+          std::list<structure> this_chain_ensemble;
           for(auto const &this_ps : model.get_sequences(c)) {
             structure model_structure(this_ps);
 
@@ -512,7 +510,7 @@ namespace biosim {
           } // for
 
           if(!this_chain_ensemble.empty()) { // if ensemble is not empty, save ensemble in assembly
-            a.set(chain_id, che::structure_ensemble(this_chain_ensemble.begin(), this_chain_ensemble.end()));
+            a.set(chain_id, structure_ensemble(this_chain_ensemble.begin(), this_chain_ensemble.end()));
           } // if
         } // for
 

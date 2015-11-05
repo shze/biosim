@@ -8,12 +8,12 @@ namespace biosim {
   namespace che {
     namespace score {
       // base class for cc comparison functions
-      class cc_cm_function : public math::cm_function<che::cc> {
+      class cc_cm_function : public math::cm_function<cc> {
       public:
         // returns the minimum score
         virtual double get_min_score() const = 0;
         // returns the score of comparing two unknown cc
-        double get_unknown_score() const { return compare(che::cc('X'), che::cc('X')); }
+        double get_unknown_score() const { return compare(cc('X'), cc('X')); }
       }; // class cc_cm_function
     } // namespace score
   } // namespace che

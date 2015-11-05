@@ -6,7 +6,7 @@ namespace biosim {
       // returns identifier
       std::string cm_assembly_ssq3::get_identifier() const { return "ssq3"; }
       // compares the given two instances of assemblies
-      double cm_assembly_ssq3::compare(che::assembly const &__first, che::assembly const &__second) const {
+      double cm_assembly_ssq3::compare(assembly const &__first, assembly const &__second) const {
         std::list<std::string> chain_ids1(__first.get_chain_id_list()), chain_ids2(__second.get_chain_id_list());
         std::set<std::string> unique_chain_ids(chain_ids1.begin(), chain_ids1.end());
         unique_chain_ids.insert(chain_ids2.begin(), chain_ids2.end());
@@ -31,8 +31,8 @@ namespace biosim {
         return q3_sum / chain_count;
       } // compare()
       // compares the given two instances of ss
-      double cm_assembly_ssq3::compare(che::ss const &__first, che::ss const &__second) const {
-        che::sequence<che::cchb_dssp> const seq1(__first.get_sequence()), seq2(__second.get_sequence());
+      double cm_assembly_ssq3::compare(ss const &__first, ss const &__second) const {
+        sequence<cchb_dssp> const seq1(__first.get_sequence()), seq2(__second.get_sequence());
 
         if(seq1.size() != seq2.size()) {
           throw math::compare_error(get_identifier() + ": Sequence length differ, sequence1.length=" +

@@ -11,10 +11,10 @@ namespace biosim {
       class dp {
       public:
         // scoring function, taking a tensor and position and returning a score
-        using score_function = std::function<T(math::tensor<T> const &, std::vector<size_t> const &)>;
+        using score_function = std::function<T(tensor<T> const &, std::vector<size_t> const &)>;
 
         // calculates the scores for all positions of the tensor __input using the scoring function and returns it
-        math::tensor<T> calculate(math::tensor<T> __input, score_function const &__score) {
+        tensor<T> calculate(tensor<T> __input, score_function const &__score) {
           tools::mapper<std::vector<size_t>> m(__input.get_mapper_alphabets());
           std::vector<size_t> pos;
           for(size_t i(m.get_min()); i <= m.get_max(); ++i) {

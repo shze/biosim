@@ -9,7 +9,7 @@ namespace biosim {
   namespace che {
     namespace score {
       // class to evaluate the probability of alignments
-      class ev_alignment : public math::ev_function<che::alignment> {
+      class ev_alignment : public math::ev_function<alignment> {
       public:
         using cc_cm_function_ptr = std::shared_ptr<cc_cm_function>; // simplify naming
 
@@ -20,7 +20,7 @@ namespace biosim {
         // returns identifier
         std::string get_identifier() const;
         // evaluate the probability of the given alignment
-        double evaluate(che::alignment const &__al) const;
+        double evaluate(alignment const &__al) const;
 
       private:
         cc_cm_function_ptr _cm_f; // cc compare function

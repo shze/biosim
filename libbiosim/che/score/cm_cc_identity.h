@@ -17,7 +17,7 @@ namespace biosim {
         // returns the minimum score
         double get_min_score() const;
         // compares the given two instances of cc
-        double compare(che::cc const &__cc1, che::cc const &__cc2) const;
+        double compare(cc const &__cc1, cc const &__cc2) const;
 
       private:
         std::string _id; // identifier
