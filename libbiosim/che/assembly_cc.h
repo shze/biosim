@@ -20,6 +20,12 @@ namespace biosim {
       std::string _chain_id; // chain id
       size_t _chain_pos; // position of cc in the chain, i.e. residue id
     }; // class assembly_cc
+
+    // output operator for assembly_cc
+    inline std::ostream &operator<<(std::ostream &__out, assembly_cc const &__a) {
+      __out << __a.get_chain_id() << __a.get_chain_pos();
+      return __out;
+    } // operator<<()
   } // namespace che
 } // namespace biosim
 
