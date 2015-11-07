@@ -13,6 +13,7 @@ set(LIBBIOSIM_SOURCES
   che/assembly_atom.cpp
   che/assembly_cc.cpp
   che/atom.cpp
+  che/atom_contact.cpp
   che/bond.cpp
   che/cc.cpp
   che/cchb_dssp.cpp
