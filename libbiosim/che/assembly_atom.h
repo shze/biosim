@@ -1,6 +1,7 @@
 #ifndef che_assembly_atom_h
 #define che_assembly_atom_h
 
+#include <iostream>
 #include "che/atom.h"
 
 namespace biosim {

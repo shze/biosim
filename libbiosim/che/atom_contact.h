@@ -2,6 +2,7 @@
 #define che_atom_contact_h
 
 #include <tuple>
+#include <iostream>
 #include "che/assembly_atom.h"
 
 namespace biosim {
