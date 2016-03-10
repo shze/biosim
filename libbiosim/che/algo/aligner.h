@@ -1,5 +1,5 @@
-#ifndef che_aligner_h
-#define che_aligner_h
+#ifndef che_algo_aligner_h
+#define che_algo_aligner_h
 
 #include "che/alignment.h"
 
@@ -33,4 +33,4 @@ namespace biosim {
   } // namespace che
 } // namespace biosim
 
-#endif // che_aligner_h
+#endif // che_algo_aligner_h

@@ -1,5 +1,5 @@
-#ifndef che_aligner_dp_h
-#define che_aligner_dp_h
+#ifndef che_algo_aligner_dp_h
+#define che_algo_aligner_dp_h
 
 #include "che/algo/aligner.h"
 #include "che/score/ev_alignment.h"
@@ -29,4 +29,4 @@ namespace biosim {
   } // namespace che
 } // namespace biosim
 
-#endif // che_aligner_dp_h
+#endif // che_algo_aligner_dp_h
